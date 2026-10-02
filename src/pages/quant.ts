@@ -52,6 +52,10 @@ import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
 import type { ScreensPayload } from "../lib/screens/map";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
+import {
+  renderBucketedFilingsList,
+  renderEventBucketCounts,
+} from "./tools";
 import type { LatestPayload, SymbolRow } from "./types";
 
 export interface RecipesPayload {
@@ -187,27 +191,12 @@ function renderFilingsStub(
   locale: Locale,
   announcements: AnnouncementsPayload | null,
 ): string {
-  const items = (announcements?.items ?? []).slice(0, 8);
+  const items = announcements?.items ?? [];
   return `<section class="filings-stub">
     <h2>${esc(t(locale, "filingsStub"))}</h2>
     <p class="muted tiny">${esc(t(locale, "filingsStubLead"))} · ${esc(fmtIsoSlice(announcements?.generatedAt))} · ${esc(t(locale, "iwencaiSource"))}</p>
-    ${
-      !items.length
-        ? `<p class="muted">${esc(t(locale, "announcementsEmpty"))}</p>`
-        : `<ul class="news-list filings-list">
-      ${items
-        .map((n) => {
-          const title = locale === "zh" ? n.titleZh : n.titleEn;
-          const name = locale === "zh" ? n.nameZh : n.symbol;
-          return `<li>
-            <time>${esc(n.date)} · ${esc(name)}</time>
-            <strong>${esc(title)}</strong>
-            ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener">source</a>` : ""}
-          </li>`;
-        })
-        .join("")}
-    </ul>`
-    }
+    ${renderEventBucketCounts(locale, items)}
+    ${renderBucketedFilingsList(locale, items, 8)}
   </section>`;
 }
 

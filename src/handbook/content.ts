@@ -485,6 +485,83 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       { href: "#/learn", label: { zh: "入门 101", en: "Learn 101" } },
     ],
   },
+  {
+    id: "academy-retail-path",
+    title: {
+      zh: "研学学院 · 零售→量化路径",
+      en: "Academy · Retail → quant path",
+    },
+    body: {
+      zh: "本课把「随便看看盘」变成可复盘的量化习惯。目标不是一夜变成对冲基金，而是建立三条可检查的链路：选工具（Agent）→ 读信号（Quant）→ 练习成交与导出（Paper）。\n\n**第一步：用对比页选工具，而不是选神话。** 打开 `#/compare`，先按场景过滤（编码 / 国内可达 / 隐私 / **量化 / AI 金融**）。量化预设会抬高研究编排、因子工具、记忆反思、风控与回测严谨度；缺失维度不参与加权，因此编码型 Agent 与量化型 Agent 可以同屏比较而不被「空分」拖垮。分数是编辑启发式，不是实盘夏普。\n\n**第二步：在量化页只读「已发生」的证据。** 信号看板、形态、因子看板与公告分桶都来自 bake JSON。你要养成提问：这条信号的 bar 日期是哪天？形态识别有没有偷看未来 K？公告事件桶是关键词规则还是 LLM？答案应分别是：历史 bar、无未来函数、关键词规则。\n\n**第三步：纸盘强制「信号日 t → 成交 t+1 开盘」。** 起点壹亿、手数 100、往返约 3 bps。导出券商清单时措辞必须是【次日开盘】——本站永不代下单。若你把当日收盘当成交价，你就在练习未来函数，而不是练习可执行流程。\n\n**练习作业：** 完成 Learn 场景 12–15；在对比页应用量化预设并复制短名单链接；在量化页打开一只标的核对公告事件桶；在纸盘下一笔买入再导出 CSV。把三份产物（链接 / 截图思路 / CSV）当作个人研学档案。",
+      en: "This lesson turns casual chart browsing into a repeatable quant habit. The goal is not overnight hedge-fund status — it is three auditable loops: pick tools (Agent) → read signals (Quant) → practice fills and export (Paper).\n\n**Step 1: Choose tools on Compare, not myths.** Open `#/compare`, filter by scenario (coding / CN access / privacy / **Quant / AI-finance**). The Quant preset raises research orchestration, factor tooling, memory/reflection, risk controls, and backtest rigor; missing dims are skipped so coding and quant agents can share a matrix without empty-score penalties. Scores are editorial heuristics — not live Sharpe.\n\n**Step 2: On Quant, only trust evidence that already happened.** Signal board, patterns, Factor Board, and filing buckets come from bake JSON. Ask: which bar date is this signal? Did pattern detection peek ahead? Are event buckets keyword rules or LLM? Answers should be: historical bars, no lookahead, keyword rules.\n\n**Step 3: Paper enforces signal bar t → fill at t+1 open.** Start ¥100M; lots of 100; ~3 bps RT. Checklist export must say NEXT OPEN — this site never submits. Using the same-bar close as a fill practices lookahead, not an executable workflow.\n\n**Homework:** Finish Learn scenarios 12–15; apply the Quant preset and copy a shortlist link; open one Asset and check filing buckets; place one Paper buy and export CSV. Keep the trio (link / notes / CSV) as your personal academy packet.",
+    },
+    deepLinks: [
+      { href: "#/compare", label: { zh: "对比 · 量化预设", en: "Compare · Quant preset" } },
+      { href: "#/quant", label: { zh: "量化复盘", en: "Quant review" } },
+      { href: "#/paper", label: { zh: "纸盘", en: "Paper" } },
+      { href: "#/learn", label: { zh: "入门场景 12", en: "Learn scenario 12" } },
+    ],
+    skills: ["candlestick", "execution-model", "announcement-search"],
+  },
+  {
+    id: "academy-no-lookahead",
+    title: {
+      zh: "研学学院 · 无未来函数",
+      en: "Academy · No-lookahead discipline",
+    },
+    body: {
+      zh: "「无未来函数」是零售量化最容易口头承认、最容易在实现里违反的一条。定义很短：**在决策时刻 t，算法只能使用 ≤ t 的信息；成交与评估若假设用到了 t 之后的价格，就必须显式标注或改成可执行规则。**\n\n**形态与指标。** Agenter 的 K 线形态与均线只扫描历史 candles；命中日是形态完成的那天，不是「事后知道涨了才贴标签」。若你在研究笔记里用未来 5 日收益去「挑选」形态定义，那是样本内数据挖掘，不是策略。\n\n**成交假设。** 纸盘与 Lab 默认：信号日 t 的目标仓位，在有下一根 K 时按 **t+1 开盘**成交；否则标注收盘回退。这不是「更准」，而是更接近人工在券商按次日开盘核对清单的操作。关掉成本模型或改用同 bar 收盘，只适合做对照实验，不可当作实操建议。\n\n**回测诚实度。** 惩罚后夏普、幸存者宇宙横幅、样本内/外切分，都在提醒：你看到的曲线已经过选择。无未来函数解决的是信息泄漏；它不自动解决过拟合、成本忽略与发表后衰减。\n\n**自检清单：** (1) 信号特征是否只用 ≤ t？ (2) 成交价是否来自 t 之后且规则固定？ (3) 标签/收益是否泄漏进特征？ (4) 导出清单是否仍写【次日开盘】？四条都过，才算本课合格。",
+      en: "No-lookahead is the rule retail quants agree with in speech and break in code. Short definition: **at decision time t, the algorithm may use only information ≤ t; if fills or evaluation assume prices after t, that must be labeled explicitly or rewritten as an executable rule.**\n\n**Patterns and indicators.** Agenter candlestick patterns and MAs scan historical candles only; the hit date is when the pattern completes — not a post-hoc label after a rally. Using future 5-day returns to cherry-pick pattern definitions is in-sample mining, not a strategy.\n\n**Fill assumptions.** Paper and Lab default: target position from signal bar t fills at **t+1 open** when a next bar exists; otherwise a labeled close fallback. That is not “more accurate” — it mirrors a human checklist at NEXT OPEN. Turning costs off or filling on the same-bar close is a controlled contrast, not actionable practice.\n\n**Backtest honesty.** Haircut Sharpe, survivor-universe banners, and IS/OOS splits remind you the curve is already selected. No-lookahead fixes information leakage; it does not fix overfitting, ignored costs, or post-publication decay.\n\n**Checklist:** (1) Features only ≤ t? (2) Fill price after t with a fixed rule? (3) Labels/returns leaking into features? (4) Checklist still says NEXT OPEN? Pass all four to clear this lesson.",
+    },
+    deepLinks: [
+      { href: "#/quant", label: { zh: "量化 · 形态/Lab", en: "Quant · patterns/Lab" } },
+      { href: "#/paper", label: { zh: "纸盘成交规则", en: "Paper fill rules" } },
+      { href: "#/learn", label: { zh: "入门场景 13", en: "Learn scenario 13" } },
+    ],
+    skills: ["candlestick", "execution-model", "quant-statistics"],
+  },
+  {
+    id: "academy-factors-ic",
+    title: {
+      zh: "研学学院 · 因子与 IC",
+      en: "Academy · Factors & IC",
+    },
+    body: {
+      zh: "因子课要把三件事分开：**经济故事、可计算代理、样本外诚实。** Agenter 站点上的动量 / 低波 / ADV / 质量分数是 OHLC 代理，不是实时 PE/PB 或经典账面市值比；HML-proxy 标注为 12−1 反转代理，避免把演示分数误读成学术复刻。\n\n**IC / IR 面板。** 横截面 IC 均值与 IR 告诉你：在这段烘焙历史上，代理因子与前瞻收益的相关性有多稳。分位收益展示分层，不是实盘组合。IC 高也不等于「下周能赚」——宇宙固定、幸存者偏差、成本未全计时，数字只是教育 distill。\n\n**McLean 式警示。** 学术上常见「发表后可预测性衰减」：一旦因子被广泛知晓，拥挤交易会压薄 α。本站用惩罚后夏普、样本外切分与披露文案提醒你：先问衰减与成本，再问能不能上杠杆。\n\n**与 Compare / Paper 的衔接。** 对比页的「因子 / Alpha 工具」维度评价的是 Agent 是否擅长因子研究编排，不是站点因子分数本身。纸盘批量下单只是把 TopN 练习成可导出清单，不构成投顾。\n\n**练习：** 打开因子看板与 IC 面板，写下一句「该分数是什么代理、缺什么真实基本面」；再在 Lab 对比固定 bps 与 √冲击下的成本差异。",
+      en: "Separate three ideas: **economic story, computable proxy, out-of-sample honesty.** Site momentum / low-vol / ADV / quality scores are OHLC proxies — not live PE/PB or classic book-to-market; HML-proxy is labeled as a 12−1 reversal proxy so demo scores are not mistaken for academic replicas.\n\n**IC / IR panel.** Cross-section IC mean and IR ask how stable the proxy–forward-return link was on this bake. Quantile returns show layers, not a live book. High IC ≠ “profits next week” — fixed universe, survivorship, and incomplete costs make the numbers an educational distill.\n\n**McLean-style caution.** Predictability often decays after publication as crowded trades thin alpha. Haircut Sharpe, OOS splits, and disclosure copy push you to ask about decay and costs before leverage.\n\n**Link to Compare / Paper.** Compare’s factor/alpha tooling dimension rates whether an agent orchestrates factor research — not the site factor scores themselves. Paper batch sizing only practices TopN → checklist export; it is not advice.\n\n**Drill:** Open Factor Board + IC; write one sentence on what the score proxies and which live fundamentals are missing; in Lab compare fixed bps vs √-impact costs.",
+    },
+    deepLinks: [
+      { href: "#/quant", label: { zh: "因子看板 / IC", en: "Factor Board / IC" } },
+      { href: "#/compare", label: { zh: "对比 · 因子维度", en: "Compare · factor dims" } },
+      { href: "#/paper", label: { zh: "纸盘批量练习", en: "Paper batch practice" } },
+      { href: "#/learn", label: { zh: "入门场景 14", en: "Learn scenario 14" } },
+    ],
+    skills: [
+      "multi-factor",
+      "factor-research",
+      "fundamental-filter",
+      "quant-factor-select",
+      "quant-statistics",
+    ],
+  },
+  {
+    id: "academy-committee",
+    title: {
+      zh: "研学学院 · 委员会识字",
+      en: "Academy · Committee literacy",
+    },
+    body: {
+      zh: "「多智能体委员会」是研学营 AI 篇常见叙事：基本面、情绪、技术、新闻/公告、风控、组合等角色辩论后给出共识。Agenter **Step One** 先教识字与选工具；Step Two 才会在量化页落地 bake-only 投票桌。现在你要能回答：委员会解决什么、不解决什么。\n\n**它解决什么。** 把单一模型的一次性答案，拆成可检查的证据桶（财报/回购/增减持公告、形态偏向、因子暴露、风险闸）。TradingAgents、FinRobot、FinMem 等开源栈强调角色、记忆与工具调用——对比页量化目录用编辑分刻画这些能力，并可用「量化 / AI 金融」预设排序。\n\n**它不解决什么。** 浏览器里没有实时 LLM 券商下单；bake 投票（后续）也不是真实投委会纪要。没有无未来函数与成本模型，再多角色也只是故事。FinCast / TSFM / AlphaFormer 等论文能力在本站是**前沿识字**，不是权重推理。\n\n**与 Compare 的配合。** 打开 `#/compare`，类别选「量化」，应用量化预设，并排 TradingAgents / FinGPT / FinMem / QFinZero 等。问自己：研究编排高分是否配得上你的回测严谨度要求？国内可达与成本是否匹配你的运行环境？\n\n**预告（Step Two）：** Committee Desk 将用烘焙特征生成六角色投票与证据条，并可 Promote → 纸盘清单。本课合格标准：能用自己的话解释「共识 ≠ 成交许可」。",
+      en: "“Multi-agent committee” is a common camp AI-track story: fundamentals, sentiment, technicals, news/filings, risk, and portfolio roles debate toward consensus. Agenter **Step One** teaches literacy and tool selection; Step Two lands a bake-only voting desk on Quant. For now you must answer what committees solve — and what they do not.\n\n**What they solve.** They split one-shot model answers into checkable evidence buckets (earnings/buyback/holder filings, pattern bias, factor exposure, risk gates). Stacks like TradingAgents, FinRobot, and FinMem stress roles, memory, and tool use — the Compare quant catalog scores those capabilities editorially and ranks them with the Quant / AI-finance preset.\n\n**What they do not solve.** The browser has no live LLM broker orders; future bake votes are not real IC minutes. Without no-lookahead and costs, more roles are still a story. FinCast / TSFM / AlphaFormer remain **frontier literacy** here — not in-browser weight inference.\n\n**With Compare.** Open `#/compare`, filter Quant, apply the Quant preset, and side-by-side TradingAgents / FinGPT / FinMem / QFinZero. Ask: does high research-orchestration match your backtest-rigor bar? Do CN access and cost fit your runtime?\n\n**Preview (Step Two):** Committee Desk will emit six-role bake votes and evidence bullets with Promote → Paper checklist. Pass this lesson when you can say: consensus ≠ permission to trade.",
+    },
+    deepLinks: [
+      { href: "#/compare", label: { zh: "对比量化 Agent", en: "Compare quant agents" } },
+      { href: "#/quant", label: { zh: "量化（后续委员会）", en: "Quant (committee later)" } },
+      { href: "#/handbook", label: { zh: "手册目录", en: "Handbook TOC" } },
+      { href: "#/learn", label: { zh: "入门场景 15", en: "Learn scenario 15" } },
+    ],
+    skills: ["announcement-search", "news-search", "multi-factor", "sim-trading"],
+  },
 ];
 
 export function handbookSearchHaystack(

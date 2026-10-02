@@ -1,0 +1,367 @@
+{
+  "generatedAt": "2026-10-02T14:00:00.000Z",
+  "sourceNote": "Editorial Quant / AI-finance agent catalog for Agenter Compare. Scores are literature/README heuristics (1–5), not live trading PnL. Sources: TradingAgents, FinGPT/FinRobot, FinMem, FinAgent, QuantAgent, StockAgent, R&D-Agent-Quant, AI-Trader, QFinZero, FactorGPT; SUFE Fin Manus / Fin-R1 / LightAgent tagged where public.",
+  "agents": [
+    {
+      "id": "tradingagents",
+      "nameZh": "TradingAgents",
+      "nameEn": "TradingAgents",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "open-source",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "LangGraph multi-agent desk (analyst→debate→trader→risk)",
+      "privacy": "Self-host / BYOK LLMs",
+      "links": {
+        "homepage": "https://github.com/TauricResearch/TradingAgents",
+        "docs": "https://tauricresearch.github.io/TradingAgents/"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 4,
+        "privacyControl": 4,
+        "costEfficiency": 3,
+        "cnAccessibility": 4,
+        "learningCurve": 3,
+        "researchOrchestration": 5,
+        "factorAlphaTooling": 3,
+        "memoryReflection": 4,
+        "riskControls": 5,
+        "backtestRigor": 3
+      },
+      "notesZh": "交易公司式多角色辩论；研究框架，非券商下单。",
+      "notesEn": "Trading-firm multi-agent debate graph; research framework, not a broker."
+    },
+    {
+      "id": "fingpt",
+      "nameZh": "FinGPT",
+      "nameEn": "FinGPT",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "open-source",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "FinNLP data + LoRA / sentiment / forecast toolkits",
+      "privacy": "Self-host weights",
+      "links": {
+        "homepage": "https://github.com/AI4Finance-Foundation/FinGPT"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 4,
+        "costEfficiency": 4,
+        "cnAccessibility": 3,
+        "learningCurve": 3,
+        "researchOrchestration": 2,
+        "factorAlphaTooling": 5,
+        "memoryReflection": 2,
+        "riskControls": 2,
+        "backtestRigor": 3
+      },
+      "notesZh": "金融 LLM 工厂（数据/微调/情绪），不是完整交易台。",
+      "notesEn": "Finance LLM factory (data/LoRA/sentiment) — not a full trading desk."
+    },
+    {
+      "id": "finrobot",
+      "nameZh": "FinRobot",
+      "nameEn": "FinRobot",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "open-source",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Equity research agents + deterministic valuation code",
+      "privacy": "Self-host",
+      "links": {
+        "homepage": "https://github.com/AI4Finance-Foundation/FinRobot"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 4,
+        "privacyControl": 4,
+        "costEfficiency": 3,
+        "cnAccessibility": 3,
+        "learningCurve": 3,
+        "researchOrchestration": 4,
+        "factorAlphaTooling": 4,
+        "memoryReflection": 3,
+        "riskControls": 3,
+        "backtestRigor": 4
+      },
+      "notesZh": "研报/估值多智能体；数值由确定性代码路径产出。",
+      "notesEn": "Research/valuation multi-agent; numbers from deterministic code paths."
+    },
+    {
+      "id": "finmem",
+      "nameZh": "FinMem",
+      "nameEn": "FinMem",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "research",
+      "contextWindow": "layered memory",
+      "toolsMcp": "Profiling + layered memory + decision loop",
+      "privacy": "Research code",
+      "links": {
+        "homepage": "https://arxiv.org/abs/2311.13743"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 3,
+        "contextMemory": 5,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 2,
+        "learningCurve": 3,
+        "researchOrchestration": 3,
+        "factorAlphaTooling": 2,
+        "memoryReflection": 5,
+        "riskControls": 3,
+        "backtestRigor": 3
+      },
+      "notesZh": "分层记忆与角色画像的交易智能体论文框架。",
+      "notesEn": "Layered-memory + character-design trading agent (paper)."
+    },
+    {
+      "id": "finagent",
+      "nameZh": "FinAgent",
+      "nameEn": "FinAgent",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "research",
+      "contextWindow": "multimodal",
+      "toolsMcp": "Tool-augmented multimodal trading agent",
+      "privacy": "Research",
+      "links": {
+        "homepage": "https://personal.ntu.edu.sg/boan/papers/KDD24_FinAgent.pdf"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 5,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 2,
+        "learningCurve": 3,
+        "researchOrchestration": 4,
+        "factorAlphaTooling": 3,
+        "memoryReflection": 4,
+        "riskControls": 3,
+        "backtestRigor": 3
+      },
+      "notesZh": "KDD multimodal tool-augmented trading agent；SUFE 中台亦出现 FinAgent 标签。",
+      "notesEn": "KDD multimodal tool-augmented agent; also tagged in SUFE mid-layer diagrams."
+    },
+    {
+      "id": "quantagent",
+      "nameZh": "QuantAgent",
+      "nameEn": "QuantAgent",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "research",
+      "contextWindow": "signal KB",
+      "toolsMcp": "Self-improving signal mining loop",
+      "privacy": "Research",
+      "links": {
+        "homepage": "https://arxiv.org/abs/2402.03755"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 3,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 2,
+        "learningCurve": 3,
+        "researchOrchestration": 3,
+        "factorAlphaTooling": 5,
+        "memoryReflection": 5,
+        "riskControls": 2,
+        "backtestRigor": 4
+      },
+      "notesZh": "内外环自我改进的信号挖掘智能体。",
+      "notesEn": "Self-improving signal-mining agent (inner/outer loops)."
+    },
+    {
+      "id": "stockagent",
+      "nameZh": "StockAgent",
+      "nameEn": "StockAgent",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "research",
+      "contextWindow": "event-driven sim",
+      "toolsMcp": "Multi-agent simulated exchange environment",
+      "privacy": "Research",
+      "links": {
+        "homepage": "https://arxiv.org/abs/2407.18957"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 2,
+        "learningCurve": 3,
+        "researchOrchestration": 4,
+        "factorAlphaTooling": 2,
+        "memoryReflection": 3,
+        "riskControls": 3,
+        "backtestRigor": 3
+      },
+      "notesZh": "事件驱动多主体股市仿真，研究外部冲击与行为。",
+      "notesEn": "Event-driven multi-agent market simulation for behavior studies."
+    },
+    {
+      "id": "rd-agent-quant",
+      "nameZh": "R&D-Agent-Quant",
+      "nameEn": "R&D-Agent-Quant",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "research",
+      "contextWindow": "factor-model co-opt",
+      "toolsMcp": "Research↔Development agents + backtest feedback",
+      "privacy": "Research",
+      "links": {
+        "homepage": "https://arxiv.org/abs/2505.15155"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 3,
+        "learningCurve": 2,
+        "researchOrchestration": 5,
+        "factorAlphaTooling": 5,
+        "memoryReflection": 3,
+        "riskControls": 3,
+        "backtestRigor": 5
+      },
+      "notesZh": "因子–模型联合优化的数据中心多智能体。",
+      "notesEn": "Data-centric multi-agent factor–model co-optimization."
+    },
+    {
+      "id": "ai-trader",
+      "nameZh": "AI-Trader",
+      "nameEn": "AI-Trader",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "benchmark",
+      "contextWindow": "live markets",
+      "toolsMcp": "Live multi-market agent benchmark harness",
+      "privacy": "Research / open eval",
+      "links": {
+        "homepage": "https://github.com/HKUDS/AI-Trader"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 4,
+        "learningCurve": 3,
+        "researchOrchestration": 3,
+        "factorAlphaTooling": 2,
+        "memoryReflection": 2,
+        "riskControls": 5,
+        "backtestRigor": 5
+      },
+      "notesZh": "实时多市场评测：风险控制比裸收益更关键。",
+      "notesEn": "Live multi-market benchmark — risk control often beats raw return."
+    },
+    {
+      "id": "qfinzero",
+      "nameZh": "QFinZero",
+      "nameEn": "QFinZero",
+      "region": "Global",
+      "category": "quant",
+      "pricingBand": "open-source",
+      "contextWindow": "tool schemas",
+      "toolsMcp": "Unified data / news / paper-broker toolchain for LLM agents",
+      "privacy": "Self-host",
+      "links": {
+        "homepage": "https://aclanthology.org/2026.acl-demo.7/"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 5,
+        "contextMemory": 3,
+        "privacyControl": 4,
+        "costEfficiency": 4,
+        "cnAccessibility": 3,
+        "learningCurve": 3,
+        "researchOrchestration": 3,
+        "factorAlphaTooling": 3,
+        "memoryReflection": 2,
+        "riskControls": 4,
+        "backtestRigor": 5
+      },
+      "notesZh": "可审计工具链与纸券商仿真（ACL 2026 demo）。",
+      "notesEn": "Auditable toolchain + paper brokerage (ACL 2026 demo)."
+    },
+    {
+      "id": "factorgpt",
+      "nameZh": "FactorGPT",
+      "nameEn": "FactorGPT",
+      "region": "CN",
+      "category": "quant",
+      "pricingBand": "open-source",
+      "contextWindow": "factor factory",
+      "toolsMcp": "LLM factor mining / library / GP search",
+      "privacy": "Self-host",
+      "links": {
+        "homepage": "https://github.com/ystiansw/FactorGPT"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 5,
+        "learningCurve": 2,
+        "researchOrchestration": 3,
+        "factorAlphaTooling": 5,
+        "memoryReflection": 3,
+        "riskControls": 2,
+        "backtestRigor": 3
+      },
+      "notesZh": "LLM 因子工业化平台（表达式/库/挖掘）。",
+      "notesEn": "LLM factor industrialization platform (expressions/library/mining)."
+    },
+    {
+      "id": "fin-manus",
+      "nameZh": "Fin Manus（产教参考）",
+      "nameEn": "Fin Manus (edu ref)",
+      "region": "CN",
+      "category": "quant",
+      "pricingBand": "campus / AIaaS",
+      "contextWindow": "product hub",
+      "toolsMcp": "SUFE AI Learning Center product hub (Fin-R1 / LightAgent / FinAgent stack)",
+      "privacy": "Campus / partner",
+      "links": {
+        "homepage": "https://www.sufe.edu.cn/"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 5,
+        "learningCurve": 3,
+        "researchOrchestration": 4,
+        "factorAlphaTooling": 3,
+        "memoryReflection": 3,
+        "riskControls": 4,
+        "backtestRigor": 3
+      },
+      "notesZh": "上财 AI 学习中心全景中的产品枢纽标签（Fin-R1/LightAgent/FinAgent）；公开细节有限，分数为生态位启发式。",
+      "notesEn": "SUFE AI Learning Center product-hub tag (Fin-R1/LightAgent/FinAgent); limited public specs — niche heuristic scores."
+    }
+  ]
+}

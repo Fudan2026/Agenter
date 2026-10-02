@@ -31,6 +31,11 @@ const DIM_LABEL: Record<
   | "dimCost"
   | "dimCnAccess"
   | "dimLearn"
+  | "dimResearchOrch"
+  | "dimFactorAlpha"
+  | "dimMemoryReflect"
+  | "dimRiskCtrl"
+  | "dimBacktestRigor"
 > = {
   codingAbility: "dimCoding",
   toolUse: "dimToolUse",
@@ -39,29 +44,55 @@ const DIM_LABEL: Record<
   costEfficiency: "dimCost",
   cnAccessibility: "dimCnAccess",
   learningCurve: "dimLearn",
+  researchOrchestration: "dimResearchOrch",
+  factorAlphaTooling: "dimFactorAlpha",
+  memoryReflection: "dimMemoryReflect",
+  riskControls: "dimRiskCtrl",
+  backtestRigor: "dimBacktestRigor",
 };
 
 const CAT_LABEL: Record<
   AgentCategory,
-  "catCoding" | "catChat" | "catResearch" | "catImage" | "catTooling"
+  | "catCoding"
+  | "catChat"
+  | "catResearch"
+  | "catImage"
+  | "catTooling"
+  | "catQuant"
 > = {
   coding: "catCoding",
   chat: "catChat",
   research: "catResearch",
   image: "catImage",
   tooling: "catTooling",
+  quant: "catQuant",
 };
 
 let agentsCache: AgentRecord[] | null = null;
 
 export async function loadAgents(): Promise<AgentRecord[]> {
   if (agentsCache) return agentsCache;
-  const res = await fetch(`${import.meta.env.BASE_URL}data/agents.json`, {
-    cache: "no-cache",
-  });
-  if (!res.ok) throw new Error(`agents.json HTTP ${res.status}`);
-  const payload = (await res.json()) as AgentsPayload;
-  agentsCache = payload.agents;
+  const base = import.meta.env.BASE_URL;
+  const [codingRes, quantRes] = await Promise.all([
+    fetch(`${base}data/agents.json`, { cache: "no-cache" }),
+    fetch(`${base}data/quant-agents.json`, { cache: "no-cache" }),
+  ]);
+  if (!codingRes.ok) throw new Error(`agents.json HTTP ${codingRes.status}`);
+  const codingPayload = (await codingRes.json()) as AgentsPayload;
+  let quantAgents: AgentRecord[] = [];
+  if (quantRes.ok) {
+    try {
+      const quantPayload = (await quantRes.json()) as AgentsPayload;
+      quantAgents = quantPayload.agents ?? [];
+    } catch {
+      quantAgents = [];
+    }
+  }
+  const byId = new Map<string, AgentRecord>();
+  for (const a of [...codingPayload.agents, ...quantAgents]) {
+    if (!byId.has(a.id)) byId.set(a.id, a);
+  }
+  agentsCache = [...byId.values()];
   return agentsCache;
 }
 
@@ -236,6 +267,7 @@ export function renderCompare(
       <h1>${esc(t(locale, "compareTitle"))}</h1>
       <p class="lead">${esc(t(locale, "compareLead"))}</p>
       <p class="muted tiny">${esc(t(locale, "editorialNote"))}</p>
+      <p class="muted tiny">${esc(t(locale, "compareQuantNote"))}</p>
       ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
 
       <section class="harness presets-first">
@@ -245,6 +277,7 @@ export function renderCompare(
           <button type="button" class="btn" data-preset="cn">${esc(t(locale, "presetCn"))}</button>
           <button type="button" class="btn" data-preset="privacy">${esc(t(locale, "presetPrivacy"))}</button>
           <button type="button" class="btn" data-preset="research">${esc(t(locale, "presetResearch"))}</button>
+          <button type="button" class="btn" data-preset="quant">${esc(t(locale, "presetQuant"))}</button>
           <button type="button" class="btn" id="reset-weights">${esc(t(locale, "resetWeights"))}</button>
           <button type="button" class="btn btn-primary" id="copy-share">${esc(t(locale, "copyShare"))}</button>
           <button type="button" class="btn" id="export-scores">${esc(t(locale, "exportScores"))}</button>

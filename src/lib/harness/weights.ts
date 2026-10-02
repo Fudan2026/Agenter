@@ -8,7 +8,7 @@ export const COMPARE_PICK_KEY = "agenter.compare.picks.v1";
 export const LEARN_DONE_KEY = "agenter.learn.completed.v1";
 export const LEARN_SCENARIO_KEY = "agenter.learn.scenarios.v1";
 
-/** Default weights prioritize coding-agent dimensions (plan default #6). */
+/** Default weights prioritize coding-agent dimensions; quant dims low until Quant preset. */
 export const DEFAULT_WEIGHTS: Record<DimensionId, number> = {
   codingAbility: 1.4,
   toolUse: 1.3,
@@ -17,6 +17,11 @@ export const DEFAULT_WEIGHTS: Record<DimensionId, number> = {
   costEfficiency: 1.0,
   cnAccessibility: 0.9,
   learningCurve: 0.8,
+  researchOrchestration: 0.35,
+  factorAlphaTooling: 0.35,
+  memoryReflection: 0.3,
+  riskControls: 0.4,
+  backtestRigor: 0.4,
 };
 
 export const HARNESS_PRESETS: Record<
@@ -31,6 +36,11 @@ export const HARNESS_PRESETS: Record<
     costEfficiency: 1.0,
     cnAccessibility: 0.7,
     learningCurve: 0.8,
+    researchOrchestration: 0.2,
+    factorAlphaTooling: 0.2,
+    memoryReflection: 0.2,
+    riskControls: 0.3,
+    backtestRigor: 0.3,
   },
   cn: {
     codingAbility: 1.1,
@@ -40,6 +50,11 @@ export const HARNESS_PRESETS: Record<
     costEfficiency: 1.1,
     cnAccessibility: 1.8,
     learningCurve: 1.0,
+    researchOrchestration: 0.4,
+    factorAlphaTooling: 0.4,
+    memoryReflection: 0.3,
+    riskControls: 0.5,
+    backtestRigor: 0.4,
   },
   privacy: {
     codingAbility: 1.0,
@@ -49,6 +64,11 @@ export const HARNESS_PRESETS: Record<
     costEfficiency: 1.2,
     cnAccessibility: 0.8,
     learningCurve: 0.9,
+    researchOrchestration: 0.3,
+    factorAlphaTooling: 0.3,
+    memoryReflection: 0.4,
+    riskControls: 0.6,
+    backtestRigor: 0.5,
   },
   research: {
     codingAbility: 0.7,
@@ -58,6 +78,26 @@ export const HARNESS_PRESETS: Record<
     costEfficiency: 1.1,
     cnAccessibility: 0.8,
     learningCurve: 1.2,
+    researchOrchestration: 0.8,
+    factorAlphaTooling: 0.7,
+    memoryReflection: 0.9,
+    riskControls: 0.6,
+    backtestRigor: 0.7,
+  },
+  /** Camp-aligned Quant / AI-finance preset. */
+  quant: {
+    codingAbility: 0.5,
+    toolUse: 1.0,
+    contextMemory: 1.1,
+    privacyControl: 0.9,
+    costEfficiency: 1.0,
+    cnAccessibility: 1.1,
+    learningCurve: 1.0,
+    researchOrchestration: 1.6,
+    factorAlphaTooling: 1.5,
+    memoryReflection: 1.3,
+    riskControls: 1.5,
+    backtestRigor: 1.6,
   },
 };
 
@@ -87,15 +127,18 @@ export function saveWeights(weights: Record<DimensionId, number>): void {
   }
 }
 
+/** Skip missing scores so coding agents without quant dims are not zeroed. */
 export function weightedScore(
-  scores: Record<DimensionId, number>,
+  scores: Partial<Record<DimensionId, number>>,
   weights: Record<DimensionId, number>,
 ): number {
   let num = 0;
   let den = 0;
   for (const id of DIMENSION_IDS) {
+    const s = scores[id];
     const w = weights[id] ?? 0;
-    num += (scores[id] ?? 0) * w;
+    if (s == null || !Number.isFinite(s) || !(w > 0)) continue;
+    num += s * w;
     den += w;
   }
   return den === 0 ? 0 : num / den;
@@ -180,12 +223,17 @@ export function parseCompareShare(hash: string): {
   const wRaw = params.get("w");
   if (!wRaw) return { ids, weights: null };
   const parts = wRaw.split(",").map(Number);
-  if (parts.length !== DIMENSION_IDS.length || parts.some((n) => !Number.isFinite(n))) {
+  // Accept legacy 7-dim share links by padding quant dims with defaults
+  if (parts.some((n) => !Number.isFinite(n))) {
+    return { ids, weights: null };
+  }
+  if (parts.length !== DIMENSION_IDS.length && parts.length !== 7) {
     return { ids, weights: null };
   }
   const weights = { ...DEFAULT_WEIGHTS };
-  DIMENSION_IDS.forEach((id, i) => {
-    weights[id] = Math.max(0, parts[i]);
-  });
+  const n = Math.min(parts.length, DIMENSION_IDS.length);
+  for (let i = 0; i < n; i++) {
+    weights[DIMENSION_IDS[i]] = Math.max(0, parts[i]);
+  }
   return { ids, weights };
 }

@@ -12,13 +12,29 @@ import { t } from "../i18n/strings";
 import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
 import { rsi } from "../lib/indicators/core";
 import type { AnnouncementsPayload } from "../lib/announcements/map";
+import {
+  bucketAnnouncements,
+  postEventReturnPct,
+  type EventBucketId,
+} from "../lib/announcements/events";
 import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
 import { patternConfluenceAbs } from "../lib/patterns/confluence";
 import { PATTERN_META } from "../lib/patterns/types";
 import { loadPaperState } from "../lib/paper/journal";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
+import { renderEventBucketCounts } from "./tools";
 import type { LatestPayload, SymbolRow } from "./types";
+
+const BUCKET_I18N: Record<
+  EventBucketId,
+  "eventEarnings" | "eventBuyback" | "eventHolder" | "eventOther"
+> = {
+  earnings: "eventEarnings",
+  buyback: "eventBuyback",
+  holder_change: "eventHolder",
+  other: "eventOther",
+};
 
 let chart: IChartApi | null = null;
 let rsiChart: IChartApi | null = null;
@@ -212,17 +228,26 @@ export function renderAsset(
   const symbolAnn = (announcements?.items ?? []).filter(
     (a) => a.symbol === row.symbol,
   );
+  const candles = row.candles.map((c) => ({ date: c.date, close: c.close }));
   const annList =
     symbolAnn.length === 0
       ? `<p class="muted">${esc(t(locale, "announcementsEmpty"))}</p>`
-      : `<ul class="news-list">${symbolAnn
+      : `<ul class="news-list">${bucketAnnouncements(symbolAnn)
           .slice(0, 5)
           .map((n) => {
             const title = locale === "zh" ? n.titleZh : n.titleEn;
             const summary = locale === "zh" ? n.summaryZh : n.summaryEn;
+            const bucketLabel = t(locale, BUCKET_I18N[n.bucket]);
+            const postRet = postEventReturnPct(n.date, candles, 5);
+            const retStr =
+              postRet == null
+                ? "—"
+                : `${postRet > 0 ? "+" : ""}${postRet.toFixed(2)}%`;
             return `<li>
               <time>${esc(n.date)}</time>
+              <span class="chip event-bucket-tag">${esc(bucketLabel)}</span>
               <strong>${esc(title)}</strong>
+              <p class="muted tiny">${esc(t(locale, "eventPostRet"))}: ${esc(retStr)}</p>
               <p class="muted">${esc(summary)}</p>
               ${n.url ? `<p><a href="${esc(n.url)}" target="_blank" rel="noopener">source</a></p>` : ""}
             </li>`;
@@ -289,6 +314,7 @@ export function renderAsset(
       <section class="asset-announcements">
         <h2>${esc(t(locale, "announcementsTitle"))}</h2>
         <p class="muted tiny">${esc(t(locale, "announcementsSource"))}</p>
+        ${renderEventBucketCounts(locale, symbolAnn)}
         ${annList}
       </section>
       <section class="asset-iwencai-news">

@@ -202,6 +202,70 @@ const SCENARIOS: Scenario[] = [
     ],
     href: "#/quant",
   },
+  {
+    id: "academy-retail",
+    titleZh: "场景 12：零售→量化研学路径",
+    titleEn: "Scenario 12: Retail → quant Academy path",
+    stepsZh: [
+      "打开手册，找到「研学学院 · 零售→量化路径」（academy-retail-path）。",
+      "读完信号日、纸盘与导出清单三段，记下与券商核对的边界。",
+      "回到入门页勾选本场景；需要练习时再开纸盘。",
+    ],
+    stepsEn: [
+      "Open Handbook; find Academy · Retail→quant path (academy-retail-path).",
+      "Read signal-day, paper, and checklist export sections; note broker boundaries.",
+      "Mark this scenario done on Learn; open Paper when ready to practice.",
+    ],
+    href: "#/handbook",
+  },
+  {
+    id: "academy-lookahead",
+    titleZh: "场景 13：无未来函数研学",
+    titleEn: "Scenario 13: No-lookahead Academy",
+    stepsZh: [
+      "打开手册「研学学院 · 无未来函数」（academy-no-lookahead）。",
+      "对照量化页：形态与均线是否只用历史 K 线。",
+      "在纸盘确认成交默认 t+1 开盘；不要用当日收盘当信号日成交价。",
+    ],
+    stepsEn: [
+      "Open Handbook Academy · No-lookahead (academy-no-lookahead).",
+      "On Quant, confirm patterns/MAs use historical bars only.",
+      "On Paper, confirm fills default to t+1 open — never treat same-bar close as the fill.",
+    ],
+    href: "#/handbook",
+  },
+  {
+    id: "academy-factors",
+    titleZh: "场景 14：因子 IC 研学",
+    titleEn: "Scenario 14: Factor IC Academy",
+    stepsZh: [
+      "阅读手册「研学学院 · 因子与 IC」（academy-factors-ic）。",
+      "打开量化页因子看板与 IC 面板，确认分数是 OHLC 代理。",
+      "记下 McLean 式「发表后衰减」警示，再回 Lab 看惩罚后夏普。",
+    ],
+    stepsEn: [
+      "Read Handbook Academy · Factors & IC (academy-factors-ic).",
+      "Open Quant Factor Board + IC panel; confirm OHLC-proxy attribution.",
+      "Note the McLean-style post-publication decay caution; check haircut Sharpe in Lab.",
+    ],
+    href: "#/quant",
+  },
+  {
+    id: "academy-committee-compare",
+    titleZh: "场景 15：委员会识字 + 量化 Agent 对比",
+    titleEn: "Scenario 15: Committee literacy + quant Compare",
+    stepsZh: [
+      "阅读手册「研学学院 · 委员会识字」（academy-committee）。",
+      "打开对比页，点「量化 / AI 金融」预设，类别筛「量化」。",
+      "勾选 2–4 个量化 Agent，看研究编排 / 回测严谨度权重变化。",
+    ],
+    stepsEn: [
+      "Read Handbook Academy · Committee literacy (academy-committee).",
+      "Open Compare; apply Quant / AI-finance preset; filter category Quant.",
+      "Pick 2–4 quant agents; watch research orchestration / backtest rigor weights.",
+    ],
+    href: "#/compare",
+  },
 ];
 
 export function renderLearn(root: HTMLElement, locale: Locale): void {

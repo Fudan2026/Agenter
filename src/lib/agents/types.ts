@@ -1,4 +1,4 @@
-/** Curated agent catalog schema (plan Phase 1). */
+/** Curated agent catalog schema (coding + quant AI-finance). */
 
 export type AgentRegion = "CN" | "US" | "Global";
 export type AgentCategory =
@@ -6,7 +6,8 @@ export type AgentCategory =
   | "chat"
   | "research"
   | "image"
-  | "tooling";
+  | "tooling"
+  | "quant";
 
 export type DimensionId =
   | "codingAbility"
@@ -15,8 +16,14 @@ export type DimensionId =
   | "privacyControl"
   | "costEfficiency"
   | "cnAccessibility"
-  | "learningCurve";
+  | "learningCurve"
+  | "researchOrchestration"
+  | "factorAlphaTooling"
+  | "memoryReflection"
+  | "riskControls"
+  | "backtestRigor";
 
+/** Full harness dimension list (coding + quant). */
 export const DIMENSION_IDS: DimensionId[] = [
   "codingAbility",
   "toolUse",
@@ -24,6 +31,32 @@ export const DIMENSION_IDS: DimensionId[] = [
   "privacyControl",
   "costEfficiency",
   "cnAccessibility",
+  "learningCurve",
+  "researchOrchestration",
+  "factorAlphaTooling",
+  "memoryReflection",
+  "riskControls",
+  "backtestRigor",
+];
+
+export const CODING_DIMENSION_IDS: DimensionId[] = [
+  "codingAbility",
+  "toolUse",
+  "contextMemory",
+  "privacyControl",
+  "costEfficiency",
+  "cnAccessibility",
+  "learningCurve",
+];
+
+export const QUANT_DIMENSION_IDS: DimensionId[] = [
+  "researchOrchestration",
+  "factorAlphaTooling",
+  "memoryReflection",
+  "riskControls",
+  "backtestRigor",
+  "cnAccessibility",
+  "costEfficiency",
   "learningCurve",
 ];
 
@@ -38,8 +71,8 @@ export interface AgentRecord {
   toolsMcp: string;
   privacy: string;
   links: { homepage?: string; docs?: string };
-  /** Scores 1–5; coding-agent dimensions prioritized in defaults. */
-  scores: Record<DimensionId, number>;
+  /** Scores 1–5; missing dims ignored in weightedScore. */
+  scores: Partial<Record<DimensionId, number>>;
   notesZh?: string;
   notesEn?: string;
 }

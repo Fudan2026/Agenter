@@ -1,6 +1,12 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
-import type { AnnouncementsPayload } from "../lib/announcements/map";
+import type { AnnouncementItem, AnnouncementsPayload } from "../lib/announcements/map";
+import {
+  bucketAnnouncements,
+  countByBucket,
+  EVENT_BUCKETS,
+  type EventBucketId,
+} from "../lib/announcements/events";
 import type { IndicesPayload } from "../lib/indices/map";
 import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
 import { esc } from "../lib/util/esc";
@@ -23,6 +29,61 @@ export interface NewsPayload {
 
 export type { AnnouncementsPayload, IwencaiNewsPayload };
 
+const BUCKET_I18N: Record<
+  EventBucketId,
+  "eventEarnings" | "eventBuyback" | "eventHolder" | "eventOther"
+> = {
+  earnings: "eventEarnings",
+  buyback: "eventBuyback",
+  holder_change: "eventHolder",
+  other: "eventOther",
+};
+
+/** Compact bucket count chips for News / Tools / Quant strips. */
+export function renderEventBucketCounts(
+  locale: Locale,
+  items: AnnouncementItem[],
+): string {
+  if (!items.length) return "";
+  const counts = countByBucket(items);
+  return `<div class="event-bucket-strip" aria-label="${esc(t(locale, "eventBucketsTitle"))}">
+    <p class="tiny muted">${esc(t(locale, "eventBucketsTitle"))}</p>
+    <div class="event-bucket-chips">
+      ${EVENT_BUCKETS.map((b) => {
+        const label = t(locale, BUCKET_I18N[b.id]);
+        return `<span class="event-bucket-chip" data-bucket="${esc(b.id)}">${esc(label)} <strong>${counts[b.id]}</strong></span>`;
+      }).join("")}
+    </div>
+  </div>`;
+}
+
+/** Top bucketed filings list (Quant / News enrichment). */
+export function renderBucketedFilingsList(
+  locale: Locale,
+  items: AnnouncementItem[],
+  limit = 8,
+): string {
+  const bucketed = bucketAnnouncements(items).slice(0, limit);
+  if (!bucketed.length) {
+    return `<p class="muted">${esc(t(locale, "announcementsEmpty"))}</p>`;
+  }
+  return `<ul class="news-list filings-list">
+    ${bucketed
+      .map((n) => {
+        const title = locale === "zh" ? n.titleZh : n.titleEn;
+        const name = locale === "zh" ? n.nameZh : n.symbol;
+        const bucketLabel = t(locale, BUCKET_I18N[n.bucket]);
+        return `<li>
+          <time>${esc(n.date)} · ${esc(name)}</time>
+          <span class="chip event-bucket-tag">${esc(bucketLabel)}</span>
+          <strong>${esc(title)}</strong>
+          ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener">source</a>` : ""}
+        </li>`;
+      })
+      .join("")}
+  </ul>`;
+}
+
 function renderAnnouncementLis(
   locale: Locale,
   items: AnnouncementsPayload["items"],
@@ -32,13 +93,16 @@ function renderAnnouncementLis(
   if (!slice.length) {
     return `<li class="muted">${esc(t(locale, "announcementsEmpty"))}</li>`;
   }
-  return slice
+  const bucketed = bucketAnnouncements(slice);
+  return bucketed
     .map((n) => {
       const title = locale === "zh" ? n.titleZh : n.titleEn;
       const summary = locale === "zh" ? n.summaryZh : n.summaryEn;
       const name = locale === "zh" ? n.nameZh : n.symbol;
+      const bucketLabel = t(locale, BUCKET_I18N[n.bucket]);
       return `<li>
         <time>${esc(n.date)} · ${esc(name)}</time>
+        <span class="chip event-bucket-tag">${esc(bucketLabel)}</span>
         <strong>${esc(title)}</strong>
         <p class="muted">${esc(summary)}</p>
         ${n.url ? `<p><a href="${esc(n.url)}" target="_blank" rel="noopener">source</a></p>` : ""}
@@ -153,6 +217,7 @@ export function renderNews(
       <h2>${esc(t(locale, "announcementsTitle"))}</h2>
       <p class="lead muted tiny">${esc(announcements?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "announcementsSource"))}</p>
       <p class="muted tiny">${esc(t(locale, "announcementsLead"))}</p>
+      ${renderEventBucketCounts(locale, annItems)}
       <ul class="news-list">
         ${renderAnnouncementLis(locale, annItems)}
       </ul>
@@ -242,6 +307,7 @@ export function renderTools(
   const annItems = announcements?.items ?? [];
   const annBlock = `<section class="news-stub announcements-stub">
       <h2>${esc(t(locale, "toolAnnouncements"))}</h2>
+      ${renderEventBucketCounts(locale, annItems)}
       <ul class="news-list">
         ${renderAnnouncementLis(locale, annItems, 3)}
       </ul>
