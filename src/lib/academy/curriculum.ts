@@ -125,6 +125,16 @@ function loadFlags(): Record<string, boolean> {
   }
 }
 
+export function setAcademyFlag(key: string): void {
+  try {
+    const f = loadFlags();
+    f[key] = true;
+    localStorage.setItem(ACADEMY_FLAGS_KEY, JSON.stringify(f));
+  } catch {
+    /* ignore */
+  }
+}
+
 export function validateStage(
   id: AcademyStageId,
   flags?: Record<string, boolean>,
