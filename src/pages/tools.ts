@@ -1,6 +1,7 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import type { AnnouncementsPayload } from "../lib/announcements/map";
+import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 
@@ -19,7 +20,7 @@ export interface NewsPayload {
   }>;
 }
 
-export type { AnnouncementsPayload };
+export type { AnnouncementsPayload, IwencaiNewsPayload };
 
 function renderAnnouncementLis(
   locale: Locale,
@@ -45,14 +46,39 @@ function renderAnnouncementLis(
     .join("");
 }
 
+function renderIwencaiNewsLis(
+  locale: Locale,
+  items: IwencaiNewsPayload["items"],
+  limit?: number,
+): string {
+  const slice = limit != null ? items.slice(0, limit) : items;
+  if (!slice.length) {
+    return `<li class="muted">${esc(t(locale, "iwencaiNewsEmpty"))}</li>`;
+  }
+  return slice
+    .map((n) => {
+      const title = locale === "zh" ? n.titleZh : n.titleEn;
+      const summary = locale === "zh" ? n.summaryZh : n.summaryEn;
+      return `<li>
+        <time>${esc(n.date)}</time>
+        <strong>${esc(title)}</strong>
+        <p class="muted">${esc(summary)}</p>
+        ${n.url ? `<p><a href="${esc(n.url)}" target="_blank" rel="noopener">source</a></p>` : ""}
+      </li>`;
+    })
+    .join("");
+}
+
 export function renderNews(
   root: HTMLElement,
   locale: Locale,
   news: NewsPayload | null,
   announcements: AnnouncementsPayload | null = null,
+  iwencaiNews: IwencaiNewsPayload | null = null,
 ): void {
   const items = news?.items ?? [];
   const annItems = announcements?.items ?? [];
+  const iwItems = iwencaiNews?.items ?? [];
   const body = `
     <h1>${esc(t(locale, "newsNavTitleFull"))}</h1>
     <section class="news-section">
@@ -85,6 +111,14 @@ export function renderNews(
         ${renderAnnouncementLis(locale, annItems)}
       </ul>
     </section>
+    <section class="news-section iwencai-news-section">
+      <h2>${esc(t(locale, "iwencaiNewsTitle"))}</h2>
+      <p class="lead muted tiny">${esc(iwencaiNews?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "iwencaiSource"))}</p>
+      <p class="muted tiny">${esc(t(locale, "iwencaiNewsLead"))}</p>
+      <ul class="news-list">
+        ${renderIwencaiNewsLis(locale, iwItems)}
+      </ul>
+    </section>
   `;
   root.innerHTML = renderShell(locale, "news", body);
   document.title = `${t(locale, "newsNavTitleFull")} · Agenter`;
@@ -95,6 +129,7 @@ export function renderTools(
   locale: Locale,
   news: NewsPayload | null,
   announcements: AnnouncementsPayload | null = null,
+  iwencaiNews: IwencaiNewsPayload | null = null,
 ): void {
   const cards = [
     {
@@ -127,6 +162,11 @@ export function renderTools(
       title: t(locale, "toolAnnouncements"),
       desc: t(locale, "toolAnnouncementsDesc"),
     },
+    {
+      href: "#/news",
+      title: t(locale, "toolIwencaiNews"),
+      desc: t(locale, "toolIwencaiNewsDesc"),
+    },
   ];
 
   const newsBlock =
@@ -157,6 +197,16 @@ export function renderTools(
       <p><a href="#/news">${esc(t(locale, "announcementsTitle"))} →</a></p>
     </section>`;
 
+  const iwItems = iwencaiNews?.items ?? [];
+  const iwBlock = `<section class="news-stub iwencai-news-stub">
+      <h2>${esc(t(locale, "toolIwencaiNews"))}</h2>
+      <ul class="news-list">
+        ${renderIwencaiNewsLis(locale, iwItems, 3)}
+      </ul>
+      <p class="muted tiny">${esc(t(locale, "iwencaiSource"))}</p>
+      <p><a href="#/news">${esc(t(locale, "iwencaiNewsTitle"))} →</a></p>
+    </section>`;
+
   const body = `
     <h1>${esc(t(locale, "toolsTitle"))}</h1>
     <p class="lead">${esc(t(locale, "toolsLead"))}</p>
@@ -173,6 +223,7 @@ export function renderTools(
     </div>
     ${newsBlock}
     ${annBlock}
+    ${iwBlock}
   `;
   root.innerHTML = renderShell(locale, "tools", body);
   document.title = `${t(locale, "toolsTitle")} · Agenter`;

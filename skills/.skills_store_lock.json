@@ -12,6 +12,24 @@
       "zip_url": "http://ms.10jqka.com.cn/gateway/market/api/v1/skills/square/download?name=%E6%A8%A1%E6%8B%9F%E7%82%92%E8%82%A1",
       "source": "skillhub",
       "version": ""
+    },
+    "news-search": {
+      "name": "news-search",
+      "zip_url": "http://ms.10jqka.com.cn/gateway/market/api/v1/skills/square/download?name=news-search",
+      "source": "skillhub",
+      "version": ""
+    },
+    "hithink-astock-selector": {
+      "name": "hithink-astock-selector",
+      "zip_url": "http://ms.10jqka.com.cn/gateway/market/api/v1/skills/square/download?name=hithink-astock-selector",
+      "source": "skillhub",
+      "version": ""
+    },
+    "hithink-zhishu-query": {
+      "name": "hithink-zhishu-query",
+      "zip_url": "http://ms.10jqka.com.cn/gateway/market/api/v1/skills/square/download?name=hithink-zhishu-query",
+      "source": "skillhub",
+      "version": ""
     }
   }
 }

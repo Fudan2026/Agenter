@@ -46,6 +46,24 @@ jobs:
         env:
           IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
 
+      - name: Bake Iwencai finance news
+        run: npm run iwencai-news:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
+      - name: Bake index snapshot
+        run: npm run indices:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
+      - name: Bake editorial screens
+        run: npm run screens:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
       - name: Build
         run: npm run build
 
