@@ -551,16 +551,118 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Academy · Committee literacy",
     },
     body: {
-      zh: "「多智能体委员会」是研学营 AI 篇常见叙事：基本面、情绪、技术、新闻/公告、风控、组合等角色辩论后给出共识。Agenter **Step One** 先教识字与选工具；Step Two 才会在量化页落地 bake-only 投票桌。现在你要能回答：委员会解决什么、不解决什么。\n\n**它解决什么。** 把单一模型的一次性答案，拆成可检查的证据桶（财报/回购/增减持公告、形态偏向、因子暴露、风险闸）。TradingAgents、FinRobot、FinMem 等开源栈强调角色、记忆与工具调用——对比页量化目录用编辑分刻画这些能力，并可用「量化 / AI 金融」预设排序。\n\n**它不解决什么。** 浏览器里没有实时 LLM 券商下单；bake 投票（后续）也不是真实投委会纪要。没有无未来函数与成本模型，再多角色也只是故事。FinCast / TSFM / AlphaFormer 等论文能力在本站是**前沿识字**，不是权重推理。\n\n**与 Compare 的配合。** 打开 `#/compare`，类别选「量化」，应用量化预设，并排 TradingAgents / FinGPT / FinMem / QFinZero 等。问自己：研究编排高分是否配得上你的回测严谨度要求？国内可达与成本是否匹配你的运行环境？\n\n**预告（Step Two）：** Committee Desk 将用烘焙特征生成六角色投票与证据条，并可 Promote → 纸盘清单。本课合格标准：能用自己的话解释「共识 ≠ 成交许可」。",
-      en: "“Multi-agent committee” is a common camp AI-track story: fundamentals, sentiment, technicals, news/filings, risk, and portfolio roles debate toward consensus. Agenter **Step One** teaches literacy and tool selection; Step Two lands a bake-only voting desk on Quant. For now you must answer what committees solve — and what they do not.\n\n**What they solve.** They split one-shot model answers into checkable evidence buckets (earnings/buyback/holder filings, pattern bias, factor exposure, risk gates). Stacks like TradingAgents, FinRobot, and FinMem stress roles, memory, and tool use — the Compare quant catalog scores those capabilities editorially and ranks them with the Quant / AI-finance preset.\n\n**What they do not solve.** The browser has no live LLM broker orders; future bake votes are not real IC minutes. Without no-lookahead and costs, more roles are still a story. FinCast / TSFM / AlphaFormer remain **frontier literacy** here — not in-browser weight inference.\n\n**With Compare.** Open `#/compare`, filter Quant, apply the Quant preset, and side-by-side TradingAgents / FinGPT / FinMem / QFinZero. Ask: does high research-orchestration match your backtest-rigor bar? Do CN access and cost fit your runtime?\n\n**Preview (Step Two):** Committee Desk will emit six-role bake votes and evidence bullets with Promote → Paper checklist. Pass this lesson when you can say: consensus ≠ permission to trade.",
+      zh: "「多智能体委员会」是研学营 AI 篇常见叙事：基本面、情绪、技术、新闻/公告、风控、组合等角色辩论后给出共识。Agenter 已在量化页落地 **Committee Desk**：六角色 bake-only 投票，无浏览器 LLM 调用。\n\n**它解决什么。** 把单一模型的一次性答案，拆成可检查的证据桶（财报/回购/增减持公告、形态偏向、因子暴露、风险闸、问财资讯命中）。TradingAgents、FinRobot、FinMem 等开源栈强调角色、记忆与工具调用——对比页量化目录用编辑分刻画这些能力。\n\n**它不解决什么。** 浏览器里没有实时 LLM 券商下单；bake 投票不是真实投委会纪要。没有无未来函数与成本模型，再多角色也只是故事。FinCast / TSFM / AlphaFormer 等论文能力在本站是**前沿识字**，不是权重推理。\n\n**练习：** 打开 `#/quant` Committee Desk，读 Top8 角色分与共识；仅把偏多共识 Promote → 纸盘清单或 JSON。合格标准：能解释「共识 ≠ 成交许可」。",
+      en: "“Multi-agent committee” is a common camp AI-track story: fundamentals, sentiment, technicals, news/filings, risk, and portfolio roles debate toward consensus. Agenter now ships **Committee Desk** on Quant: six-role bake-only votes, no browser LLM calls.\n\n**What they solve.** They split one-shot answers into checkable evidence buckets (filings, pattern bias, factor exposure, risk gates, Iwencai news hits). Stacks like TradingAgents / FinRobot / FinMem stress roles, memory, and tools — Compare scores those editorially.\n\n**What they do not solve.** No live LLM broker orders; bake votes are not real IC minutes. Without no-lookahead and costs, more roles are still a story. FinCast / TSFM / AlphaFormer remain **frontier literacy** — not in-browser weight inference.\n\n**Drill:** Open `#/quant` Committee Desk; read Top8 role scores + consensus; Promote only bullish consensus → Paper checklist/JSON. Pass when you can say: consensus ≠ permission to trade.",
     },
     deepLinks: [
       { href: "#/compare", label: { zh: "对比量化 Agent", en: "Compare quant agents" } },
-      { href: "#/quant", label: { zh: "量化（后续委员会）", en: "Quant (committee later)" } },
+      { href: "#/quant", label: { zh: "委员会桌", en: "Committee Desk" } },
       { href: "#/handbook", label: { zh: "手册目录", en: "Handbook TOC" } },
       { href: "#/learn", label: { zh: "入门场景 15", en: "Learn scenario 15" } },
     ],
     skills: ["announcement-search", "news-search", "multi-factor", "sim-trading"],
+  },
+  {
+    id: "academy-paper-pro",
+    title: {
+      zh: "研学学院 · 纸盘专业台（预告）",
+      en: "Academy · Paper Pro desk (preview)",
+    },
+    body: {
+      zh: "纸盘要把「想法」变成可审计的操作记录。当前站点已有：壹亿起点、次日开盘成交、日记、持仓、CSV/JSON 券商清单、可选硬闸。**Paper Pro（Step Three）** 会补齐驾驶舱 KPI、流水过滤、按标的/来源归因、TWAP/VWAP 切片入账，以及研究审计卡（成本开关、幸存者横幅、惩罚后夏普、无未来函数成交规则）。\n\n**现在就能练的纪律。** (1) 信号日与成交日必须分开；(2) 导出清单措辞永远是【次日开盘】；(3) 批量买入按权益百分比 sizing，不是「全仓梭哈」；(4) 把 Lab 门禁打红的结果当对照实验，不要 Promote 成「可交易」。\n\n**与委员会 / 因子工作室衔接。** Factor Studio TopN 与 Committee 偏多共识可以喂进纸盘批量路径，但两者都只是**练习输入**，不是投顾。审计卡问的是：你是否诚实记录了假设，而不是曲线漂不漂亮。\n\n**作业：** 从量化清单或委员会 Promote 下一笔纸盘买入；导出 JSON；用自己的话写出三条审计勾选项（成本 / 无未来函数 / 幸存者宇宙）。Step Three 上线后，核对这些勾选项是否出现在驾驶舱。",
+      en: "Paper turns ideas into an auditable ops log. Today the site already has: ¥100M start, next-open fills, journal, positions, CSV/JSON broker checklists, optional hard gates. **Paper Pro (Step Three)** adds cockpit KPIs, blotter filters, P&L attribution by symbol/source, TWAP/VWAP slice fills into the journal, and a Research Audit card (costs on, survivor banner, haircut Sharpe, no-lookahead fill rule).\n\n**Discipline you can practice now.** (1) Keep signal date and fill date separate; (2) checklist wording is always NEXT OPEN; (3) batch buys size by equity percent — not all-in; (4) treat Lab gate-red results as contrasts, not actionable Promotes.\n\n**Links to Committee / Factor Studio.** Studio TopN and bullish committee consensus can feed Paper batch paths — both are **practice inputs**, not advice. The audit card asks whether you recorded assumptions honestly, not whether the equity curve looks pretty.\n\n**Homework:** Paper one buy from Quant checklist or Committee Promote; export JSON; write three audit toggles in your own words (costs / no-lookahead / survivor universe). When Step Three lands, check those toggles appear in the cockpit.",
+    },
+    deepLinks: [
+      { href: "#/paper", label: { zh: "纸盘", en: "Paper" } },
+      { href: "#/quant", label: { zh: "量化 · 清单/委员会", en: "Quant · checklist/committee" } },
+      { href: "#/learn", label: { zh: "入门场景 16", en: "Learn scenario 16" } },
+    ],
+    skills: ["execution-model", "sim-trading", "strategy-generate"],
+  },
+  {
+    id: "academy-quant-agents",
+    title: {
+      zh: "研学学院 · 量化 Agent 深读",
+      en: "Academy · Quant agents deep-dive",
+    },
+    body: {
+      zh: "对比页的「量化」类别与「量化 / AI 金融」预设，是研学营 AI 篇工具选型的入口。编辑维度包括：研究编排、因子/Alpha 工具、记忆与反思、风控、回测严谨度，以及共享的国内可达、成本、学习曲线。**缺失维度不参与加权**，因此编码型与量化型 Agent 可同屏。\n\n**怎么读一条目录。** TradingAgents / FinRobot 强调多角色协作；FinGPT / FinMem 强调金融语料与记忆；QFinZero / R&D-Agent-Quant 偏研究—回测闭环；Fin-R1 / LightAgent / Fin Manus 以苏财生态参考标签出现在备注——没有公开可复现分数时不做假打分。\n\n**与站点表面的分工。** Compare 回答「选哪个 Agent 帮你研究」；Quant 回答「在固定 bake 宇宙上，信号/因子/委员会长什么样」；Paper 回答「如何练习可导出成交」。三者不可互相替代。\n\n**作业：** 应用量化预设，并排至少三个 Agent，写下「我会用谁做因子研究、谁做回测审计」各一句；把短名单链接存进研学档案。",
+      en: "Compare’s Quant category and Quant / AI-finance preset are the camp AI-track tool-selection entry. Editorial dims include research orchestration, factor/alpha tooling, memory/reflection, risk controls, backtest rigor, plus shared CN access, cost, and learning curve. **Missing dims are skipped**, so coding and quant agents can share one matrix.\n\n**How to read a catalog row.** TradingAgents / FinRobot stress multi-role collab; FinGPT / FinMem stress finance corpora and memory; QFinZero / R&D-Agent-Quant lean research→backtest loops; Fin-R1 / LightAgent / Fin Manus appear as SUFE-ecosystem reference tags — no fake scores without public evidence.\n\n**Division of labor.** Compare answers “which agent helps you research”; Quant answers “what signals/factors/committee look like on a fixed bake universe”; Paper answers “how to practice exportable fills.” None replaces the others.\n\n**Homework:** Apply the Quant preset; side-by-side ≥3 agents; write one sentence each on who you’d use for factor research vs backtest audit; save the shortlist link.",
+    },
+    deepLinks: [
+      { href: "#/compare", label: { zh: "对比 · 量化预设", en: "Compare · Quant preset" } },
+      { href: "#/handbook", label: { zh: "委员会识字", en: "Committee literacy" } },
+      { href: "#/learn", label: { zh: "入门场景 15", en: "Learn scenario 15" } },
+    ],
+    skills: ["multi-factor", "factor-research", "strategy-generate"],
+  },
+  {
+    id: "academy-fincast-frontier",
+    title: {
+      zh: "研学学院 · FinCast / TSFM 前沿识字",
+      en: "Academy · FinCast / TSFM frontier literacy",
+    },
+    body: {
+      zh: "研学营与论文（Das 2024 TSFM、Zhu 2025 FinCast、Faw 2025 上下文微调等）讨论的是**时间序列基础模型与金融迁移学习**：用大规模序列预训练，再适配下游预测/分类。这与「在浏览器里跑完整 FinCast 权重」是两件完全不同的事。\n\n**本站边界。** Agenter 是静态 SPA + bake JSON。因子、IC、形态、委员会投票全部是 OHLC / 文本关键词 distill。我们**不**在客户端加载 TSFM 权重，也不假装站点夏普来自基础模型推理。Compare 目录可用标签标注「前沿 / 研究向」Agent 或论文栈，但分数仍是编辑启发式。\n\n**你该带走的三句话。** (1) 迁移学习降低冷启动成本，不自动消除过拟合与成本；(2) 上下文微调改变的是提示—样本协议，不是无未来函数物理定律；(3) 若论文曲线漂亮，先问样本外切分、交易成本与发表后衰减，再问能不能上杠杆。\n\n**作业：** 读完本课，打开因子工作室与 Lab，指出一处「代理分数」与一处「真实基础模型会需要、但本站没有」的数据（例如 tick LOB、完整财报时间序列）。",
+      en: "Camp themes and papers (Das 2024 TSFM, Zhu 2025 FinCast, Faw 2025 in-context FT, …) discuss **time-series foundation models and finance transfer learning**: pretrain on large sequences, then adapt to downstream forecast/classification. That is not the same as “run full FinCast weights in the browser.”\n\n**Site boundary.** Agenter is a static SPA + bake JSON. Factors, IC, patterns, and committee votes are OHLC / keyword distill. We **do not** load TSFM weights client-side, and we do not pretend site Sharpe comes from foundation-model inference. Compare may tag frontier/research stacks, but scores stay editorial heuristics.\n\n**Three takeaways.** (1) Transfer learning cuts cold-start cost — it does not erase overfitting or trading costs; (2) in-context FT changes the prompt–example protocol, not the physics of no-lookahead; (3) when a paper curve looks great, ask OOS splits, costs, and post-publication decay before leverage.\n\n**Homework:** After this lesson, open Factor Studio and Lab; point to one proxy score and one data need a real foundation model would require that this site lacks (e.g. tick LOB, full filing time series).",
+    },
+    deepLinks: [
+      { href: "#/quant", label: { zh: "因子工作室 / Lab", en: "Factor Studio / Lab" } },
+      { href: "#/compare", label: { zh: "对比前沿标签", en: "Compare frontier tags" } },
+      { href: "#/learn", label: { zh: "入门场景 17", en: "Learn scenario 17" } },
+    ],
+    skills: ["ml-strategy", "quant-statistics", "factor-research"],
+  },
+  {
+    id: "academy-mclean-decay",
+    title: {
+      zh: "研学学院 · McLean 发表后衰减",
+      en: "Academy · McLean post-publication decay",
+    },
+    body: {
+      zh: "McLean & Pontiff (2016) 等文献的核心警示：**学术上显著的可预测性，在发表与广泛传播后往往会衰减**——拥挤交易、数据挖掘与制度变化都会压薄 α。研学营基础篇讲「因子」，进阶与 AI 篇讲「可解释 Alpha」时，都应默认带上这条警示。\n\n**在 Agenter 上怎么用。** IC 面板高 ≠ 下周能赚；惩罚后夏普与样本外切分是最小诚实装置；Alpha 配方卡把「动量 12−1 / 低波 / 质量代理」写成经济故事 + 衰减提醒，而不是「保证超额」。Kou 2025 / AlphaFormer 讨论的可解释策略发现，在本站是**识字**——表达式好看也不免除衰减与成本。\n\n**错误用法。** 看到 TopN 综合分就全仓；把委员会共识当成交许可；关掉成本模型只展示漂亮曲线。正确用法：先写清假设与衰减风险，再决定是否把清单导出到人工券商核对。\n\n**作业：** 选一张 Alpha 配方卡，用两句话写出「经济故事」与「若因子已众所周知会发生什么」；对照 Lab 的 haircut Sharpe。",
+      en: "McLean & Pontiff (2016) and related work warn that **academic predictability often decays after publication and wide awareness** — crowded trades, data mining, and regime shifts thin alpha. Camp basics on “factors” and advanced/AI tracks on “interpretable alpha” should carry this caution by default.\n\n**How to use it on Agenter.** High IC ≠ next-week profits; haircut Sharpe and OOS splits are the minimum honesty kit; Alpha recipe cards write momentum 12−1 / low-vol / quality-proxy as economic story + decay caution — not guaranteed excess return. Kou 2025 / AlphaFormer-style interpretable discovery is **literacy** here — pretty expressions still face decay and costs.\n\n**Misuse.** All-in on TopN composites; treating committee consensus as trade permission; turning costs off to beautify curves. Correct use: write assumptions and decay risk first, then decide whether to export a human broker checklist.\n\n**Homework:** Pick one Alpha recipe card; write two sentences — economic story vs what happens if the factor is common knowledge; compare to Lab haircut Sharpe.",
+    },
+    deepLinks: [
+      { href: "#/quant", label: { zh: "Alpha 配方 / IC", en: "Alpha recipes / IC" } },
+      { href: "#/quant", label: { zh: "策略 Lab", en: "Strategy Lab" } },
+      { href: "#/learn", label: { zh: "入门场景 17", en: "Learn scenario 17" } },
+    ],
+    skills: ["multi-factor", "factor-research", "quant-statistics"],
+  },
+  {
+    id: "academy-limits-l1l4",
+    title: {
+      zh: "研学学院 · 边界与 L1–L4",
+      en: "Academy · Limits & L1–L4 maturity",
+    },
+    body: {
+      zh: "苏财 / Fin Manus 全景常用 **L1→L4** 描述 Agent 成熟度：从响应式工具与洞察看板，到编排型研究助手，再到更高自治。**本站产品定位 ≈ L1–L2**（静态工具 + 本地纸盘/模拟 distill）；Agent CLI / Skills 是通往 L3 的路径；浏览器内全自动实盘（L4）**明确不在范围**。\n\n**硬边界清单。** 不下真单；不嵌券商/同花顺交易 SDK；不向客户端下发 IWENCAI_API_KEY；不跑 FinCast/AlphaFormer 权重；不做 tick LOB / 期货价差实盘。Skills 目录只增不减。\n\n**为什么要写清楚。** 研学营容易把「多智能体协作」误读成「站点会替你下单」。把 L 级写进手册，是为了保护学习者：你可以练流程与审计，但责任仍在人工券商端。\n\n**作业：** 用自己的话各写一句 L1、L2、L3、L4；圈出本站属于哪两级，并指出一个你想用 CLI Skill 补的 L3 能力。",
+      en: "SUFE / Fin Manus panoramas often use **L1→L4** for agent maturity: from responsive tools and insight boards, through orchestrated research assistants, toward higher autonomy. **This site ≈ L1–L2** (static tools + local Paper/Sim distill); Agent CLI / Skills are the path toward L3; fully autonomous live trading in the browser (**L4**) is **explicitly out of scope**.\n\n**Hard limits.** No live orders; no broker/THS trade SDKs in-page; IWENCAI_API_KEY never ships to the client; no FinCast/AlphaFormer weights; no tick LOB / futures arb live books. Skills are add-only.\n\n**Why state it.** Camp narratives about multi-agent collab are easy to misread as “the site will submit for you.” Writing L-levels into the Handbook protects learners: you practice process and audit; responsibility stays at the human broker.\n\n**Homework:** Define L1–L4 in one sentence each; circle which two levels this site occupies; name one L3 capability you’d add via a CLI Skill.",
+    },
+    deepLinks: [
+      { href: "#/tools", label: { zh: "工具箱", en: "Tools" } },
+      { href: "#/handbook", label: { zh: "边界与披露", en: "Limits & disclosures" } },
+      { href: "#/learn", label: { zh: "入门场景 18", en: "Learn scenario 18" } },
+    ],
+    skills: ["sim-trading", "execution-model", "announcement-search"],
+  },
+  {
+    id: "academy-markowitz-lite",
+    title: {
+      zh: "研学学院 · Markowitz 精简版",
+      en: "Academy · Markowitz lite",
+    },
+    body: {
+      zh: "基础篇常从 **均值—方差（Markowitz）** 与「全天候」直觉开始：收益、风险、相关，以及分散化为何不是「买很多票」那么简单。本站不做完整二次规划求解器，但用相关热力、低波因子、组合角色投票与纸盘仓位比例，帮你建立**可检查的组合思维**。\n\n**三件可落地的事。** (1) 看相关热力：高相关标的放在一起并不等于分散；(2) 低波 / 质量倾斜改变的是横截面暴露，不是无风险套利；(3) 纸盘按权益百分比下单，是在练习仓位预算，而不是在优化全局有效前沿。\n\n**与前沿课的边界。** Markowitz lite 不替代基础模型预测，也不解决发表后衰减。它回答的是：在固定宇宙里，你是否至少意识到风险与相关。\n\n**作业：** 打开相关热力与因子工作室，选两只高相关名与一只低相关名，写一句「若等权持有，风险主要来自哪里」；再在纸盘用 1% 权益练习一笔。",
+      en: "Camp basics often start from **mean–variance (Markowitz)** and “all-weather” intuition: return, risk, correlation, and why diversification is not “own many tickers.” This site does not ship a full QP solver, but correlation heatmaps, low-vol factors, portfolio-role votes, and Paper position sizing build **checkable portfolio thinking**.\n\n**Three practical moves.** (1) Read the corr heatmap — high-corr names together are not diversification; (2) low-vol / quality tilts change cross-section exposure, not risk-free arb; (3) Paper sizing by equity percent practices a risk budget — it does not optimize a global efficient frontier.\n\n**Boundary vs frontier lessons.** Markowitz lite does not replace foundation-model forecasts or fix post-publication decay. It asks whether, on a fixed universe, you at least notice risk and correlation.\n\n**Homework:** Open corr heatmap + Factor Studio; pick two high-corr names and one low-corr name; write one sentence on where risk would come from if equally weighted; Paper a 1% equity practice fill.",
+    },
+    deepLinks: [
+      { href: "#/quant", label: { zh: "相关热力 / 工作室", en: "Corr heatmap / Studio" } },
+      { href: "#/paper", label: { zh: "纸盘仓位练习", en: "Paper sizing drill" } },
+      { href: "#/learn", label: { zh: "入门场景 18", en: "Learn scenario 18" } },
+    ],
+    skills: ["quant-statistics", "multi-factor", "execution-model"],
   },
 ];
 

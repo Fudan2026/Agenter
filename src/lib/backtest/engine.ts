@@ -93,13 +93,20 @@ function toOHLC(c: CandleBar): OHLC {
   };
 }
 
+import {
+  mergeParams,
+  type StrategyParams,
+} from "./params";
+
 /** Long-only signal: 1 = want long, 0 = flat. Evaluated at bar i using ≤ i only. */
 function signalAt(
   strategy: StrategyId,
   candles: CandleBar[],
   i: number,
+  params?: StrategyParams | null,
 ): 0 | 1 {
   if (i < 1) return 0;
+  const p = mergeParams(params);
   const closes = candles.slice(0, i + 1).map((c) => c.close);
   const ohlcPrefix = candles.slice(0, i + 1).map(toOHLC);
 
@@ -124,20 +131,23 @@ function signalAt(
   }
 
   if (strategy === "ma_cross") {
-    const s20 = sma(closes, 20);
-    const s60 = sma(closes, 60);
-    if (!s20.length || !s60.length) return 0;
-    const a = last(s20)!;
-    const b = last(s60)!;
+    const fast = Math.max(2, Math.floor(p.maFast));
+    const slow = Math.max(fast + 1, Math.floor(p.maSlow));
+    const sFast = sma(closes, fast);
+    const sSlow = sma(closes, slow);
+    if (!sFast.length || !sSlow.length) return 0;
+    const a = last(sFast)!;
+    const b = last(sSlow)!;
     return a > b ? 1 : 0;
   }
 
   if (strategy === "rsi_mr") {
-    const r = rsi(closes, 14);
+    const period = Math.max(2, Math.floor(p.rsiPeriod));
+    const r = rsi(closes, period);
     const v = last(r);
     if (v == null) return 0;
-    if (v < 30) return 1;
-    if (v > 70) return 0;
+    if (v < p.rsiOs) return 1;
+    if (v > p.rsiOb) return 0;
     return 0;
   }
 
@@ -169,23 +179,24 @@ function signalAt(
         if (bear.includes(h)) score -= 8;
       }
     }
-    return score >= 16 ? 1 : 0;
+    // Map confThreshold (0–100 style) onto pattern window score (~16 default)
+    const thr = Math.max(8, Math.round((p.confThreshold / 60) * 16));
+    return score >= thr ? 1 : 0;
   }
 
   if (strategy === "ml_lite") {
-    // Lagged-return sign rule (ridge-lite): long when mean of lags 1..5 > 0
-    // Uses only closes ≤ i (no lookahead).
-    if (closes.length < 8) return 0;
+    const lags = Math.max(2, Math.min(12, Math.floor(p.mlLags)));
+    const shrink = Math.max(0, p.mlShrink);
+    if (closes.length < lags + 3) return 0;
     const rets: number[] = [];
-    for (let k = 1; k <= 5; k++) {
+    for (let k = 1; k <= lags; k++) {
       const a = closes[closes.length - 1 - k];
       const b = closes[closes.length - k];
       if (a > 0 && b > 0) rets.push(b / a - 1);
     }
-    if (rets.length < 3) return 0;
+    if (rets.length < 2) return 0;
     const mean = rets.reduce((s, x) => s + x, 0) / rets.length;
-    // mild ridge shrinkage toward 0
-    const shrunk = mean * (rets.length / (rets.length + 2));
+    const shrunk = mean * (rets.length / (rets.length + shrink));
     return shrunk > 0 ? 1 : 0;
   }
 
@@ -209,7 +220,7 @@ function signalAt(
   if (bullish) score += 40;
   if (maBull) score += 35;
   if (r != null && r < 40) score += 25;
-  return score >= 60 ? 1 : 0;
+  return score >= p.confThreshold ? 1 : 0;
 }
 
 function lotRound(qty: number): number {
@@ -304,6 +315,7 @@ export function runBacktest(opts: {
   lotSize?: number;
   costConfig?: CostConfig;
   costModelEnabled?: boolean;
+  params?: StrategyParams | null;
 }): BacktestResult {
   const startCash = opts.startCash ?? PAPER_START_CASH;
   const positionPct = opts.positionPct ?? 0.1;
@@ -321,7 +333,7 @@ export function runBacktest(opts: {
   let buyFillDate: string | null = null;
 
   for (let i = 0; i < candles.length - 1; i++) {
-    const want = signalAt(opts.strategyId, candles, i);
+    const want = signalAt(opts.strategyId, candles, i, opts.params);
     const next = candles[i + 1];
     const mark = candles[i].close;
 

@@ -357,6 +357,48 @@ export const STRINGS = {
     simHandoff: "导出 → 纸盘核对清单",
     simHandoffLead: "把模拟持仓写成次日开盘人工核对 JSON；可选跳转纸盘。",
     openPaperLink: "打开纸盘",
+    factorStudio: "因子工作室",
+    factorStudioLead:
+      "拖动权重（0–100，归一化后打分）；可存配方、IC 覆盖、TopN→纸盘批量。倾斜预设仅作快捷填充。",
+    studioTopN: "TopN",
+    studioUseIc: "用 IC 覆盖 mom/lowVol/ADV/质量",
+    studioSave: "保存配方",
+    studioLoad: "加载配方",
+    studioExport: "导出 JSON",
+    studioTopNPaper: "TopN → 纸盘批量",
+    studioRecipeName: "配方名",
+    studioSliders: "权重滑条",
+    committeeDesk: "委员会桌",
+    committeeDeskLead:
+      "六角色 bake-only 投票（基本面/情绪/技术/公告资讯/风控/组合）。无浏览器 LLM。共识≠成交许可。",
+    committeeConsensus: "共识",
+    committeePromote: "Promote 偏多 → 清单 JSON",
+    committeePromotePaper: "Promote 偏多 → 纸盘批量",
+    committeeEmpty: "暂无委员会结果",
+    strategyComposer: "策略参数",
+    composerFast: "快均线",
+    composerSlow: "慢均线",
+    composerRsi: "RSI 周期",
+    composerOs: "超卖",
+    composerOb: "超买",
+    composerThr: "共振阈值",
+    composerLags: "滞后期",
+    composerShrink: "收缩",
+    alphaRecipes: "Alpha 配方卡",
+    alphaRecipesLead:
+      "教育卡片：经济故事 + McLean 衰减警示；Kou/AlphaFormer 仅为可解释策略识字，非浏览器训练。",
+    alphaMomTitle: "动量 12−1 代理",
+    alphaMomBody:
+      "跳过近月、回看约一年的价格动量（OHLC 代理）。经济故事：趋势延续。McLean 警示：广泛知晓后拥挤会压薄 α。",
+    alphaLowVolTitle: "低波倾斜",
+    alphaLowVolBody:
+      "较低已实现波动横截面得分更高。经济故事：波动异象 / 防御。衰减：低波拥挤时溢价可变薄。",
+    alphaQualityTitle: "质量代理",
+    alphaQualityBody:
+      "OHLC 质量启发式（非真实 ROE/毛利）。经济故事：稳健经营。识字：Kou/AlphaFormer 强调可解释表达式——本站只展示故事，不跑符号回归。",
+    alphaValueTitle: "价值 PE/PB 代理",
+    alphaValueBody:
+      "相对价格/流动性启发式，标注为 PE/PB 代理，≠ 真实估值。衰减与幸存者宇宙同样适用。",
   },
   en: {
     brand: "Agenter",
@@ -714,6 +756,48 @@ export const STRINGS = {
     simHandoff: "Export → Paper checklist",
     simHandoffLead: "Write sim positions as next-open human checklist JSON; optional link to Paper.",
     openPaperLink: "Open Paper",
+    factorStudio: "Factor Studio",
+    factorStudioLead:
+      "Slide weights (0–100, then normalize); save recipes, IC override, TopN→Paper batch. Tilts are shortcuts only.",
+    studioTopN: "TopN",
+    studioUseIc: "IC override for mom/lowVol/ADV/quality",
+    studioSave: "Save recipe",
+    studioLoad: "Load recipe",
+    studioExport: "Export JSON",
+    studioTopNPaper: "TopN → Paper batch",
+    studioRecipeName: "Recipe name",
+    studioSliders: "Weight sliders",
+    committeeDesk: "Committee Desk",
+    committeeDeskLead:
+      "Six-role bake-only votes (fundamentals/sentiment/technical/news/risk/portfolio). No browser LLM. Consensus ≠ trade permission.",
+    committeeConsensus: "Consensus",
+    committeePromote: "Promote bullish → checklist JSON",
+    committeePromotePaper: "Promote bullish → Paper batch",
+    committeeEmpty: "No committee results yet",
+    strategyComposer: "Strategy params",
+    composerFast: "Fast MA",
+    composerSlow: "Slow MA",
+    composerRsi: "RSI period",
+    composerOs: "Oversold",
+    composerOb: "Overbought",
+    composerThr: "Confluence thr",
+    composerLags: "Lags",
+    composerShrink: "Shrink",
+    alphaRecipes: "Alpha recipe cards",
+    alphaRecipesLead:
+      "Educational cards: economic story + McLean decay caution; Kou/AlphaFormer = interpretable-strategy literacy, not browser training.",
+    alphaMomTitle: "Momentum 12−1 proxy",
+    alphaMomBody:
+      "Skip recent month; ~1y price momentum (OHLC proxy). Story: trend continuation. McLean: crowding can thin α after wide awareness.",
+    alphaLowVolTitle: "Low-vol tilt",
+    alphaLowVolBody:
+      "Lower realized vol scores higher cross-sectionally. Story: volatility anomaly / defensive. Decay: crowded low-vol can thin the premium.",
+    alphaQualityTitle: "Quality proxy",
+    alphaQualityBody:
+      "OHLC quality heuristic (not live ROE/margins). Story: resilient operations. Literacy: Kou/AlphaFormer stress interpretable expressions — site shows the story, not symbolic regression.",
+    alphaValueTitle: "Value PE/PB proxy",
+    alphaValueBody:
+      "Relative price/liquidity heuristics labeled PE/PB proxy — not live valuation. Decay and survivor-universe caveats still apply.",
   },
 } as const;
 

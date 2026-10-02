@@ -6,25 +6,43 @@ import {
 } from "lightweight-charts";
 
 import type { Locale } from "../i18n/strings";
-import { t } from "../i18n/strings";
+import { t, type StringKey } from "../i18n/strings";
 import {
   runBacktest,
   STRATEGY_META,
   type BacktestResult,
   type StrategyId,
 } from "../lib/backtest/engine";
+import {
+  mergeParams,
+  parseLabParams,
+  type StrategyParams,
+} from "../lib/backtest/params";
+import {
+  rankCommittee,
+  ROLE_LABELS,
+  type CommitteeResult,
+} from "../lib/committee/votes";
 import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
 import {
-  compositeFromWeights,
   type FactorsPayload,
   type FactorScores,
+  type FactorWeights,
 } from "../lib/factors/cross-section";
 import {
   FACTOR_TILTS,
-  icWeightVector,
   type FactorTiltId,
   type FactorsIcPayload,
 } from "../lib/factors/ic";
+import {
+  defaultStudioWeights,
+  loadRecipes,
+  normalizeWeights,
+  rankWithWeights,
+  resolveStudioWeights,
+  saveRecipes,
+  type FactorRecipe,
+} from "../lib/factors/studio";
 import { PATTERN_META, type PatternId } from "../lib/patterns/types";
 import { patternConfluenceAbs } from "../lib/patterns/confluence";
 import {
@@ -39,6 +57,7 @@ import {
   resolveNextOpenFill,
 } from "../lib/paper/engine";
 import { defaultSignalDate } from "../lib/paper/equity";
+import { downloadChecklistRows } from "../lib/paper/export";
 import { loadPaperState, savePaperState } from "../lib/paper/journal";
 import { evaluateBacktestGates } from "../lib/risk/gates";
 import {
@@ -273,37 +292,323 @@ function renderCorrHeatmap(
   </section>`;
 }
 
-function tiltWeights(
-  tilt: FactorTiltId,
-  ic: FactorsIcPayload | null,
-): {
+/** UI slider state 0–100 → FactorWeights via normalizeWeights. */
+type StudioSliderState = {
   momentum: number;
   lowVol: number;
   sizeAdv: number;
   quality: number;
-  peProxy?: number;
-  pbProxy?: number;
-} {
-  if (tilt === "ic") return icWeightVector(ic);
-  return FACTOR_TILTS[tilt];
+  peProxy: number;
+  pbProxy: number;
+};
+
+function slidersFromWeights(w: FactorWeights): StudioSliderState {
+  return {
+    momentum: Math.round((w.momentum ?? 0) * 100),
+    lowVol: Math.round((w.lowVol ?? 0) * 100),
+    sizeAdv: Math.round((w.sizeAdv ?? 0) * 100),
+    quality: Math.round((w.quality ?? 0) * 100),
+    peProxy: Math.round((w.peProxy ?? 0) * 100),
+    pbProxy: Math.round((w.pbProxy ?? 0) * 100),
+  };
 }
 
-function rankedFactors(
-  factors: FactorsPayload | null,
-  tilt: FactorTiltId,
-  ic: FactorsIcPayload | null,
-): FactorScores[] {
-  if (!factors?.factors?.length) return [];
-  const w = tiltWeights(tilt, ic);
-  const rescored = factors.factors.map((f) => {
-    const composite = compositeFromWeights(f, w);
-    return { ...f, composite };
+function weightsFromSliders(s: StudioSliderState): FactorWeights {
+  return normalizeWeights({
+    momentum: s.momentum,
+    lowVol: s.lowVol,
+    sizeAdv: s.sizeAdv,
+    quality: s.quality,
+    peProxy: s.peProxy,
+    pbProxy: s.pbProxy,
   });
-  rescored.sort((a, b) => (b.composite ?? -999) - (a.composite ?? -999));
-  return rescored.map((f, i) => ({
-    ...f,
-    rank: f.composite == null ? null : i + 1,
-  }));
+}
+
+function tiltLabel(locale: Locale, id: FactorTiltId): string {
+  if (id === "equal") return t(locale, "factorTiltEqual");
+  if (id === "ic") return t(locale, "factorTiltIc");
+  if (id === "value") return t(locale, "factorTiltValue");
+  if (id === "momentum") return t(locale, "factorTiltMomentum");
+  return t(locale, "factorTiltQuality");
+}
+
+function renderFactorStudio(
+  locale: Locale,
+  factors: FactorsPayload | null,
+  sliders: StudioSliderState,
+  topN: number,
+  useIc: boolean,
+  factorsIc: FactorsIcPayload | null,
+  recipes: FactorRecipe[],
+): string {
+  if (!factors?.factors?.length) return "";
+  const base = weightsFromSliders(sliders);
+  const w = resolveStudioWeights(base, useIc, factorsIc);
+  const ranked = rankWithWeights(factors.factors, w, topN);
+  const attr = locale === "zh" ? factors.attribution.zh : factors.attribution.en;
+  const tiltOpts: FactorTiltId[] = [
+    "equal",
+    "ic",
+    "value",
+    "momentum",
+    "quality",
+  ];
+  const sliderKeys: Array<keyof StudioSliderState> = [
+    "momentum",
+    "lowVol",
+    "sizeAdv",
+    "quality",
+    "peProxy",
+    "pbProxy",
+  ];
+  const sliderLabel = (k: keyof StudioSliderState): string => {
+    if (k === "momentum") return t(locale, "factorMomentum");
+    if (k === "lowVol") return t(locale, "factorLowVol");
+    if (k === "sizeAdv") return t(locale, "factorSizeAdv");
+    if (k === "quality") return t(locale, "factorQuality");
+    if (k === "peProxy") return t(locale, "peProxy");
+    return t(locale, "pbProxy");
+  };
+  const topOpts = Array.from({ length: 11 }, (_, i) => i + 5);
+  return `<section class="factor-board-panel factor-studio-panel">
+    <h2>${esc(t(locale, "factorStudio"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "factorStudioLead"))}</p>
+    <p class="muted tiny">${esc(attr)}</p>
+    <div class="factor-tilt-bar cta-row wrap">
+      <span class="tiny muted">${esc(t(locale, "factorTilt"))}:</span>
+      ${tiltOpts
+        .map(
+          (id) =>
+            `<button type="button" class="btn btn-ghost studio-tilt" data-tilt="${esc(id)}">${esc(tiltLabel(locale, id))}</button>`,
+        )
+        .join("")}
+    </div>
+    <div class="studio-sliders" aria-label="${esc(t(locale, "studioSliders"))}">
+      ${sliderKeys
+        .map((k) => {
+          const disabled = useIc && ["momentum", "lowVol", "sizeAdv", "quality"].includes(k);
+          return `<label class="studio-slider">
+            <span>${esc(sliderLabel(k))} <strong data-slider-val="${esc(k)}">${sliders[k]}</strong></span>
+            <input type="range" min="0" max="100" step="1" id="studio-${esc(k)}" data-studio-key="${esc(k)}" value="${sliders[k]}"${disabled ? " disabled" : ""}/>
+          </label>`;
+        })
+        .join("")}
+    </div>
+    <div class="cta-row wrap studio-controls">
+      <label>${esc(t(locale, "studioTopN"))}
+        <select id="studio-topn">
+          ${topOpts
+            .map((n) => {
+              const sel = n === topN ? " selected" : "";
+              return `<option value="${n}"${sel}>${n}</option>`;
+            })
+            .join("")}
+        </select>
+      </label>
+      <label class="tiny"><input type="checkbox" id="studio-use-ic" ${useIc ? "checked" : ""}/> ${esc(t(locale, "studioUseIc"))}</label>
+      <label>${esc(t(locale, "studioRecipeName"))}
+        <input type="text" id="studio-recipe-name" maxlength="40" placeholder="my-recipe" value=""/>
+      </label>
+      <button type="button" class="btn" id="studio-save">${esc(t(locale, "studioSave"))}</button>
+      <label>${esc(t(locale, "studioLoad"))}
+        <select id="studio-load">
+          <option value="">—</option>
+          ${recipes
+            .map(
+              (r) =>
+                `<option value="${esc(r.id)}">${esc(r.name)} · N=${r.topN}</option>`,
+            )
+            .join("")}
+        </select>
+      </label>
+      <button type="button" class="btn" id="studio-export">${esc(t(locale, "studioExport"))}</button>
+      <button type="button" class="btn btn-primary" id="studio-topn-paper">${esc(t(locale, "studioTopNPaper"))}</button>
+    </div>
+    <p class="muted tiny">${esc(t(locale, "factorComposite"))}: mom ${(w.momentum * 100).toFixed(0)} · lv ${(w.lowVol * 100).toFixed(0)} · adv ${(w.sizeAdv * 100).toFixed(0)} · q ${(w.quality * 100).toFixed(0)}${w.peProxy ? ` · pe ${(w.peProxy * 100).toFixed(0)}` : ""}${w.pbProxy ? ` · pb ${(w.pbProxy * 100).toFixed(0)}` : ""}</p>
+    <div class="table-wrap"><table class="agent-table" id="studio-rank-table">
+      <thead><tr>
+        <th>${esc(t(locale, "factorRank"))}</th>
+        <th>Symbol</th>
+        <th>${esc(t(locale, "factorMomentum"))}</th>
+        <th>${esc(t(locale, "factorLowVol"))}</th>
+        <th>${esc(t(locale, "factorSizeAdv"))}</th>
+        <th>${esc(t(locale, "factorQuality"))}</th>
+        <th>${esc(t(locale, "peProxy"))}</th>
+        <th>${esc(t(locale, "pbProxy"))}</th>
+        <th>${esc(t(locale, "factorComposite"))}</th>
+      </tr></thead>
+      <tbody>
+        ${ranked
+          .map((f) => {
+            const name = locale === "zh" ? f.nameZh : f.nameEn;
+            return `<tr data-symbol="${esc(f.symbol)}">
+              <td>${f.rank ?? "—"}</td>
+              <td><a href="#/asset/${encodeURIComponent(f.symbol)}">${esc(f.symbol)}</a>
+                <div class="muted tiny">${esc(name)}</div></td>
+              <td>${esc(fmtZ(f.momentum))}</td>
+              <td>${esc(fmtZ(f.lowVol))}</td>
+              <td>${esc(fmtZ(f.sizeAdv))}</td>
+              <td>${esc(fmtZ(f.quality))}</td>
+              <td>${esc(fmtZ(f.peProxy))}</td>
+              <td>${esc(fmtZ(f.pbProxy))}</td>
+              <td><strong>${esc(fmtZ(f.composite))}</strong></td>
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table></div>
+  </section>`;
+}
+
+function renderCommitteeDesk(
+  locale: Locale,
+  results: CommitteeResult[],
+): string {
+  if (!results.length) {
+    return `<section class="committee-desk-panel">
+      <h2>${esc(t(locale, "committeeDesk"))}</h2>
+      <p class="muted tiny">${esc(t(locale, "committeeDeskLead"))}</p>
+      <p class="muted">${esc(t(locale, "committeeEmpty"))}</p>
+    </section>`;
+  }
+  return `<section class="committee-desk-panel">
+    <h2>${esc(t(locale, "committeeDesk"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "committeeDeskLead"))}</p>
+    <div class="cta-row wrap">
+      <button type="button" class="btn btn-primary" id="committee-promote-json">${esc(t(locale, "committeePromote"))}</button>
+      <button type="button" class="btn" id="committee-promote-paper">${esc(t(locale, "committeePromotePaper"))}</button>
+    </div>
+    <div class="table-wrap"><table class="agent-table committee-table">
+      <thead><tr>
+        <th>Symbol</th>
+        <th>${esc(t(locale, "committeeConsensus"))}</th>
+        <th>Bias</th>
+        ${(["fundamentals", "sentiment", "technical", "news", "risk", "portfolio"] as const)
+          .map((r) => `<th class="tiny">${esc(ROLE_LABELS[r][locale])}</th>`)
+          .join("")}
+      </tr></thead>
+      <tbody>
+        ${results
+          .map((r) => {
+            const name = locale === "zh" ? r.nameZh : r.nameEn;
+            const vote = (role: string) =>
+              r.votes.find((v) => v.role === role)?.score ?? 0;
+            return `<tr data-symbol="${esc(r.symbol)}" data-bias="${esc(r.bias)}">
+              <td><a href="#/asset/${encodeURIComponent(r.symbol)}">${esc(r.symbol)}</a>
+                <div class="muted tiny">${esc(name)}</div></td>
+              <td><strong>${r.consensus.toFixed(2)}</strong></td>
+              <td><span class="chip chip-${r.bias === "neutral" ? "neutral" : r.bias === "bull" ? "bull" : "bear"}">${esc(biasLabel(locale, r.bias))}</span></td>
+              ${(["fundamentals", "sentiment", "technical", "news", "risk", "portfolio"] as const)
+                .map((role) => {
+                  const v = vote(role);
+                  const ev = r.votes.find((x) => x.role === role);
+                  const tip = locale === "zh" ? ev?.evidenceZh : ev?.evidenceEn;
+                  return `<td class="tiny" title="${esc(tip ?? "")}">${v.toFixed(2)}</td>`;
+                })
+                .join("")}
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table></div>
+  </section>`;
+}
+
+function renderAlphaRecipeCards(locale: Locale): string {
+  const cards: Array<{ title: StringKey; body: StringKey; href: string }> = [
+    {
+      title: "alphaMomTitle",
+      body: "alphaMomBody",
+      href: "#/handbook",
+    },
+    {
+      title: "alphaLowVolTitle",
+      body: "alphaLowVolBody",
+      href: "#/handbook",
+    },
+    {
+      title: "alphaQualityTitle",
+      body: "alphaQualityBody",
+      href: "#/handbook",
+    },
+    {
+      title: "alphaValueTitle",
+      body: "alphaValueBody",
+      href: "#/handbook",
+    },
+  ];
+  return `<section class="alpha-recipes-panel recipe-cards-panel">
+    <h2>${esc(t(locale, "alphaRecipes"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "alphaRecipesLead"))}</p>
+    <div class="recipe-grid">
+      ${cards
+        .map(
+          (c) => `<article class="recipe-card alpha-card">
+            <h3>${esc(t(locale, c.title))}</h3>
+            <p>${esc(t(locale, c.body))}</p>
+            <a class="btn" href="${esc(c.href)}">${esc(t(locale, "navHandbook"))}</a>
+          </article>`,
+        )
+        .join("")}
+    </div>
+  </section>`;
+}
+
+function composerParamsHtml(
+  locale: Locale,
+  strategy: StrategyId,
+  params: StrategyParams,
+): string {
+  const m = mergeParams(params);
+  if (strategy === "ma_cross") {
+    return `<div class="composer-params cta-row wrap" id="composer-params">
+      <span class="tiny muted">${esc(t(locale, "strategyComposer"))}</span>
+      <label>${esc(t(locale, "composerFast"))}
+        <input type="number" id="p-fast" min="2" max="120" value="${m.maFast}"/>
+      </label>
+      <label>${esc(t(locale, "composerSlow"))}
+        <input type="number" id="p-slow" min="3" max="250" value="${m.maSlow}"/>
+      </label>
+    </div>`;
+  }
+  if (strategy === "rsi_mr") {
+    return `<div class="composer-params cta-row wrap" id="composer-params">
+      <span class="tiny muted">${esc(t(locale, "strategyComposer"))}</span>
+      <label>${esc(t(locale, "composerRsi"))}
+        <input type="number" id="p-rsi" min="2" max="50" value="${m.rsiPeriod}"/>
+      </label>
+      <label>${esc(t(locale, "composerOs"))}
+        <input type="number" id="p-os" min="5" max="45" value="${m.rsiOs}"/>
+      </label>
+      <label>${esc(t(locale, "composerOb"))}
+        <input type="number" id="p-ob" min="55" max="95" value="${m.rsiOb}"/>
+      </label>
+    </div>`;
+  }
+  if (strategy === "confluence" || strategy === "pattern_confluence") {
+    return `<div class="composer-params cta-row wrap" id="composer-params">
+      <span class="tiny muted">${esc(t(locale, "strategyComposer"))}</span>
+      <label>${esc(t(locale, "composerThr"))}
+        <input type="number" id="p-thr" min="10" max="100" value="${m.confThreshold}"/>
+      </label>
+    </div>`;
+  }
+  if (strategy === "ml_lite") {
+    return `<div class="composer-params cta-row wrap" id="composer-params">
+      <span class="tiny muted">${esc(t(locale, "strategyComposer"))}</span>
+      <label>${esc(t(locale, "composerLags"))}
+        <input type="number" id="p-lags" min="2" max="12" value="${m.mlLags}"/>
+      </label>
+      <label>${esc(t(locale, "composerShrink"))}
+        <input type="number" id="p-shrink" min="0" max="20" step="0.5" value="${m.mlShrink}"/>
+      </label>
+    </div>`;
+  }
+  return `<div class="composer-params muted tiny" id="composer-params">${esc(t(locale, "strategyComposer"))}: —</div>`;
+}
+
+function fmtZ(v: number | null): string {
+  return v == null ? "—" : v.toFixed(2);
 }
 
 function renderIndicesStrip(
@@ -383,86 +688,6 @@ function renderScreensPanel(
         .join("")}
     </div>`
     }
-  </section>`;
-}
-
-function fmtZ(v: number | null): string {
-  return v == null ? "—" : v.toFixed(2);
-}
-
-function renderFactorBoard(
-  locale: Locale,
-  factors: FactorsPayload | null,
-  tilt: FactorTiltId,
-  factorsIc: FactorsIcPayload | null,
-): string {
-  if (!factors?.factors?.length) return "";
-  const ranked = rankedFactors(factors, tilt, factorsIc);
-  const top = ranked.filter((f) => f.composite != null).slice(0, factors.topN ?? 8);
-  const attr = locale === "zh" ? factors.attribution.zh : factors.attribution.en;
-  const tiltOpts: FactorTiltId[] = [
-    "equal",
-    "ic",
-    "value",
-    "momentum",
-    "quality",
-  ];
-  const tiltLabel = (id: FactorTiltId): string => {
-    if (id === "equal") return t(locale, "factorTiltEqual");
-    if (id === "ic") return t(locale, "factorTiltIc");
-    if (id === "value") return t(locale, "factorTiltValue");
-    if (id === "momentum") return t(locale, "factorTiltMomentum");
-    return t(locale, "factorTiltQuality");
-  };
-  return `<section class="factor-board-panel">
-    <h2>${esc(t(locale, "factorBoard"))}</h2>
-    <p class="muted tiny">${esc(t(locale, "factorBoardLead"))}</p>
-    <p class="muted tiny">${esc(attr)}</p>
-    <div class="factor-tilt-bar cta-row wrap">
-      <label>${esc(t(locale, "factorTilt"))}
-        <select id="factor-tilt">
-          ${tiltOpts
-            .map((id) => {
-              const sel = id === tilt ? " selected" : "";
-              return `<option value="${esc(id)}"${sel}>${esc(tiltLabel(id))}</option>`;
-            })
-            .join("")}
-        </select>
-      </label>
-      <label class="tiny"><input type="checkbox" id="factor-ic-toggle" ${tilt === "ic" ? "checked" : ""}/> ${esc(t(locale, "factorTiltIc"))}</label>
-    </div>
-    <div class="table-wrap"><table class="agent-table">
-      <thead><tr>
-        <th>${esc(t(locale, "factorRank"))}</th>
-        <th>Symbol</th>
-        <th>${esc(t(locale, "factorMomentum"))}</th>
-        <th>${esc(t(locale, "factorLowVol"))}</th>
-        <th>${esc(t(locale, "factorSizeAdv"))}</th>
-        <th>${esc(t(locale, "factorQuality"))}</th>
-        <th>${esc(t(locale, "peProxy"))}</th>
-        <th>${esc(t(locale, "pbProxy"))}</th>
-        <th>${esc(t(locale, "factorComposite"))}</th>
-      </tr></thead>
-      <tbody>
-        ${top
-          .map((f) => {
-            const name = locale === "zh" ? f.nameZh : f.nameEn;
-            return `<tr>
-              <td>${f.rank ?? "—"}</td>
-              <td><a href="#/asset/${encodeURIComponent(f.symbol)}">${esc(f.symbol)}</a>
-                <div class="muted tiny">${esc(name)}</div></td>
-              <td>${esc(fmtZ(f.momentum))}</td>
-              <td>${esc(fmtZ(f.lowVol))}</td>
-              <td>${esc(fmtZ(f.sizeAdv))}</td>
-              <td>${esc(fmtZ(f.quality))}</td>
-              <td>${esc(fmtZ(f.peProxy))}</td>
-              <td>${esc(fmtZ(f.pbProxy))}</td>
-              <td><strong>${esc(fmtZ(f.composite))}</strong></td>
-            </tr>`;
-          })
-          .join("")}
-      </tbody>
-    </table></div>
   </section>`;
 }
 
@@ -654,21 +879,109 @@ export function renderQuant(
     .map((s) => s.symbol);
   const stale = isStaleVsReport(data);
 
-  const hashQ = location.hash.includes("?")
-    ? location.hash.slice(location.hash.indexOf("?") + 1)
-    : "";
-  const hashParams = new URLSearchParams(hashQ);
-  const labFromHash = hashParams.get("lab");
-
+  const parsedLab = parseLabParams(location.hash);
   let biasFilter: "all" | "bull" | "bear" | "neutral" = "all";
   let sortKey: "confluence" | "rsi" | "bias" = "confluence";
   let labStrategy: StrategyId =
-    labFromHash && strategies.includes(labFromHash as StrategyId)
-      ? (labFromHash as StrategyId)
+    parsedLab.lab && strategies.includes(parsedLab.lab)
+      ? parsedLab.lab
       : (strategies[0] ?? "ma_cross");
   let labSymbol: string = tradeable[0]?.symbol ?? "";
   let labSlip: SlippageModel = "fixed";
-  let factorTilt: FactorTiltId = "equal";
+  let labParams: StrategyParams = { ...parsedLab.params };
+  let studioSliders: StudioSliderState = slidersFromWeights(
+    defaultStudioWeights(),
+  );
+  let studioTopN = Math.min(15, Math.max(5, factors?.topN ?? 8));
+  let studioUseIc = false;
+  let studioRecipes = loadRecipes();
+
+  const ashareTradeable = data.symbols.filter(
+    (s) =>
+      s.group === "china-ashare" &&
+      s.dataStatus !== "missing" &&
+      s.candles.length >= 60,
+  );
+
+  const studioRanked = (): FactorScores[] => {
+    if (!factors?.factors?.length) return [];
+    const base = weightsFromSliders(studioSliders);
+    const w = resolveStudioWeights(base, studioUseIc, factorsIc);
+    return rankWithWeights(factors.factors, w, studioTopN);
+  };
+
+  const committeeResults = (): CommitteeResult[] =>
+    rankCommittee(
+      ashareTradeable.length ? ashareTradeable : tradeable,
+      {
+        factors: factors?.factors,
+        announcements: announcements?.items,
+        news: iwencaiNews?.items,
+      },
+      8,
+    );
+
+  const readComposerFromDom = (): StrategyParams => {
+    const num = (id: string): number | undefined => {
+      const el = root.querySelector(`#${id}`) as HTMLInputElement | null;
+      if (!el || el.value === "") return undefined;
+      const n = Number(el.value);
+      return Number.isFinite(n) ? n : undefined;
+    };
+    const next: StrategyParams = { ...labParams };
+    const fast = num("p-fast");
+    const slow = num("p-slow");
+    const rsi = num("p-rsi");
+    const os = num("p-os");
+    const ob = num("p-ob");
+    const thr = num("p-thr");
+    const lags = num("p-lags");
+    const shrink = num("p-shrink");
+    if (fast != null) next.maFast = fast;
+    if (slow != null) next.maSlow = slow;
+    if (rsi != null) next.rsiPeriod = rsi;
+    if (os != null) next.rsiOs = os;
+    if (ob != null) next.rsiOb = ob;
+    if (thr != null) next.confThreshold = thr;
+    if (lags != null) next.mlLags = lags;
+    if (shrink != null) next.mlShrink = shrink;
+    return next;
+  };
+
+  const paperBatchSymbols = (syms: string[], note: string): number => {
+    let state = loadPaperState();
+    const lastClose: Record<string, number> = {};
+    for (const s of data.symbols) {
+      if (s.lastClose) lastClose[s.symbol] = s.lastClose;
+    }
+    const eq = equityMark(state, lastClose);
+    let applied = 0;
+    for (const sym of syms) {
+      const s = data.symbols.find((r) => r.symbol === sym);
+      if (!s) continue;
+      const sigDate = signalDateForRow(s);
+      const fill = resolveNextOpenFill(s.candles, sigDate);
+      if (!fill || fill.fillRule !== "next_open") continue;
+      const budget = eq * 0.01;
+      const rawQty = budget / fill.fillPrice;
+      const norm = normalizeQty(rawQty, s.group);
+      if (norm.error || !norm.qty) continue;
+      const r = applyBuy(state, {
+        symbol: s.symbol,
+        qty: norm.qty,
+        fill,
+        source: "checklist",
+        note,
+        lastCloseBySymbol: lastClose,
+      });
+      if (r.ok) {
+        state = r.state;
+        applied += 1;
+      }
+    }
+    savePaperState(state);
+    return applied;
+  };
 
   const boardRows = (): SymbolRow[] => {
     let rows = data.symbols.filter(
@@ -728,7 +1041,17 @@ export function renderQuant(
       ${renderScreensPanel(locale, screens)}
       ${renderIcPanel(locale, factorsIc)}
       ${renderCorrHeatmap(locale, factorsIc)}
-      ${renderFactorBoard(locale, factors, factorTilt, factorsIc)}
+      ${renderFactorStudio(
+        locale,
+        factors,
+        studioSliders,
+        studioTopN,
+        studioUseIc,
+        factorsIc,
+        studioRecipes,
+      )}
+      ${renderCommitteeDesk(locale, committeeResults())}
+      ${renderAlphaRecipeCards(locale)}
       ${renderAdfStrip(locale, factors)}
       ${renderRecipeCards(locale, recipes)}
       <section class="review">
@@ -775,6 +1098,7 @@ export function renderQuant(
           <button type="button" class="btn btn-primary" id="lab-run">${esc(t(locale, "strategyRun"))}</button>
           <button type="button" class="btn" id="lab-send" ${lastLabResult ? "" : "disabled"}>${esc(t(locale, "strategySendPaper"))}</button>
         </div>
+        ${composerParamsHtml(locale, labStrategy, labParams)}
         <div id="lab-metrics">${lastLabResult ? metricsHtml(locale, lastLabResult) : ""}</div>
         <div id="factor-box" class="factor-box">
           ${(() => {
@@ -922,13 +1246,145 @@ export function renderQuant(
       sortKey = (e.target as HTMLSelectElement).value as typeof sortKey;
       paint();
     });
-    root.querySelector("#factor-tilt")?.addEventListener("change", (e) => {
-      factorTilt = (e.target as HTMLSelectElement).value as FactorTiltId;
+
+    root.querySelectorAll<HTMLInputElement>("[data-studio-key]").forEach((el) => {
+      el.addEventListener("input", () => {
+        const key = el.dataset.studioKey as keyof StudioSliderState;
+        studioSliders = { ...studioSliders, [key]: Number(el.value) };
+        const label = root.querySelector(`[data-slider-val="${key}"]`);
+        if (label) label.textContent = String(el.value);
+      });
+      el.addEventListener("change", () => {
+        const key = el.dataset.studioKey as keyof StudioSliderState;
+        studioSliders = { ...studioSliders, [key]: Number(el.value) };
+        paint();
+      });
+    });
+    root.querySelector("#studio-topn")?.addEventListener("change", (e) => {
+      studioTopN = Number((e.target as HTMLSelectElement).value);
       paint();
     });
-    root.querySelector("#factor-ic-toggle")?.addEventListener("change", (e) => {
-      const on = (e.target as HTMLInputElement).checked;
-      factorTilt = on ? "ic" : "equal";
+    root.querySelector("#studio-use-ic")?.addEventListener("change", (e) => {
+      studioUseIc = (e.target as HTMLInputElement).checked;
+      paint();
+    });
+    root.querySelectorAll<HTMLButtonElement>(".studio-tilt").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.tilt as FactorTiltId;
+        if (id === "ic") {
+          studioUseIc = true;
+          studioSliders = slidersFromWeights(defaultStudioWeights());
+        } else {
+          studioUseIc = false;
+          studioSliders = slidersFromWeights(FACTOR_TILTS[id]);
+        }
+        paint();
+      });
+    });
+    root.querySelector("#studio-save")?.addEventListener("click", () => {
+      const nameEl = root.querySelector(
+        "#studio-recipe-name",
+      ) as HTMLInputElement | null;
+      const name =
+        nameEl?.value?.trim() ||
+        `recipe-${new Date().toISOString().slice(0, 10)}`;
+      const recipe: FactorRecipe = {
+        id: `r-${Date.now()}`,
+        name,
+        topN: studioTopN,
+        useIc: studioUseIc,
+        weights: weightsFromSliders(studioSliders),
+        savedAt: new Date().toISOString(),
+      };
+      studioRecipes = [recipe, ...studioRecipes.filter((r) => r.name !== name)];
+      saveRecipes(studioRecipes);
+      paint(locale === "zh" ? `已保存配方 ${name}` : `Saved recipe ${name}`);
+    });
+    root.querySelector("#studio-load")?.addEventListener("change", (e) => {
+      const id = (e.target as HTMLSelectElement).value;
+      const recipe = studioRecipes.find((r) => r.id === id);
+      if (!recipe) return;
+      studioSliders = slidersFromWeights(recipe.weights);
+      studioTopN = Math.min(15, Math.max(5, recipe.topN));
+      studioUseIc = recipe.useIc;
+      paint(locale === "zh" ? `已加载 ${recipe.name}` : `Loaded ${recipe.name}`);
+    });
+    root.querySelector("#studio-export")?.addEventListener("click", () => {
+      const payload = {
+        topN: studioTopN,
+        useIc: studioUseIc,
+        weights: resolveStudioWeights(
+          weightsFromSliders(studioSliders),
+          studioUseIc,
+          factorsIc,
+        ),
+        ranked: studioRanked().map((f) => ({
+          symbol: f.symbol,
+          rank: f.rank,
+          composite: f.composite,
+        })),
+        recipes: studioRecipes,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], {
+        type: "application/json",
+      });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `agenter-factor-studio-${data.reportDate}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+    root.querySelector("#studio-topn-paper")?.addEventListener("click", () => {
+      const syms = studioRanked().map((f) => f.symbol);
+      const n = paperBatchSymbols(syms, "studio TopN 1% equity");
+      paint(
+        locale === "zh"
+          ? `工作室 TopN 纸盘买入 ${n} 票`
+          : `Papered ${n} Factor Studio TopN names`,
+      );
+    });
+
+    root
+      .querySelector("#committee-promote-json")
+      ?.addEventListener("click", () => {
+        const bulls = committeeResults().filter((r) => r.bias === "bull");
+        const rows = bulls.map((r) => ({
+          symbol: r.symbol,
+          side: "buy" as const,
+          qty: 100,
+          orderType: "market_next_open" as const,
+          limitOrMarket: "market" as const,
+          intendedSession: "next_open",
+          notes:
+            locale === "zh"
+              ? `委员会共识 ${r.consensus.toFixed(2)}；人工【次日开盘】核对；本站不下单。`
+              : `Committee consensus ${r.consensus.toFixed(2)}; human NEXT OPEN checklist — site never submits.`,
+        }));
+        downloadChecklistRows(rows, "json", "agenter-committee-checklist");
+        paint(
+          locale === "zh"
+            ? `已导出偏多 ${rows.length} 条委员会清单`
+            : `Exported ${rows.length} bullish committee rows`,
+        );
+      });
+    root
+      .querySelector("#committee-promote-paper")
+      ?.addEventListener("click", () => {
+        const bulls = committeeResults()
+          .filter((r) => r.bias === "bull")
+          .map((r) => r.symbol);
+        const n = paperBatchSymbols(bulls, "committee bullish 1% equity");
+        paint(
+          locale === "zh"
+            ? `委员会偏多纸盘买入 ${n} 票`
+            : `Papered ${n} committee bullish names`,
+        );
+      });
+
+    root.querySelector("#lab-strategy")?.addEventListener("change", (e) => {
+      labParams = readComposerFromDom();
+      labStrategy = (e.target as HTMLSelectElement).value as StrategyId;
       paint();
     });
 
@@ -983,6 +1439,7 @@ export function renderQuant(
         .value;
       labSlip = ((root.querySelector("#lab-slip") as HTMLSelectElement)
         ?.value ?? "fixed") as SlippageModel;
+      labParams = readComposerFromDom();
       const row = data.symbols.find((s) => s.symbol === labSymbol);
       if (!row || row.candles.length < 60) {
         paint(locale === "zh" ? "K线不足" : "Not enough candles");
@@ -996,6 +1453,7 @@ export function renderQuant(
           ...DEFAULT_COST_CONFIG,
           slippageModel: labSlip,
         },
+        params: labParams,
       });
       paint(
         locale === "zh"

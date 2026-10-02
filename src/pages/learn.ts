@@ -266,6 +266,54 @@ const SCENARIOS: Scenario[] = [
     ],
     href: "#/compare",
   },
+  {
+    id: "academy-paper-pro",
+    titleZh: "场景 16：纸盘专业台研学",
+    titleEn: "Scenario 16: Paper Pro Academy",
+    stepsZh: [
+      "阅读手册「研学学院 · 纸盘专业台」（academy-paper-pro）。",
+      "打开量化页，从清单或委员会 Promote 一笔到纸盘练习路径。",
+      "在纸盘导出 JSON，核对「次日开盘」措辞与信号日/成交日分离。",
+    ],
+    stepsEn: [
+      "Read Handbook Academy · Paper Pro (academy-paper-pro).",
+      "On Quant, Promote one checklist/committee name toward Paper practice.",
+      "Export Paper JSON; verify NEXT OPEN wording and signal/fill date separation.",
+    ],
+    href: "#/handbook",
+  },
+  {
+    id: "academy-frontier-decay",
+    titleZh: "场景 17：前沿识字 + McLean 衰减",
+    titleEn: "Scenario 17: Frontier literacy + McLean decay",
+    stepsZh: [
+      "阅读手册 academy-fincast-frontier 与 academy-mclean-decay。",
+      "打开量化页 Alpha 配方卡，记下一条衰减警示。",
+      "在 Lab 看惩罚后夏普，写一句「高 IC ≠ 下周能赚」。",
+    ],
+    stepsEn: [
+      "Read Handbook academy-fincast-frontier and academy-mclean-decay.",
+      "Open Quant Alpha recipe cards; note one decay caution.",
+      "In Lab, check haircut Sharpe; write “high IC ≠ next-week profits.”",
+    ],
+    href: "#/quant",
+  },
+  {
+    id: "academy-limits-markowitz",
+    titleZh: "场景 18：L1–L4 边界 + Markowitz 精简",
+    titleEn: "Scenario 18: L1–L4 limits + Markowitz lite",
+    stepsZh: [
+      "阅读手册 academy-limits-l1l4 与 academy-markowitz-lite。",
+      "用自己的话写出本站属于 L1–L2，L4 不在浏览器范围。",
+      "打开相关热力，指出一对高相关标的为何不等于分散。",
+    ],
+    stepsEn: [
+      "Read Handbook academy-limits-l1l4 and academy-markowitz-lite.",
+      "State in your words: site ≈ L1–L2; L4 is out of browser scope.",
+      "Open the corr heatmap; explain why one high-corr pair is not diversification.",
+    ],
+    href: "#/handbook",
+  },
 ];
 
 export function renderLearn(root: HTMLElement, locale: Locale): void {

@@ -742,9 +742,51 @@ a:hover {
 }
 
 .factor-board-panel,
+.factor-studio-panel,
+.committee-desk-panel,
+.alpha-recipes-panel,
 .adf-strip-panel,
 .recipe-cards-panel {
   margin: 0 0 1.25rem;
+}
+
+.studio-sliders {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.5rem 0.85rem;
+  margin: 0.65rem 0;
+}
+
+.studio-slider {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.studio-slider input[type="range"] {
+  width: 100%;
+}
+
+.studio-controls input[type="text"] {
+  min-width: 8rem;
+}
+
+.composer-params {
+  margin: 0.5rem 0 0.75rem;
+}
+
+.composer-params input[type="number"] {
+  width: 4.5rem;
+}
+
+.committee-table td[title] {
+  cursor: help;
+}
+
+.alpha-card p {
+  font-size: 0.9rem;
+  line-height: 1.45;
 }
 
 .recipe-grid {
