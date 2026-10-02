@@ -7,8 +7,22 @@ import { detectAt } from "../patterns/detect";
 import type { PatternId } from "../patterns/types";
 import { sma, rsi, last } from "../indicators/core";
 import type { OHLC } from "../ohlc/types";
-import { feeForSide } from "../paper/engine";
-import { PAPER_FEE_BPS_RT, PAPER_START_CASH } from "../paper/types";
+import {
+  computeTradeCosts,
+  DEFAULT_COST_CONFIG,
+  type CostConfig,
+} from "../paper/costs";
+import { PAPER_START_CASH } from "../paper/types";
+import {
+  DEFAULT_N_TRIALS,
+  deflatedSharpeVerdict,
+  haircutSharpe,
+} from "./deflated-sharpe";
+import {
+  buildExpandingFolds,
+  DEFAULT_WF_CONFIG,
+  type WfFold,
+} from "./walkforward";
 
 export type StrategyId =
   | "pattern_follow"
@@ -47,6 +61,14 @@ export interface BacktestResult {
   metrics: BacktestMetrics;
   isMetrics: BacktestMetrics;
   oosMetrics: BacktestMetrics;
+  folds: Array<{ fold: number; metrics: BacktestMetrics }>;
+  degradation: { returnRatio: number; sharpeRatio: number };
+  costModelEnabled: boolean;
+  usedPurgedWf: boolean;
+  haircutSharpe: number;
+  haircutPct: number;
+  nTrials: number;
+  gateLevel: "green" | "yellow" | "red";
 }
 
 export interface CandleBar {
@@ -230,34 +252,46 @@ export function runBacktest(opts: {
   startCash?: number;
   positionPct?: number;
   lotSize?: number;
+  costConfig?: CostConfig;
+  costModelEnabled?: boolean;
 }): BacktestResult {
   const startCash = opts.startCash ?? PAPER_START_CASH;
   const positionPct = opts.positionPct ?? 0.1;
   const lotSize = opts.lotSize ?? 100;
+  const costModelEnabled = opts.costModelEnabled !== false;
+  const costCfg: CostConfig = {
+    ...(opts.costConfig ?? DEFAULT_COST_CONFIG),
+    enabled: costModelEnabled,
+  };
   const candles = opts.candles;
   let cash = startCash;
   let qty = 0;
-  let avgCost = 0;
   const trades: BacktestTrade[] = [];
   const equity: Array<{ time: string; value: number }> = [];
+  let buyFillDate: string | null = null;
 
   for (let i = 0; i < candles.length - 1; i++) {
     const want = signalAt(opts.strategyId, candles, i);
     const next = candles[i + 1];
     const mark = candles[i].close;
 
-    // Target position
     if (want === 1 && qty === 0) {
       const budget = cash * positionPct;
       let q = lotRound(budget / next.open);
       if (q < lotSize) q = 0;
       if (q > 0) {
-        const fee = feeForSide(q * next.open, PAPER_FEE_BPS_RT);
-        const cost = q * next.open + fee;
+        const notional = q * next.open;
+        const fee = computeTradeCosts({
+          side: "buy",
+          notional,
+          symbol: opts.symbol,
+          cfg: costCfg,
+        }).total;
+        const cost = notional + fee;
         if (cost <= cash) {
           cash -= cost;
           qty = q;
-          avgCost = next.open;
+          buyFillDate = next.date;
           trades.push({
             symbol: opts.symbol,
             side: "buy",
@@ -271,26 +305,35 @@ export function runBacktest(opts: {
         }
       }
     } else if (want === 0 && qty > 0) {
-      const fee = feeForSide(qty * next.open, PAPER_FEE_BPS_RT);
-      cash += qty * next.open - fee;
-      trades.push({
-        symbol: opts.symbol,
-        side: "sell",
-        qty,
-        signalDate: candles[i].date,
-        fillDate: next.date,
-        fillPrice: next.open,
-        fee,
-        fillRule: "next_open",
-      });
-      qty = 0;
-      avgCost = 0;
+      // T+1: skip sell if would be same session as buy fill
+      if (buyFillDate && next.date === buyFillDate) {
+        // hold
+      } else {
+        const notional = qty * next.open;
+        const fee = computeTradeCosts({
+          side: "sell",
+          notional,
+          symbol: opts.symbol,
+          cfg: costCfg,
+        }).total;
+        cash += notional - fee;
+        trades.push({
+          symbol: opts.symbol,
+          side: "sell",
+          qty,
+          signalDate: candles[i].date,
+          fillDate: next.date,
+          fillPrice: next.open,
+          fee,
+          fillRule: "next_open",
+        });
+        qty = 0;
+        buyFillDate = null;
+      }
     }
 
-    const eq = cash + qty * mark;
-    equity.push({ time: candles[i].date, value: eq });
+    equity.push({ time: candles[i].date, value: cash + qty * mark });
   }
-  // Final mark on last bar
   if (candles.length) {
     const lastBar = candles[candles.length - 1];
     equity.push({
@@ -308,11 +351,69 @@ export function runBacktest(opts: {
     };
   });
 
-  const split = Math.floor(equity.length * 0.6);
-  const isEq = equity.slice(0, Math.max(2, split));
-  const oosEq = equity.slice(Math.max(0, split - 1));
-  const isTrades = trades.filter((t) => t.fillDate <= (isEq[isEq.length - 1]?.time ?? ""));
-  const oosTrades = trades.filter((t) => t.fillDate >= (oosEq[0]?.time ?? ""));
+  const foldsIdx: WfFold[] = buildExpandingFolds(
+    candles.length,
+    DEFAULT_WF_CONFIG,
+  );
+  const usedPurgedWf = foldsIdx.length >= 3;
+  const foldMetrics = foldsIdx.map((f, i) => {
+    const startDate = candles[f.testStart]?.date ?? "";
+    const endDate = candles[Math.min(f.testEnd, candles.length) - 1]?.date ?? "";
+    const eqSlice = equity.filter(
+      (p) => p.time >= startDate && p.time <= endDate,
+    );
+    const tr = trades.filter(
+      (t) => t.fillDate >= startDate && t.fillDate <= endDate,
+    );
+    return {
+      fold: i + 1,
+      metrics: metricsFromEquity(
+        eqSlice.length >= 2 ? eqSlice : equity.slice(-2),
+        tr,
+        startCash,
+      ),
+    };
+  });
+
+  // IS = before first test; OOS = aggregate OOS fold equity
+  const firstTest = foldsIdx[0]?.testStart ?? Math.floor(candles.length * 0.6);
+  const isEndDate = candles[Math.max(0, firstTest - 1)]?.date ?? "";
+  const isEq = equity.filter((p) => p.time <= isEndDate);
+  const oosEq = equity.filter((p) => p.time >= (candles[firstTest]?.date ?? ""));
+  const isTrades = trades.filter((t) => t.fillDate <= isEndDate);
+  const oosTrades = trades.filter(
+    (t) => t.fillDate >= (candles[firstTest]?.date ?? ""),
+  );
+
+  const metrics = metricsFromEquity(equity, trades, startCash);
+  const isMetrics = metricsFromEquity(
+    isEq.length >= 2 ? isEq : equity.slice(0, 2),
+    isTrades,
+    startCash,
+  );
+  const oosMetrics = metricsFromEquity(
+    oosEq.length >= 2 ? oosEq : equity.slice(-2),
+    oosTrades,
+    startCash,
+  );
+
+  const hc = haircutSharpe({
+    sharpe: oosMetrics.sharpe,
+    nObs: Math.max(2, oosEq.length),
+    nTrials: DEFAULT_N_TRIALS,
+  });
+  const gateLevel = deflatedSharpeVerdict(
+    hc.sharpeHaircut,
+    oosMetrics.maxDrawdownPct,
+  );
+  metrics.verdict = gateLevel;
+
+  const returnRatio =
+    isMetrics.totalReturnPct !== 0
+      ? oosMetrics.totalReturnPct / isMetrics.totalReturnPct
+      : 0;
+  const sharpeRatio =
+    isMetrics.sharpe !== 0 ? oosMetrics.sharpe / isMetrics.sharpe : 0;
 
   return {
     strategyId: opts.strategyId,
@@ -320,9 +421,17 @@ export function runBacktest(opts: {
     equity,
     drawdown,
     trades,
-    metrics: metricsFromEquity(equity, trades, startCash),
-    isMetrics: metricsFromEquity(isEq, isTrades, startCash),
-    oosMetrics: metricsFromEquity(oosEq, oosTrades, startCash),
+    metrics,
+    isMetrics,
+    oosMetrics,
+    folds: foldMetrics,
+    degradation: { returnRatio, sharpeRatio },
+    costModelEnabled,
+    usedPurgedWf,
+    haircutSharpe: hc.sharpeHaircut,
+    haircutPct: hc.haircutPct,
+    nTrials: DEFAULT_N_TRIALS,
+    gateLevel,
   };
 }
 

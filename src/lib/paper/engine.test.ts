@@ -83,12 +83,37 @@ describe("paper capital and lots", () => {
     const sold = applySell(state, {
       symbol: "600519.SS",
       qty: 100,
-      fill: { ...fill, fillPrice: 110 },
+      fill: {
+        ...fill,
+        fillPrice: 110,
+        fillDate: "2026-03-03",
+        signalDate: "2026-03-02",
+      },
     });
     assert.equal(sold.ok, true);
     if (!sold.ok) return;
     assert.equal(sold.state.positions.length, 0);
     assert.ok(sold.state.journal.length >= 2);
+  });
+
+  it("T+1 blocks same-fillDate sell", () => {
+    let state = defaultPaperState();
+    const fill = {
+      fillPrice: 100,
+      fillDate: "2026-03-02",
+      fillRule: "next_open" as const,
+      signalDate: "2026-03-01",
+    };
+    const bought = applyBuy(state, { symbol: "600519.SS", qty: 100, fill });
+    assert.equal(bought.ok, true);
+    if (!bought.ok) return;
+    const sold = applySell(bought.state, {
+      symbol: "600519.SS",
+      qty: 100,
+      fill,
+    });
+    assert.equal(sold.ok, false);
+    if (!sold.ok) assert.equal(sold.error, "t1_lock");
   });
 
   it("risk snapshot flags overweight name", () => {

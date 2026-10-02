@@ -21,6 +21,7 @@ import {
   defaultSignalDate,
   drawdownSeries,
 } from "../lib/paper/equity";
+import { suggestHalfKelly, conservativeDefaults } from "../lib/paper/kelly";
 import {
   downloadJournalJson,
   importPaperState,
@@ -53,6 +54,9 @@ function errMsg(locale: Locale, code: string): string {
     insufficient_qty: "paperErrInsuff",
     risk_overweight: "paperErrOverweight",
     risk_cash: "paperErrCashGate",
+    t1_lock: "paperT1Lock",
+    limit_up: "paperLimitReject",
+    limit_down: "paperLimitReject",
   };
   const key = map[code];
   return key ? t(locale, key) : code;
@@ -138,14 +142,19 @@ export function renderPaper(
           : ""
       }
       ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
+      <p class="muted tiny" id="ws-account">${esc(t(locale, "paperSurvivorship"))} · ${
+        state.costModelEnabled === false
+          ? esc(t(locale, "paperCostOffWarn"))
+          : esc(t(locale, "paperCostOn"))
+      } · ${esc(t(locale, "paperReflexivityWarn"))}</p>
       <div class="stats-row paper-stats">
         <div class="stat"><span class="stat-n">${fmtMoney(state.cash)}</span><span class="stat-l">${esc(t(locale, "paperCash"))}</span></div>
         <div class="stat"><span class="stat-n">${fmtMoney(eq)}</span><span class="stat-l">${esc(t(locale, "paperEquity"))}</span></div>
         <div class="stat"><span class="stat-n">${pnlPctNow.toFixed(3)}%</span><span class="stat-l">${esc(t(locale, "paperPnlPct"))}</span></div>
-        <div class="stat"><span class="stat-n">${state.feeBpsRoundTrip}</span><span class="stat-l">bps RT</span></div>
+        <div class="stat"><span class="stat-n">${state.costModelEnabled === false ? "OFF" : "ON"}</span><span class="stat-l">Costs</span></div>
       </div>
 
-      <section class="risk-strip ${risk.overweight ? "warn" : ""}">
+      <section class="risk-strip ${risk.overweight ? "warn" : ""}" id="ws-risk">
         <h2>${esc(t(locale, "paperRisk"))}</h2>
         <ul>
           <li>${esc(t(locale, "paperCashBuf"))}: ${(risk.cashPct * 100).toFixed(1)}%</li>
@@ -155,12 +164,15 @@ export function renderPaper(
               : "—"
           }${risk.overweight ? ` · ${esc(t(locale, "paperOverweight"))}` : ""}</li>
           <li>${esc(t(locale, "paperConsecLoss"))}: ${risk.consecutiveLosses}</li>
+          <li>${esc(t(locale, "paperStress"))}: −8% / −15% equity shock → ${fmtMoney(eq * 0.92)} / ${fmtMoney(eq * 0.85)}</li>
         </ul>
         <label class="tiny"><input type="checkbox" id="p-hard" ${state.hardRiskGates ? "checked" : ""}/> ${esc(t(locale, "paperHardGates"))}</label>
+        <label class="tiny"><input type="checkbox" id="p-cost" ${state.costModelEnabled === false ? "" : "checked"}/> ${esc(t(locale, "paperCostOn"))}</label>
         <p class="muted tiny">${esc(t(locale, "paperRiskNote"))}</p>
       </section>
 
-      <section class="paper-ticket">
+      <section class="paper-ticket" id="ws-ticket">
+        <h2>${esc(t(locale, "wsTicket"))}</h2>
         <label>${esc(t(locale, "paperSymbol"))}
           <select id="p-symbol">
             ${tradeable
@@ -182,13 +194,15 @@ export function renderPaper(
             ? `${esc(t(locale, "paperFillPreview"))}: ${previewFill.fillRule} @ ${previewFill.fillPrice.toFixed(3)} on ${previewFill.fillDate}`
             : ""
         }</p>
+        <p class="muted tiny" id="p-kelly"></p>
         <div class="cta-row">
+          <button type="button" class="btn" id="kelly-fill">${esc(t(locale, "paperKellySuggest"))}</button>
           <button type="button" class="btn btn-primary" id="p-buy">${esc(t(locale, "paperBuy"))}</button>
           <button type="button" class="btn" id="p-sell">${esc(t(locale, "paperSell"))}</button>
         </div>
       </section>
 
-      <section>
+      <section id="ws-perf">
         <h2>${esc(t(locale, "paperEquityCurve"))}</h2>
         <div class="cta-row wrap">
           <button type="button" class="btn ${viewMode === "pnlPct" ? "btn-primary" : ""}" id="v-pnl">${esc(t(locale, "paperViewPnl"))}</button>
@@ -199,7 +213,7 @@ export function renderPaper(
         <p class="muted tiny">${esc(t(locale, "paperMtmNote"))} · points=${points.length} · markers=${markers.length}</p>
       </section>
 
-      <section>
+      <section id="ws-positions">
         <h2>${esc(t(locale, "paperPositions"))}</h2>
         ${
           state.positions.length === 0
@@ -233,7 +247,7 @@ export function renderPaper(
         }
       </section>
 
-      <section>
+      <section id="ws-journal">
         <h2>${esc(t(locale, "paperJournal"))}</h2>
         ${
           state.journal.length === 0
@@ -254,7 +268,11 @@ export function renderPaper(
                         <td>${esc(j.symbol)}</td>
                         <td>${j.qty.toLocaleString()}</td>
                         <td>${j.fillPrice.toFixed(3)} <span class="muted tiny">${esc(j.fillDate)}</span></td>
-                        <td>${j.fee.toFixed(2)}</td>
+                        <td>${j.fee.toFixed(2)}${
+                          j.feeStampDuty
+                            ? ` <span class="muted tiny">(c${(j.feeCommission ?? 0).toFixed(1)}/s${j.feeStampDuty.toFixed(1)})</span>`
+                            : ""
+                        }</td>
                         <td>${esc(j.fillRule)} <span class="muted tiny">sig ${esc(j.signalDate)}</span></td>
                         <td class="tiny">${esc(j.source ?? "manual")}</td>
                       </tr>`,
@@ -265,7 +283,7 @@ export function renderPaper(
         }
       </section>
 
-      <div class="cta-row wrap">
+      <div class="cta-row wrap" id="ws-ops">
         <button type="button" class="btn" id="p-csv">${esc(t(locale, "paperExportCsv"))}</button>
         <button type="button" class="btn" id="p-json">${esc(t(locale, "paperExportJson"))}</button>
         <button type="button" class="btn" id="p-jl">${esc(t(locale, "paperDownloadJournal"))}</button>
@@ -411,6 +429,30 @@ export function renderPaper(
         hardRiskGates: (e.target as HTMLInputElement).checked,
       };
       savePaperState(state);
+    });
+    root.querySelector("#p-cost")?.addEventListener("change", (e) => {
+      const on = (e.target as HTMLInputElement).checked;
+      state = { ...state, costModelEnabled: on };
+      savePaperState(state);
+      paint();
+    });
+    root.querySelector("#kelly-fill")?.addEventListener("click", () => {
+      const symbol = (root.querySelector("#p-symbol") as HTMLSelectElement)
+        .value;
+      const row = data.symbols.find((s) => s.symbol === symbol);
+      if (!row?.lastClose) return;
+      const d = conservativeDefaults();
+      const sug = suggestHalfKelly({
+        ...d,
+        equity: eq,
+        price: row.lastClose,
+      });
+      const qtyEl = root.querySelector("#p-qty") as HTMLInputElement | null;
+      if (qtyEl) qtyEl.value = String(sug.qtyLots || 100);
+      const kel = root.querySelector("#p-kelly");
+      if (kel) {
+        kel.textContent = `${t(locale, "paperKellySuggest")}: ${sug.qtyLots} · f*=${sug.fStar.toFixed(3)} · ${t(locale, "paperKellyFail")}: ${sug.failureModes.join("; ")}`;
+      }
     });
 
     const trade = (side: "buy" | "sell"): void => {

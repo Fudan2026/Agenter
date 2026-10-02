@@ -9,6 +9,7 @@ import {
 
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
+import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
 import { rsi } from "../lib/indicators/core";
 import { PATTERN_META } from "../lib/patterns/types";
 import { loadPaperState } from "../lib/paper/journal";
@@ -187,6 +188,8 @@ export function renderAsset(
   let showRsi = false;
   const name = locale === "zh" ? row.nameZh : row.nameEn;
   const patterns = [...row.recentPatterns].reverse();
+  const bench = resolveBenchmark(data.symbols);
+  const factors = exposuresForRow(row, bench, data.symbols);
   const patternList =
     patterns.length === 0
       ? `<p class="muted">${esc(t(locale, "noPatterns"))}</p>`
@@ -221,6 +224,15 @@ export function renderAsset(
       <div class="chart-shell rsi-shell" id="rsi-shell" ${showRsi ? "" : "hidden"}>
         <div id="rsi-chart" class="chart rsi-chart"></div>
       </div>
+      <section id="factor-box" class="factor-box">
+        <h2>${esc(t(locale, "factorBox"))}</h2>
+        <p class="muted tiny">${esc(t(locale, "hmlProxyNote"))}</p>
+        <ul>
+          <li>β ${factors.marketBeta == null ? "—" : factors.marketBeta.toFixed(2)} vs ${esc(factors.labels.market)}</li>
+          <li>Size ${factors.sizeScore == null ? "—" : factors.sizeScore.toFixed(2)}</li>
+          <li>Value ${factors.valueScore == null ? "—" : factors.valueScore.toFixed(2)} (HML-proxy)</li>
+        </ul>
+      </section>
       <section class="patterns">
         <h2>${esc(t(locale, "recentPatterns"))}</h2>
         ${patternList}

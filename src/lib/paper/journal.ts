@@ -22,6 +22,11 @@ function normalizeState(parsed: Partial<PaperState> & { version?: number }): Pap
     positions: Array.isArray(parsed.positions) ? parsed.positions : [],
     journal: Array.isArray(parsed.journal) ? parsed.journal : [],
     hardRiskGates: Boolean(parsed.hardRiskGates),
+    costModelEnabled: parsed.costModelEnabled !== false,
+    boughtLots:
+      parsed.boughtLots && typeof parsed.boughtLots === "object"
+        ? parsed.boughtLots
+        : {},
     version: 2,
   };
 }

@@ -107,12 +107,25 @@ Legacy 16 unchanged + additive: `510050.SS`, `159919.SZ`, `512690.SS`, `515790.S
 
 ## Paper desk
 
-- Start **¥100,000,000**; fee 3 bps RT; A-share/ETF lots 100
-- Fills: **signal-date picker** → next-open (fallback labeled); deep-link `?symbol=&signal=`
-- Equity: **mark-to-market** daily closes between fills; dual view Equity CNY / PnL %; drawdown sparkline; buy/sell markers
-- Soft risk strip + optional hard gates (name >20% or cash <10% block buys)
-- Checklist batch “paper these” (1% equity) from Quant; import/export journal JSON; broker checklist with **next-open** wording
+- Start **¥100,000,000**; A-share cost model **default ON** (commission 2.5 bps/side min ¥5, stamp 5 bps sell, transfer 0.1 bps, slippage 5/10 bps); lots 100; T+1; limit-band rejects
+- Workstation panels: Account · Ticket (half-Kelly) · Positions · Fills · Risk · Performance · Ops
+- Fills: signal-date → next-open; MTM equity / PnL% / drawdown
+- Soft + optional hard gates; checklist export with next-open wording
 - No xiadan / THS / broker SDKs
+
+### Tier 2 paper mechanisms (product, not blog)
+
+| Paper / idea | Product mechanism |
+|--------------|-------------------|
+| Fama–French | Style exposures β / Size ADV / HML-proxy 12−1 on asset + lab |
+| Harvey / DSR | Haircut Sharpe with N=12; gates block false greens |
+| López de Prado | Expanding purged + embargo walk-forward (≥3 OOS folds) |
+| Kelly / Thorp | Half-Kelly ticket suggestion + failure modes |
+| Microstructure costs | Shared cost model default ON; OFF cannot be “actionable” |
+
+### Four hard gates
+
+Multiple testing · lookahead · IS→OOS degradation · cost/liquidity — plus survivorship disclosure on Quant/Paper.
 
 ---
 

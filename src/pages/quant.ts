@@ -13,6 +13,7 @@ import {
   type BacktestResult,
   type StrategyId,
 } from "../lib/backtest/engine";
+import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
 import { PATTERN_META, type PatternId } from "../lib/patterns/types";
 import {
   applyBuy,
@@ -23,6 +24,7 @@ import {
 } from "../lib/paper/engine";
 import { defaultSignalDate } from "../lib/paper/equity";
 import { loadPaperState, savePaperState } from "../lib/paper/journal";
+import { evaluateBacktestGates } from "../lib/risk/gates";
 import {
   confluenceScore,
   isStaleVsReport,
@@ -146,15 +148,39 @@ function cardHtml(locale: Locale, s: SymbolRow): string {
 function metricsHtml(locale: Locale, res: BacktestResult): string {
   const m = res.metrics;
   const fmt = (n: number, d = 2) => n.toFixed(d);
-  return `<div class="tear-sheet verdict-${esc(m.verdict)}">
+  const gate = evaluateBacktestGates({
+    costModelEnabled: res.costModelEnabled,
+    fillRuleAllNextOpen: res.trades.every((t) => t.fillRule === "next_open"),
+    usedPurgedWf: res.usedPurgedWf,
+    rawSharpe: res.oosMetrics.sharpe,
+    haircutSharpe: res.haircutSharpe,
+    isReturn: res.isMetrics.totalReturnPct,
+    oosReturn: res.oosMetrics.totalReturnPct,
+    oosSharpe: res.oosMetrics.sharpe,
+    maxDdPct: res.oosMetrics.maxDrawdownPct,
+  });
+  const level = gate.okForGreen ? gate.level : gate.level === "green" ? "yellow" : gate.level;
+  const foldRows = res.folds
+    .map(
+      (f) =>
+        `<tr><td>${f.fold}</td><td>${fmt(f.metrics.totalReturnPct)}%</td><td>${fmt(f.metrics.sharpe)}</td></tr>`,
+    )
+    .join("");
+  return `<div class="tear-sheet verdict-${esc(level)}">
     <div class="stats-row paper-stats">
       <div class="stat"><span class="stat-n">${fmt(m.totalReturnPct)}%</span><span class="stat-l">Return</span></div>
       <div class="stat"><span class="stat-n">${fmt(m.maxDrawdownPct)}%</span><span class="stat-l">Max DD</span></div>
-      <div class="stat"><span class="stat-n">${fmt(m.sharpe)}</span><span class="stat-l">Sharpe</span></div>
-      <div class="stat"><span class="stat-n">${esc(m.verdict)}</span><span class="stat-l">${esc(t(locale, "verdict"))}</span></div>
+      <div class="stat"><span class="stat-n">${fmt(res.oosMetrics.sharpe)}</span><span class="stat-l">${esc(t(locale, "rawSharpe"))}</span></div>
+      <div class="stat"><span class="stat-n">${fmt(res.haircutSharpe)}</span><span class="stat-l">${esc(t(locale, "haircutSharpe"))} N=${res.nTrials}</span></div>
     </div>
-    <p class="muted tiny">WR ${(m.winRate * 100).toFixed(0)}% · PF ${fmt(m.profitFactor)} · hold ${fmt(m.avgHoldDays, 1)}d · trades ${m.trades}</p>
-    <p class="muted tiny">${esc(t(locale, "strategyIS"))}: ${fmt(res.isMetrics.totalReturnPct)}% / Sh ${fmt(res.isMetrics.sharpe)} · ${esc(t(locale, "strategyOOS"))}: ${fmt(res.oosMetrics.totalReturnPct)}% / Sh ${fmt(res.oosMetrics.sharpe)}</p>
+    <p class="muted tiny">Haircut ${fmt(res.haircutPct, 0)}% · verdict <strong>${esc(level)}</strong> · cost ${res.costModelEnabled ? "ON" : "OFF"} · purged WF ${res.usedPurgedWf ? "yes" : "no"}</p>
+    <p class="muted tiny">${esc(t(locale, "strategyIS"))}: ${fmt(res.isMetrics.totalReturnPct)}% / Sh ${fmt(res.isMetrics.sharpe)} · ${esc(t(locale, "strategyOOS"))}: ${fmt(res.oosMetrics.totalReturnPct)}% / Sh ${fmt(res.oosMetrics.sharpe)} · deg ${fmt(res.degradation.returnRatio)}</p>
+    ${
+      foldRows
+        ? `<div class="table-wrap"><table class="agent-table"><thead><tr><th>Fold</th><th>OOS ret</th><th>OOS Sh</th></tr></thead><tbody>${foldRows}</tbody></table></div>`
+        : ""
+    }
+    <ul class="tiny">${gate.messages.map((msg) => `<li>${esc(locale === "zh" ? msg.zh : msg.en)}</li>`).join("")}</ul>
   </div>`;
 }
 
@@ -220,6 +246,7 @@ export function renderQuant(
           ? `<div class="banner-stale">${esc(t(locale, "staleBanner"))}</div>`
           : ""
       }
+      <div class="banner-stale">${esc(t(locale, "survivorshipBanner"))}</div>
       ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
       <div class="stats-row">
         <div class="stat"><span class="stat-n">${data.stats.symbolsOk}</span><span class="stat-l">${esc(t(locale, "statsOk"))}</span></div>
@@ -266,6 +293,21 @@ export function renderQuant(
           <button type="button" class="btn" id="lab-send" ${lastLabResult ? "" : "disabled"}>${esc(t(locale, "strategySendPaper"))}</button>
         </div>
         <div id="lab-metrics">${lastLabResult ? metricsHtml(locale, lastLabResult) : ""}</div>
+        <div id="factor-box" class="factor-box">
+          ${(() => {
+            const row = data.symbols.find((s) => s.symbol === labSymbol);
+            if (!row) return "";
+            const bench = resolveBenchmark(data.symbols);
+            const ex = exposuresForRow(row, bench, data.symbols);
+            return `<h3>${esc(t(locale, "factorBox"))}</h3>
+              <p class="muted tiny">${esc(t(locale, "hmlProxyNote"))}</p>
+              <ul class="tiny">
+                <li>β ${ex.marketBeta == null ? "—" : ex.marketBeta.toFixed(2)} vs ${esc(ex.labels.market)}</li>
+                <li>Size ${ex.sizeScore == null ? "—" : ex.sizeScore.toFixed(2)} (${esc(ex.labels.size)})</li>
+                <li>Value ${ex.valueScore == null ? "—" : ex.valueScore.toFixed(2)} (${esc(ex.labels.value)})</li>
+              </ul>`;
+          })()}
+        </div>
         <div class="chart-shell equity-shell"><div id="lab-chart" class="chart equity-chart"></div></div>
       </section>
 
@@ -465,6 +507,27 @@ export function renderQuant(
 
     root.querySelector("#lab-send")?.addEventListener("click", () => {
       if (!lastLabResult?.trades.length) return;
+      const gate = evaluateBacktestGates({
+        costModelEnabled: lastLabResult.costModelEnabled,
+        fillRuleAllNextOpen: lastLabResult.trades.every(
+          (t) => t.fillRule === "next_open",
+        ),
+        usedPurgedWf: lastLabResult.usedPurgedWf,
+        rawSharpe: lastLabResult.oosMetrics.sharpe,
+        haircutSharpe: lastLabResult.haircutSharpe,
+        isReturn: lastLabResult.isMetrics.totalReturnPct,
+        oosReturn: lastLabResult.oosMetrics.totalReturnPct,
+        oosSharpe: lastLabResult.oosMetrics.sharpe,
+        maxDdPct: lastLabResult.oosMetrics.maxDrawdownPct,
+      });
+      if (!gate.okForActionable) {
+        paint(
+          locale === "zh"
+            ? "门禁拦截：结果不可作实操建议"
+            : "Gate blocked: not actionable",
+        );
+        return;
+      }
       let state = loadPaperState();
       const chrono = [...lastLabResult.trades].sort((a, b) =>
         a.fillDate.localeCompare(b.fillDate),

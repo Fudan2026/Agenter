@@ -5,6 +5,12 @@
 
 import type { SymbolRow } from "../../pages/types";
 import {
+  computeTradeCosts,
+  DEFAULT_COST_CONFIG,
+  isLimitLocked,
+  type CostConfig,
+} from "./costs";
+import {
   ASHARE_LOT,
   PAPER_FEE_BPS_RT,
   PAPER_START_CASH,
@@ -91,7 +97,28 @@ export function defaultPaperState(): PaperState {
     feeBpsRoundTrip: PAPER_FEE_BPS_RT,
     positions: [],
     journal: [],
+    costModelEnabled: true,
+    costConfig: { ...DEFAULT_COST_CONFIG },
+    boughtLots: {},
   };
+}
+
+function resolveCostCfg(state: PaperState): CostConfig {
+  const base = state.costConfig ?? DEFAULT_COST_CONFIG;
+  return {
+    ...base,
+    enabled: state.costModelEnabled !== false,
+  };
+}
+
+function sellableQty(state: PaperState, symbol: string, fillDate: string): number {
+  const pos = state.positions.find((p) => p.symbol === symbol);
+  if (!pos) return 0;
+  const lots = state.boughtLots?.[symbol] ?? [];
+  const locked = lots
+    .filter((l) => l.fillDate === fillDate)
+    .reduce((s, l) => s + l.qty, 0);
+  return Math.max(0, pos.qty - locked);
 }
 
 /** Soft risk snapshot (quant-risk-gates spirit — warnings only). */
@@ -151,10 +178,38 @@ export function applyBuy(
     note?: string;
     source?: PaperJournalEntry["source"];
     lastCloseBySymbol?: Record<string, number>;
+    prevClose?: number;
   },
 ): { ok: true; state: PaperState } | { ok: false; error: string } {
+  if (
+    opts.prevClose != null &&
+    isLimitLocked({
+      symbol: opts.symbol,
+      side: "buy",
+      prevClose: opts.prevClose,
+      fillPrice: opts.fill.fillPrice,
+    })
+  ) {
+    return { ok: false, error: "limit_up" };
+  }
+
   const notional = opts.qty * opts.fill.fillPrice;
-  const fee = feeForSide(notional, state.feeBpsRoundTrip);
+  const cfg = resolveCostCfg(state);
+  const breakdown = cfg.enabled
+    ? computeTradeCosts({
+        side: "buy",
+        notional,
+        symbol: opts.symbol,
+        cfg,
+      })
+    : {
+        commission: feeForSide(notional, state.feeBpsRoundTrip),
+        stampDuty: 0,
+        transferFee: 0,
+        slippage: 0,
+        total: feeForSide(notional, state.feeBpsRoundTrip),
+      };
+  const fee = breakdown.total;
   const cost = notional + fee;
   if (cost > state.cash + 1e-9) return { ok: false, error: "insufficient_cash" };
 
@@ -164,10 +219,7 @@ export function applyBuy(
     const idx = projectedPositions.findIndex((p) => p.symbol === opts.symbol);
     if (idx >= 0) {
       const prev = projectedPositions[idx];
-      projectedPositions[idx] = {
-        ...prev,
-        qty: prev.qty + opts.qty,
-      };
+      projectedPositions[idx] = { ...prev, qty: prev.qty + opts.qty };
     } else {
       projectedPositions.push({
         symbol: opts.symbol,
@@ -201,6 +253,11 @@ export function applyBuy(
     });
   }
 
+  const boughtLots = { ...(state.boughtLots ?? {}) };
+  const lots = [...(boughtLots[opts.symbol] ?? [])];
+  lots.push({ qty: opts.qty, fillDate: opts.fill.fillDate });
+  boughtLots[opts.symbol] = lots;
+
   const entry: PaperJournalEntry = {
     id: `j-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     ts: new Date().toISOString(),
@@ -209,6 +266,10 @@ export function applyBuy(
     qty: opts.qty,
     fillPrice: opts.fill.fillPrice,
     fee,
+    feeCommission: breakdown.commission,
+    feeStampDuty: breakdown.stampDuty,
+    feeTransfer: breakdown.transferFee,
+    feeSlippage: breakdown.slippage,
     signalDate: opts.fill.signalDate,
     fillDate: opts.fill.fillDate,
     fillRule: opts.fill.fillRule,
@@ -223,6 +284,7 @@ export function applyBuy(
       version: 2,
       cash: state.cash - cost,
       positions,
+      boughtLots,
       journal: [entry, ...state.journal],
     },
   };
@@ -236,6 +298,7 @@ export function applySell(
     fill: FillQuote;
     note?: string;
     source?: PaperJournalEntry["source"];
+    prevClose?: number;
   },
 ): { ok: true; state: PaperState } | { ok: false; error: string } {
   const idx = state.positions.findIndex((p) => p.symbol === opts.symbol);
@@ -243,14 +306,69 @@ export function applySell(
   const pos = state.positions[idx];
   if (opts.qty > pos.qty) return { ok: false, error: "insufficient_qty" };
 
+  const sellable = sellableQty(state, opts.symbol, opts.fill.fillDate);
+  if (opts.qty > sellable) return { ok: false, error: "t1_lock" };
+
+  if (
+    opts.prevClose != null &&
+    isLimitLocked({
+      symbol: opts.symbol,
+      side: "sell",
+      prevClose: opts.prevClose,
+      fillPrice: opts.fill.fillPrice,
+    })
+  ) {
+    return { ok: false, error: "limit_down" };
+  }
+
   const notional = opts.qty * opts.fill.fillPrice;
-  const fee = feeForSide(notional, state.feeBpsRoundTrip);
+  const cfg = resolveCostCfg(state);
+  const breakdown = cfg.enabled
+    ? computeTradeCosts({
+        side: "sell",
+        notional,
+        symbol: opts.symbol,
+        cfg,
+      })
+    : {
+        commission: feeForSide(notional, state.feeBpsRoundTrip),
+        stampDuty: 0,
+        transferFee: 0,
+        slippage: 0,
+        total: feeForSide(notional, state.feeBpsRoundTrip),
+      };
+  const fee = breakdown.total;
   const proceeds = notional - fee;
 
   const positions = [...state.positions];
   const remaining = pos.qty - opts.qty;
   if (remaining === 0) positions.splice(idx, 1);
   else positions[idx] = { ...pos, qty: remaining };
+
+  // Consume lots FIFO preferring unlocked (older) lots
+  const boughtLots = { ...(state.boughtLots ?? {}) };
+  let left = opts.qty;
+  const lots = [...(boughtLots[opts.symbol] ?? [])];
+  const nextLots = [];
+  for (const lot of lots) {
+    if (left <= 0) {
+      nextLots.push(lot);
+      continue;
+    }
+    if (lot.fillDate === opts.fill.fillDate) {
+      nextLots.push(lot);
+      continue;
+    }
+    const take = Math.min(lot.qty, left);
+    left -= take;
+    if (lot.qty > take) nextLots.push({ ...lot, qty: lot.qty - take });
+  }
+  if (left > 0) {
+    // should not happen if sellable checked
+    return { ok: false, error: "t1_lock" };
+  }
+  if (nextLots.length) boughtLots[opts.symbol] = nextLots;
+  else delete boughtLots[opts.symbol];
 
   const entry: PaperJournalEntry = {
     id: `j-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -260,6 +378,10 @@ export function applySell(
     qty: opts.qty,
     fillPrice: opts.fill.fillPrice,
     fee,
+    feeCommission: breakdown.commission,
+    feeStampDuty: breakdown.stampDuty,
+    feeTransfer: breakdown.transferFee,
+    feeSlippage: breakdown.slippage,
     signalDate: opts.fill.signalDate,
     fillDate: opts.fill.fillDate,
     fillRule: opts.fill.fillRule,
@@ -274,6 +396,7 @@ export function applySell(
       version: 2,
       cash: state.cash + proceeds,
       positions,
+      boughtLots,
       journal: [entry, ...state.journal],
     },
   };
