@@ -30,6 +30,8 @@ import {
   isStaleVsReport,
   patternHeatmap,
 } from "../lib/signals/board";
+import type { IndicesPayload } from "../lib/indices/map";
+import type { ScreensPayload } from "../lib/screens/map";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 import type { LatestPayload, SymbolRow } from "./types";
@@ -93,6 +95,97 @@ function biasLabel(locale: Locale, bias: "bull" | "bear" | "neutral"): string {
   if (bias === "bull") return t(locale, "biasBull");
   if (bias === "bear") return t(locale, "biasBear");
   return t(locale, "biasNeutral");
+}
+
+function fmtPct(n: number | null): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${n.toFixed(2)}%`;
+}
+
+function fmtLast(n: number | null): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function renderIndicesStrip(
+  locale: Locale,
+  indices: IndicesPayload | null,
+): string {
+  const items = indices?.items ?? [];
+  if (!items.length) {
+    return `<section class="indices-strip">
+      <h2 class="indices-h">${esc(t(locale, "indicesTitle"))}</h2>
+      <p class="muted tiny">${esc(t(locale, "indicesEmpty"))} · ${esc(t(locale, "iwencaiSource"))}</p>
+    </section>`;
+  }
+  return `<section class="indices-strip">
+    <div class="indices-head">
+      <h2 class="indices-h">${esc(t(locale, "indicesTitle"))}</h2>
+      <p class="muted tiny">${esc(indices?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "iwencaiSource"))}</p>
+    </div>
+    <div class="indices-row">
+      ${items
+        .map((ix) => {
+          const name = locale === "zh" ? ix.nameZh : ix.nameEn;
+          const up = (ix.changePct ?? 0) > 0;
+          const down = (ix.changePct ?? 0) < 0;
+          const cls = up ? "up" : down ? "down" : "flat";
+          return `<div class="index-chip ${cls}">
+            <span class="index-name">${esc(name)}</span>
+            <span class="index-last">${esc(fmtLast(ix.last))}</span>
+            <span class="index-chg">${esc(fmtPct(ix.changePct))}</span>
+          </div>`;
+        })
+        .join("")}
+    </div>
+  </section>`;
+}
+
+function renderScreensPanel(
+  locale: Locale,
+  screens: ScreensPayload | null,
+): string {
+  const panels = screens?.screens ?? [];
+  return `<section class="screens-panel">
+    <h2>${esc(t(locale, "screensTitle"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "screensLead"))}</p>
+    <p class="muted tiny">${esc(screens?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "iwencaiSource"))}</p>
+    ${
+      !panels.length
+        ? `<p class="muted">${esc(t(locale, "screensEmpty"))}</p>`
+        : `<div class="screens-grid">
+      ${panels
+        .map((p) => {
+          const name = locale === "zh" ? p.nameZh : p.nameEn;
+          const tickers = p.tickers
+            .slice(0, 8)
+            .map((tk) => {
+              const up = (tk.changePct ?? 0) > 0;
+              const down = (tk.changePct ?? 0) < 0;
+              const cls = up ? "up" : down ? "down" : "flat";
+              return `<li class="${cls}">
+                <strong>${esc(tk.nameZh)}</strong>
+                <span class="muted tiny">${esc(tk.code)}</span>
+                <span>${esc(fmtLast(tk.last))}</span>
+                <span class="chg">${esc(fmtPct(tk.changePct))}</span>
+              </li>`;
+            })
+            .join("");
+          return `<article class="screen-card">
+            <h3>${esc(name)}</h3>
+            <p class="muted tiny">${esc(t(locale, "screensMatches"))}: ${p.codeCount}</p>
+            ${
+              p.tickers.length
+                ? `<ul class="screen-tickers">${tickers}</ul>`
+                : `<p class="muted tiny">${esc(t(locale, "screensEmpty"))}</p>`
+            }
+          </article>`;
+        })
+        .join("")}
+    </div>`
+    }
+  </section>`;
 }
 
 function signalDateForRow(row: SymbolRow): string {
@@ -189,6 +282,8 @@ export function renderQuant(
   root: HTMLElement,
   data: LatestPayload,
   locale: Locale,
+  indices: IndicesPayload | null = null,
+  screens: ScreensPayload | null = null,
 ): void {
   destroyLabChart();
   const bullets = locale === "zh" ? data.dailyReview.zh : data.dailyReview.en;
@@ -241,6 +336,7 @@ export function renderQuant(
     const body = `
       <h1>${esc(t(locale, "quantTitle"))}</h1>
       <p class="lead">${esc(t(locale, "quantSubtitle"))}</p>
+      ${renderIndicesStrip(locale, indices)}
       ${
         stale
           ? `<div class="banner-stale">${esc(t(locale, "staleBanner"))}</div>`
@@ -254,6 +350,7 @@ export function renderQuant(
         <div class="stat"><span class="stat-n">${data.stats.symbolsMissing}</span><span class="stat-l">${esc(t(locale, "statsMissing"))}</span></div>
         <div class="stat"><span class="stat-n">${data.stats.patternHits}</span><span class="stat-l">${esc(t(locale, "statsPatterns"))}</span></div>
       </div>
+      ${renderScreensPanel(locale, screens)}
       <section class="review">
         <h2>${esc(t(locale, "dailyReview"))}</h2>
         <p class="muted tiny">${esc(data.reportDate)} · ${esc(data.generatedAt.slice(0, 19))}Z</p>

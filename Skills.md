@@ -10,7 +10,7 @@ Workspace skill catalog for **all coding agents** (Cursor Cloud Agent, Claude Co
 4. Interpret API JSON in the agent layer; bundled scripts must pass through raw gateway bodies unchanged.
 5. For answers sourced from Iwencai skills, state: **数据来源：同花顺问财**.
 
-The Agenter **website** never calls Iwencai or THS trade APIs from the browser. Announcements come from bake-time `npm run announcements:bake` → `public/data/announcements.json`. Sim Desk `#/sim` is a local distill. Agents use SkillHub CLIs interactively.
+The Agenter **website** never calls Iwencai or THS trade APIs from the browser. Bake-time JSON only: `announcements.json`, `iwencai-news.json`, `indices.json`, `screens.json`. Sim Desk `#/sim` is a local distill. Agents use SkillHub CLIs interactively.
 
 ## Environment
 
@@ -45,6 +45,9 @@ After installing a new SkillHub skill, add or update its section in **this file*
 | Slug | Trigger (when to load) | Package path |
 |------|------------------------|--------------|
 | `announcement-search` | A股/港股/基金/ETF 公告；分红、回购、业绩预告、重组等 | `skills/announcement-search/` |
+| `news-search` | 财经资讯 / 政策动态 / 行业与上市公司新闻检索 | `skills/news-search/` |
+| `hithink-zhishu-query` | 上证指数、沪深300、创业板指等指数点位/涨跌幅/成交量 | `skills/hithink-zhishu-query/` |
+| `hithink-astock-selector` | A股自然语言选股（行情、财务、形态、概念组合） | `skills/hithink-astock-selector/` |
 | `模拟炒股` | A股模拟开户、买入/卖出、持仓/资金/成交/近30日收益 | `skills/模拟炒股/` |
 
 ---
@@ -105,6 +108,124 @@ The script must not reshape API fields; summarization happens in the agent after
 
 ---
 
+## news-search
+
+**Description:** 财经资讯搜索（官媒、主流财经媒体、垂直站、公司官网等）。Attribution: **数据来源：同花顺问财**.
+
+**Version:** `1.0.0` (SkillHub)
+
+**Paths (agenter repo root):**
+
+| Artifact | Path |
+|----------|------|
+| Full skill doc | `skills/news-search/SKILL.md` |
+| API reference | `skills/news-search/references/api.md` |
+| CLI script | `skills/news-search/scripts/news_search.py` |
+
+**Absolute CLI (Cloud Agent):**
+
+```bash
+python3 /agent/repos/agenter/skills/news-search/scripts/news_search.py "<查询语句>" --size 10
+```
+
+### Workflow
+
+1. Verify `IWENCAI_API_KEY`.
+2. Rewrite the user ask into concise Chinese news queries (one topic each).
+3. Run the script once per query; stdout is the raw gateway JSON (`channels: ["news"]`).
+4. Answer from parsed rows; end with **数据来源：同花顺问财**.
+
+### Website distill
+
+`npm run iwencai-news:bake` → `public/data/iwencai-news.json` → third section on `#/news` (+ Tools stub). Browser never holds the key.
+
+### Examples
+
+```bash
+python3 /agent/repos/agenter/skills/news-search/scripts/news_search.py "人工智能 最新消息" --size 5
+python3 /agent/repos/agenter/skills/news-search/scripts/news_search.py "A股政策 最新消息" --size 5
+```
+
+---
+
+## hithink-zhishu-query
+
+**Description:** 指数行情查询（上证、沪深300、创业板指、海外主要指数等）。Attribution: **数据来源：同花顺问财**.
+
+**Version:** `1.0.0` (SkillHub)
+
+**Paths (agenter repo root):**
+
+| Artifact | Path |
+|----------|------|
+| Full skill doc | `skills/hithink-zhishu-query/SKILL.md` |
+| CLI script | `skills/hithink-zhishu-query/scripts/cli.py` |
+
+**Absolute CLI (Cloud Agent):**
+
+```bash
+python3 /agent/repos/agenter/skills/hithink-zhishu-query/scripts/cli.py --query "上证指数最新点位"
+```
+
+### Workflow
+
+1. Verify `IWENCAI_API_KEY`.
+2. Rewrite to a standard index query (点位 / 涨跌幅 / 成交量).
+3. Call `scripts/cli.py` (`POST /v1/query2data`); inspect `datas`.
+4. Answer with **数据来源：同花顺问财**.
+
+### Website distill
+
+`npm run indices:bake` → `public/data/indices.json` → **指数快照** strip atop `#/quant` (SSE / CSI 300 / ChiNext).
+
+### Examples
+
+```bash
+python3 /agent/repos/agenter/skills/hithink-zhishu-query/scripts/cli.py --query "沪深300最新点位"
+python3 /agent/repos/agenter/skills/hithink-zhishu-query/scripts/cli.py --query "创业板指涨跌幅"
+```
+
+---
+
+## hithink-astock-selector
+
+**Description:** 自然语言 A 股筛选（行情、技术形态、财务、行业概念）。Attribution: **数据来源：同花顺问财**.
+
+**Version:** `1.0.0` (SkillHub)
+
+**Paths (agenter repo root):**
+
+| Artifact | Path |
+|----------|------|
+| Full skill doc | `skills/hithink-astock-selector/SKILL.md` |
+| CLI script | `skills/hithink-astock-selector/scripts/cli.py` |
+
+**Absolute CLI (Cloud Agent):**
+
+```bash
+python3 /agent/repos/agenter/skills/hithink-astock-selector/scripts/cli.py --query "近5日放量上涨" --limit 10
+```
+
+### Workflow
+
+1. Verify `IWENCAI_API_KEY`.
+2. Rewrite user NL into a standard screen query; split multi-intent asks.
+3. Call `scripts/cli.py` (`POST /v1/query2data`); respect `code_count` + pagination.
+4. Answer with **数据来源：同花顺问财**.
+
+### Website distill
+
+`npm run screens:bake` → `public/data/screens.json` → **问财精选屏** on `#/quant` (exactly three fixed editorial screens). Agents keep full NL CLI; browser is not interactive NL.
+
+### Examples
+
+```bash
+python3 /agent/repos/agenter/skills/hithink-astock-selector/scripts/cli.py --query "低估值白酒"
+python3 /agent/repos/agenter/skills/hithink-astock-selector/scripts/cli.py --query "半导体ETF成分强势" --limit 8
+```
+
+---
+
 ## 模拟炒股
 
 **Description:** 同花顺模拟炒股服务 — A股开户、委托买卖、持仓/资金/成交/盈利查询。Attribution: **同花顺问财提供模拟炒股服务**.
@@ -155,4 +276,4 @@ The SPA route `#/sim` (Tools → 模拟炒股台) mirrors open-account / order /
 
 ## Cursor discovery
 
-Project-local Cursor skills live under `.cursor/skills/<slug>/SKILL.md`. For `announcement-search` and `模拟炒股`, this repo symlinks those directories to `skills/<slug>/` so Cursor indexes the same content as SkillHub.
+Project-local Cursor skills live under `.cursor/skills/<slug>/SKILL.md`. For `announcement-search`, `news-search`, `hithink-zhishu-query`, `hithink-astock-selector`, and `模拟炒股`, this repo symlinks those directories to `skills/<slug>/` so Cursor indexes the same content as SkillHub.

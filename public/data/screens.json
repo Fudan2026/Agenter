@@ -1,0 +1,136 @@
+{
+  "generatedAt": "2026-10-02T12:27:12.693Z",
+  "source": "同花顺问财",
+  "skill": "hithink-astock-selector",
+  "screens": [
+    {
+      "id": "volume-up-5d",
+      "nameZh": "近5日放量上涨",
+      "nameEn": "5-day volume-up rallies",
+      "query": "近5日放量上涨",
+      "codeCount": 3546,
+      "tickers": [
+        {
+          "code": "600098.SH",
+          "nameZh": "广州发展",
+          "last": 6.32,
+          "changePct": 1.9354840000000002
+        },
+        {
+          "code": "600118.SH",
+          "nameZh": "中国卫星",
+          "last": 55.03,
+          "changePct": -0.434232
+        },
+        {
+          "code": "600156.SH",
+          "nameZh": "华升股份",
+          "last": 7.35,
+          "changePct": -10.03672
+        },
+        {
+          "code": "600560.SH",
+          "nameZh": "金自天正",
+          "last": 11.46,
+          "changePct": -0.7792209999999999
+        },
+        {
+          "code": "600699.SH",
+          "nameZh": "均胜电子",
+          "last": 23.46,
+          "changePct": 3.120879
+        },
+        {
+          "code": "600731.SH",
+          "nameZh": "湖南海利",
+          "last": 5.95,
+          "changePct": 2.058319
+        },
+        {
+          "code": "600941.SH",
+          "nameZh": "中国移动",
+          "last": 95.8,
+          "changePct": 1.001581
+        },
+        {
+          "code": "600997.SH",
+          "nameZh": "开滦股份",
+          "last": 5.22,
+          "changePct": 0.7722009999999999
+        }
+      ]
+    },
+    {
+      "id": "baijiu-value",
+      "nameZh": "低估值白酒",
+      "nameEn": "Undervalued baijiu names",
+      "query": "低估值白酒",
+      "codeCount": 1,
+      "tickers": [
+        {
+          "code": "600300.SH",
+          "nameZh": "维维股份",
+          "last": 3.1,
+          "changePct": 1.639344
+        }
+      ]
+    },
+    {
+      "id": "semi-etf-strong",
+      "nameZh": "半导体ETF成分强势",
+      "nameEn": "Strong semiconductor / chip names",
+      "query": "半导体概念股涨幅居前",
+      "codeCount": 10,
+      "tickers": [
+        {
+          "code": "688099.SH",
+          "nameZh": "晶晨股份",
+          "last": 96.8,
+          "changePct": 7.174491
+        },
+        {
+          "code": "688213.SH",
+          "nameZh": "思特威",
+          "last": 97.88,
+          "changePct": 4.116583
+        },
+        {
+          "code": "301297.SZ",
+          "nameZh": "富乐德",
+          "last": 47.7,
+          "changePct": 3.4034250000000004
+        },
+        {
+          "code": "688593.SH",
+          "nameZh": "新相微",
+          "last": 30.89,
+          "changePct": 3.207484
+        },
+        {
+          "code": "603501.SH",
+          "nameZh": "豪威集团",
+          "last": 82.21,
+          "changePct": 2.30214
+        },
+        {
+          "code": "920526.BJ",
+          "nameZh": "凯华材料",
+          "last": 21.75,
+          "changePct": 2.2567
+        },
+        {
+          "code": "003043.SZ",
+          "nameZh": "华亚智能",
+          "last": 60.4,
+          "changePct": 1.649276
+        },
+        {
+          "code": "603893.SH",
+          "nameZh": "瑞芯微",
+          "last": 215.57,
+          "changePct": 1.23509
+        }
+      ]
+    }
+  ]
+}

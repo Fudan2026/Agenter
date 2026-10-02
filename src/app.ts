@@ -1,6 +1,9 @@
 import { detectLocale, setLocale, type Locale } from "./i18n/strings";
 import { t } from "./i18n/strings";
 import type { AnnouncementsPayload } from "./lib/announcements/map";
+import type { IndicesPayload } from "./lib/indices/map";
+import type { IwencaiNewsPayload } from "./lib/iwencai-news/map";
+import type { ScreensPayload } from "./lib/screens/map";
 import { cleanupAssetPage, renderAsset } from "./pages/asset";
 import { renderBrandHome } from "./pages/brand-home";
 import { loadAgents, renderCompare } from "./pages/compare";
@@ -15,6 +18,9 @@ let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
 let newsData: NewsPayload | null = null;
 let announcementsData: AnnouncementsPayload | null = null;
+let iwencaiNewsData: IwencaiNewsPayload | null = null;
+let indicesData: IndicesPayload | null = null;
+let screensData: ScreensPayload | null = null;
 let locale: Locale = detectLocale();
 
 type Route =
@@ -64,6 +70,43 @@ async function loadAnnouncements(): Promise<void> {
     announcementsData = (await res.json()) as AnnouncementsPayload;
   } catch {
     announcementsData = null;
+  }
+}
+
+async function loadIwencaiNews(): Promise<void> {
+  try {
+    const res = await fetch(
+      `${import.meta.env.BASE_URL}data/iwencai-news.json`,
+      { cache: "no-cache" },
+    );
+    if (!res.ok) return;
+    iwencaiNewsData = (await res.json()) as IwencaiNewsPayload;
+  } catch {
+    iwencaiNewsData = null;
+  }
+}
+
+async function loadIndices(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/indices.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    indicesData = (await res.json()) as IndicesPayload;
+  } catch {
+    indicesData = null;
+  }
+}
+
+async function loadScreens(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/screens.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    screensData = (await res.json()) as ScreensPayload;
+  } catch {
+    screensData = null;
   }
 }
 
@@ -123,16 +166,16 @@ async function render(): Promise<void> {
         renderLearn(root, locale);
         break;
       case "tools":
-        renderTools(root, locale, newsData, announcementsData);
+        renderTools(root, locale, newsData, announcementsData, iwencaiNewsData);
         break;
       case "news":
-        renderNews(root, locale, newsData, announcementsData);
+        renderNews(root, locale, newsData, announcementsData, iwencaiNewsData);
         break;
       case "quant":
         if (quantError || !quantData) {
           root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
         } else {
-          renderQuant(root, quantData, locale);
+          renderQuant(root, quantData, locale, indicesData, screensData);
         }
         break;
       case "paper":
@@ -167,7 +210,14 @@ async function render(): Promise<void> {
 
 export async function startApp(): Promise<void> {
   locale = detectLocale();
-  await Promise.all([loadQuantData(), loadNews(), loadAnnouncements()]);
+  await Promise.all([
+    loadQuantData(),
+    loadNews(),
+    loadAnnouncements(),
+    loadIwencaiNews(),
+    loadIndices(),
+    loadScreens(),
+  ]);
   await render();
   window.addEventListener("hashchange", () => {
     void render();
