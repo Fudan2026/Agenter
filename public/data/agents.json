@@ -1,0 +1,386 @@
+{
+  "generatedAt": "2026-10-02T00:00:00.000Z",
+  "sourceNote": "Curated public-knowledge draft for Agenter Compare MVP. Scores are editorial heuristics (1–5), not benchmarks. Sources listed in README §Agent catalog sources.",
+  "agents": [
+    {
+      "id": "claude-code",
+      "nameZh": "Claude Code",
+      "nameEn": "Claude Code",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "subscription",
+      "contextWindow": "200k+",
+      "toolsMcp": "CLI tools, MCP, repo agents",
+      "privacy": "Cloud (Anthropic)",
+      "links": {
+        "homepage": "https://claude.ai/code",
+        "docs": "https://docs.anthropic.com/en/docs/claude-code"
+      },
+      "scores": {
+        "codingAbility": 5,
+        "toolUse": 5,
+        "contextMemory": 5,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 2,
+        "learningCurve": 3
+      },
+      "notesZh": "终端向编码 Agent，强工具链。",
+      "notesEn": "Terminal coding agent with strong tool use."
+    },
+    {
+      "id": "cursor",
+      "nameZh": "Cursor",
+      "nameEn": "Cursor",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "IDE agent, MCP, Composer",
+      "privacy": "Cloud + optional privacy mode",
+      "links": {
+        "homepage": "https://cursor.com",
+        "docs": "https://docs.cursor.com"
+      },
+      "scores": {
+        "codingAbility": 5,
+        "toolUse": 5,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 3,
+        "learningCurve": 4
+      },
+      "notesZh": "IDE 内多模型 Agent 工作流。",
+      "notesEn": "IDE-native multi-model agent workflow."
+    },
+    {
+      "id": "github-copilot",
+      "nameZh": "GitHub Copilot",
+      "nameEn": "GitHub Copilot",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "subscription",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "IDE + Copilot Chat / Workspace",
+      "privacy": "Cloud (GitHub/Microsoft)",
+      "links": {
+        "homepage": "https://github.com/features/copilot",
+        "docs": "https://docs.github.com/en/copilot"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 4,
+        "cnAccessibility": 2,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "windsurf",
+      "nameZh": "Windsurf",
+      "nameEn": "Windsurf",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Cascade agent IDE",
+      "privacy": "Cloud",
+      "links": {
+        "homepage": "https://windsurf.com"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 4,
+        "cnAccessibility": 3,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "aider",
+      "nameZh": "Aider",
+      "nameEn": "Aider",
+      "region": "Global",
+      "category": "coding",
+      "pricingBand": "BYOK / open",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Git-aware CLI pair programming",
+      "privacy": "Local CLI + your model keys",
+      "links": {
+        "homepage": "https://aider.chat",
+        "docs": "https://aider.chat/docs"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 5,
+        "costEfficiency": 5,
+        "cnAccessibility": 4,
+        "learningCurve": 3
+      }
+    },
+    {
+      "id": "continue-dev",
+      "nameZh": "Continue",
+      "nameEn": "Continue",
+      "region": "Global",
+      "category": "coding",
+      "pricingBand": "open / BYOK",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "VS Code / JetBrains extension",
+      "privacy": "BYOK / local models",
+      "links": {
+        "homepage": "https://continue.dev"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 5,
+        "costEfficiency": 5,
+        "cnAccessibility": 4,
+        "learningCurve": 3
+      }
+    },
+    {
+      "id": "tongyi-lingma",
+      "nameZh": "通义灵码",
+      "nameEn": "Tongyi Lingma",
+      "region": "CN",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "IDE 插件 / 企业版",
+      "privacy": "阿里云",
+      "links": {
+        "homepage": "https://lingma.aliyun.com"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 4,
+        "cnAccessibility": 5,
+        "learningCurve": 4
+      },
+      "notesZh": "国内可达的 IDE 编码助手。",
+      "notesEn": "CN-accessible IDE coding assistant."
+    },
+    {
+      "id": "trae",
+      "nameZh": "Trae",
+      "nameEn": "Trae",
+      "region": "CN",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "AI IDE / agent",
+      "privacy": "Cloud (ByteDance)",
+      "links": {
+        "homepage": "https://www.trae.ai"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 4,
+        "cnAccessibility": 5,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "chatgpt",
+      "nameZh": "ChatGPT",
+      "nameEn": "ChatGPT",
+      "region": "US",
+      "category": "chat",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "GPTs, browsing, code interpreter",
+      "privacy": "Cloud (OpenAI)",
+      "links": {
+        "homepage": "https://chatgpt.com"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 4,
+        "privacyControl": 2,
+        "costEfficiency": 4,
+        "cnAccessibility": 1,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "claude-chat",
+      "nameZh": "Claude",
+      "nameEn": "Claude",
+      "region": "US",
+      "category": "chat",
+      "pricingBand": "freemium",
+      "contextWindow": "200k+",
+      "toolsMcp": "Artifacts, Projects, computer use (tiers)",
+      "privacy": "Cloud (Anthropic)",
+      "links": {
+        "homepage": "https://claude.ai"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 5,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 2,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "kimi",
+      "nameZh": "Kimi",
+      "nameEn": "Kimi",
+      "region": "CN",
+      "category": "chat",
+      "pricingBand": "freemium",
+      "contextWindow": "long-context",
+      "toolsMcp": "长文 / 联网 / 文件",
+      "privacy": "Cloud (Moonshot)",
+      "links": {
+        "homepage": "https://kimi.moonshot.cn"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 3,
+        "contextMemory": 5,
+        "privacyControl": 3,
+        "costEfficiency": 4,
+        "cnAccessibility": 5,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "doubao",
+      "nameZh": "豆包",
+      "nameEn": "Doubao",
+      "region": "CN",
+      "category": "chat",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "对话 / 应用生态",
+      "privacy": "Cloud (ByteDance)",
+      "links": {
+        "homepage": "https://www.doubao.com"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 2,
+        "costEfficiency": 5,
+        "cnAccessibility": 5,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "deepseek-chat",
+      "nameZh": "DeepSeek",
+      "nameEn": "DeepSeek",
+      "region": "CN",
+      "category": "chat",
+      "pricingBand": "freemium / API",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Chat + API coding models",
+      "privacy": "Cloud (DeepSeek)",
+      "links": {
+        "homepage": "https://www.deepseek.com"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 3,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 5,
+        "cnAccessibility": 5,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "perplexity",
+      "nameZh": "Perplexity",
+      "nameEn": "Perplexity",
+      "region": "US",
+      "category": "research",
+      "pricingBand": "freemium",
+      "contextWindow": "search-grounded",
+      "toolsMcp": "Search / citations / Pro models",
+      "privacy": "Cloud",
+      "links": {
+        "homepage": "https://www.perplexity.ai"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 2,
+        "costEfficiency": 4,
+        "cnAccessibility": 2,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "openclaw",
+      "nameZh": "OpenClaw",
+      "nameEn": "OpenClaw",
+      "region": "Global",
+      "category": "tooling",
+      "pricingBand": "open / self-host",
+      "contextWindow": "n/a",
+      "toolsMcp": "Agent tooling / automation",
+      "privacy": "Self-host options",
+      "links": {
+        "homepage": "https://github.com/openclaw"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 2,
+        "privacyControl": 5,
+        "costEfficiency": 5,
+        "cnAccessibility": 4,
+        "learningCurve": 2
+      },
+      "notesZh": "开源工具向；以公开仓库信息为编辑打分。",
+      "notesEn": "Open tooling; editorial scores from public info."
+    },
+    {
+      "id": "gemini",
+      "nameZh": "Gemini",
+      "nameEn": "Gemini",
+      "region": "US",
+      "category": "chat",
+      "pricingBand": "freemium",
+      "contextWindow": "long / multimodal",
+      "toolsMcp": "Apps, Deep Research (tiers)",
+      "privacy": "Cloud (Google)",
+      "links": {
+        "homepage": "https://gemini.google.com"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 4,
+        "privacyControl": 2,
+        "costEfficiency": 4,
+        "cnAccessibility": 1,
+        "learningCurve": 5
+      }
+    }
+  ]
+}

@@ -1,15 +1,9 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import { PATTERN_META } from "../lib/patterns/types";
+import { esc } from "../lib/util/esc";
+import { renderShell } from "./shell";
 import type { LatestPayload, SymbolRow } from "./types";
-
-function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 function sparklineSvg(closes: number[]): string {
   if (!closes || closes.length < 2) return "";
@@ -46,7 +40,8 @@ function patternChip(
   locale: Locale,
   p: SymbolRow["recentPatterns"][number],
 ): string {
-  const label = locale === "zh" ? PATTERN_META[p.patternId].zh : PATTERN_META[p.patternId].en;
+  const label =
+    locale === "zh" ? PATTERN_META[p.patternId].zh : PATTERN_META[p.patternId].en;
   return `<span class="chip chip-${esc(p.direction)}">${esc(label)}</span>`;
 }
 
@@ -82,46 +77,43 @@ function cardHtml(locale: Locale, s: SymbolRow): string {
   </a>`;
 }
 
-export function renderHome(root: HTMLElement, data: LatestPayload, locale: Locale): void {
-  const title = locale === "zh" ? data.title.zh : data.title.en;
+/** Quant tool home — former site facade, now at /quant only. */
+export function renderQuant(
+  root: HTMLElement,
+  data: LatestPayload,
+  locale: Locale,
+): void {
   const bullets = locale === "zh" ? data.dailyReview.zh : data.dailyReview.en;
   const groups: SymbolRow["group"][] = ["macro", "china-etf", "china-ashare"];
 
-  root.innerHTML = `
-    <header class="site-header">
-      <div class="brand-block">
-        <div class="brand">${esc(t(locale, "brand"))}</div>
-        <p class="subtitle">${esc(t(locale, "subtitle"))}</p>
-      </div>
-      <div class="locale-toggle" role="group" aria-label="locale">
-        <button type="button" data-locale="zh" class="${locale === "zh" ? "active" : ""}">${esc(t(locale, "localeZh"))}</button>
-        <button type="button" data-locale="en" class="${locale === "en" ? "active" : ""}">${esc(t(locale, "localeEn"))}</button>
-      </div>
-    </header>
-    <main class="page">
-      <h1>${esc(title)}</h1>
-      <div class="stats-row">
-        <div class="stat"><span class="stat-n">${data.stats.symbolsOk}</span><span class="stat-l">${esc(t(locale, "statsOk"))}</span></div>
-        <div class="stat"><span class="stat-n">${data.stats.symbolsStale}</span><span class="stat-l">${esc(t(locale, "statsStale"))}</span></div>
-        <div class="stat"><span class="stat-n">${data.stats.symbolsMissing}</span><span class="stat-l">${esc(t(locale, "statsMissing"))}</span></div>
-        <div class="stat"><span class="stat-n">${data.stats.patternHits}</span><span class="stat-l">${esc(t(locale, "statsPatterns"))}</span></div>
-      </div>
-      <section class="review">
-        <h2>${esc(t(locale, "dailyReview"))}</h2>
-        <p class="muted tiny">${esc(data.reportDate)} · ${esc(data.generatedAt.slice(0, 19))}Z</p>
-        <ul>${bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
-      </section>
-      ${groups
-        .map((g) => {
-          const rows = data.symbols.filter((s) => s.group === g);
-          if (!rows.length) return "";
-          return `<section class="group">
-            <h2>${esc(groupLabel(locale, g))}</h2>
-            <div class="card-list">${rows.map((s) => cardHtml(locale, s)).join("")}</div>
-          </section>`;
-        })
-        .join("")}
-    </main>
-    <footer class="site-footer"><p>${esc(t(locale, "disclaimer"))}</p></footer>
+  const body = `
+    <h1>${esc(t(locale, "quantTitle"))}</h1>
+    <p class="lead">${esc(t(locale, "quantSubtitle"))}</p>
+    <div class="stats-row">
+      <div class="stat"><span class="stat-n">${data.stats.symbolsOk}</span><span class="stat-l">${esc(t(locale, "statsOk"))}</span></div>
+      <div class="stat"><span class="stat-n">${data.stats.symbolsStale}</span><span class="stat-l">${esc(t(locale, "statsStale"))}</span></div>
+      <div class="stat"><span class="stat-n">${data.stats.symbolsMissing}</span><span class="stat-l">${esc(t(locale, "statsMissing"))}</span></div>
+      <div class="stat"><span class="stat-n">${data.stats.patternHits}</span><span class="stat-l">${esc(t(locale, "statsPatterns"))}</span></div>
+    </div>
+    <section class="review">
+      <h2>${esc(t(locale, "dailyReview"))}</h2>
+      <p class="muted tiny">${esc(data.reportDate)} · ${esc(data.generatedAt.slice(0, 19))}Z</p>
+      <ul>${bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
+    </section>
+    ${groups
+      .map((g) => {
+        const rows = data.symbols.filter((s) => s.group === g);
+        if (!rows.length) return "";
+        return `<section class="group">
+          <h2>${esc(groupLabel(locale, g))}</h2>
+          <div class="card-list">${rows.map((s) => cardHtml(locale, s)).join("")}</div>
+        </section>`;
+      })
+      .join("")}
   `;
+
+  root.innerHTML = renderShell(locale, "quant", body, {
+    subtitle: t(locale, "quantSubtitle"),
+  });
+  document.title = `${t(locale, "quantTitle")} · Agenter`;
 }

@@ -1,0 +1,33 @@
+{
+  "generatedAt": "2026-10-02T00:00:00.000Z",
+  "source": "static-fixture",
+  "items": [
+    {
+      "id": "stub-1",
+      "date": "2026-10-01",
+      "titleZh": "编码 Agent 工具链继续向 MCP / CLI 收敛",
+      "titleEn": "Coding agents keep converging on MCP / CLI toolchains",
+      "summaryZh": "静态占位：对比页可关注 toolUse 与 privacy 维度，而非单一模型名。",
+      "summaryEn": "Static stub: Compare on toolUse and privacy dimensions, not model names alone.",
+      "tags": ["coding", "tools"]
+    },
+    {
+      "id": "stub-2",
+      "date": "2026-09-28",
+      "titleZh": "国内可达性仍是选型硬约束",
+      "titleEn": "CN accessibility remains a hard filter",
+      "summaryZh": "静态占位：Harness 中 cnAccessibility 权重可反映网络与支付可达性。",
+      "summaryEn": "Static stub: Weight cnAccessibility for network and payment reachability.",
+      "tags": ["CN", "access"]
+    },
+    {
+      "id": "stub-3",
+      "date": "2026-09-20",
+      "titleZh": "纸盘与清单导出：站点不下真单",
+      "titleEn": "Paper + checklist export: sites should not place live orders",
+      "summaryZh": "静态占位：快速实盘 = 信号清单 + 纸盘，券商侧人工下单。",
+      "summaryEn": "Static stub: fast practice = signal list + paper; humans order at the broker.",
+      "tags": ["paper", "risk"]
+    }
+  ]
+}
