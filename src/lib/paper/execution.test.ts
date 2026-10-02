@@ -3,6 +3,7 @@ import { describe, it } from "node:test";
 
 import {
   buildSchedule,
+  splitQtyBySchedule,
   sqrtImpactBps,
   twapSchedule,
   vwapSchedule,
@@ -35,5 +36,26 @@ describe("paper execution desk", () => {
     const high = sqrtImpactBps(200_000, 1_000_000);
     assert.ok(high.impactBps > low.impactBps);
     assert.ok(Math.abs(low.participation - 0.01) < 1e-9);
+  });
+
+  it("splitQtyBySchedule lot-rounds and conserves parent qty", () => {
+    const sched = twapSchedule(4);
+    const children = splitQtyBySchedule(10_000, sched, 100);
+    assert.ok(children.length >= 1);
+    const sum = children.reduce((a, c) => a + c.qty, 0);
+    assert.equal(sum, 10_000);
+    for (const c of children) {
+      assert.equal(c.qty % 100, 0);
+      assert.ok(c.label);
+    }
+  });
+
+  it("splitQtyBySchedule last slice absorbs remainder", () => {
+    const sched = vwapSchedule(5);
+    const children = splitQtyBySchedule(1_050, sched, 100);
+    const sum = children.reduce((a, c) => a + c.qty, 0);
+    assert.ok(sum <= 1_050);
+    assert.equal(sum % 100, 0);
+    assert.ok(sum >= 1000);
   });
 });

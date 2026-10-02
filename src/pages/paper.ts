@@ -9,7 +9,15 @@ import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import { downloadChecklist } from "../lib/paper/export";
 import {
+  attributionByPlaybook,
+  attributionBySymbol,
+  cockpitStats,
+  type PlaybookTag,
+} from "../lib/paper/attribution";
+import { buildResearchAudit } from "../lib/paper/audit";
+import {
   buildSchedule,
+  splitQtyBySchedule,
   sqrtImpactBps,
   type ExecAlgo,
 } from "../lib/paper/execution";
@@ -36,12 +44,114 @@ import {
   savePaperState,
   topUpToHundredMillion,
 } from "../lib/paper/journal";
-import { PAPER_START_CASH, type PaperState } from "../lib/paper/types";
+import { type PaperJournalEntry, type PaperState } from "../lib/paper/types";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 import type { LatestPayload, SymbolRow } from "./types";
 
+const PLAYBOOK_TAGS: PlaybookTag[] = [
+  "momentum",
+  "mean_rev",
+  "committee",
+  "lab",
+  "manual",
+];
+const BLOTTER_TOP_N = 40;
+
 let equityChart: IChartApi | null = null;
+
+function fmtPct(n: number | null, digits = 2): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return `${n.toFixed(digits)}%`;
+}
+
+function fmtRatio(n: number | null, digits = 2): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return n.toFixed(digits);
+}
+
+function researchAuditHtml(
+  locale: Locale,
+  opts: Parameters<typeof buildResearchAudit>[0],
+): string {
+  const snap = buildResearchAudit(opts);
+  return `<section class="research-audit audit-${esc(snap.level)}" id="ws-audit">
+    <h2>${esc(t(locale, "researchAudit"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "researchAuditLead"))}</p>
+    <div class="audit-score">
+      <span class="stat-n">${snap.score}</span>
+      <span class="stat-l">${esc(t(locale, "auditScore"))} · ${esc(snap.level)}</span>
+    </div>
+    <ul class="audit-flags">
+      ${snap.flags
+        .map(
+          (f) =>
+            `<li class="${f.ok ? "ok" : "warn"}">${f.ok ? "✓" : "!"} ${esc(locale === "zh" ? f.zh : f.en)}</li>`,
+        )
+        .join("")}
+    </ul>
+  </section>`;
+}
+
+function attrTableHtml(
+  locale: Locale,
+  titleKey: Parameters<typeof t>[1],
+  rows: ReturnType<typeof attributionBySymbol>,
+): string {
+  if (!rows.length) {
+    return `<section class="attr-block"><h3>${esc(t(locale, titleKey))}</h3><p class="muted">${esc(t(locale, "attrEmpty"))}</p></section>`;
+  }
+  return `<section class="attr-block"><h3>${esc(t(locale, titleKey))}</h3>
+    <div class="table-wrap"><table class="agent-table attr-table">
+      <thead><tr>
+        <th>${esc(t(locale, "attrKey"))}</th>
+        <th>${esc(t(locale, "attrBuys"))}</th>
+        <th>${esc(t(locale, "attrSells"))}</th>
+        <th>${esc(t(locale, "attrFees"))}</th>
+        <th>${esc(t(locale, "attrRealized"))}</th>
+      </tr></thead>
+      <tbody>
+        ${rows
+          .map((r) => {
+            const cls = r.realizedProxy >= 0 ? "positive" : "negative";
+            return `<tr>
+              <td>${esc(r.key)}</td>
+              <td>${fmtMoney(r.buys)}</td>
+              <td>${fmtMoney(r.sells)}</td>
+              <td>${fmtMoney(r.fees)}</td>
+              <td class="${cls}">${fmtMoney(r.realizedProxy)}</td>
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table></div>
+  </section>`;
+}
+
+function filterJournal(
+  journal: PaperJournalEntry[],
+  filters: { symbol: string; side: string; source: string },
+): PaperJournalEntry[] {
+  return journal.filter((j) => {
+    if (
+      filters.symbol &&
+      !j.symbol.toLowerCase().includes(filters.symbol.toLowerCase())
+    )
+      return false;
+    if (filters.side && j.side !== filters.side) return false;
+    if (filters.source && (j.source ?? "manual") !== filters.source)
+      return false;
+    return true;
+  });
+}
+
+function readPlaybookTag(root: HTMLElement): PlaybookTag {
+  const el = root.querySelector("#p-playbook") as HTMLSelectElement | null;
+  const v = el?.value ?? "manual";
+  return PLAYBOOK_TAGS.includes(v as PlaybookTag)
+    ? (v as PlaybookTag)
+    : "manual";
+}
 
 function destroyEquityChart(): void {
   if (equityChart) {
@@ -95,6 +205,9 @@ export function renderPaper(
   let execSlices = 8;
   let execQty = 100_000;
   let execAdv = 1_000_000;
+  let execSide: "buy" | "sell" = "buy";
+  let playbookTag: PlaybookTag = "manual";
+  let blotterFilter = { symbol: "", side: "", source: "" };
   const hashQ = location.hash.includes("?")
     ? location.hash.slice(location.hash.indexOf("?") + 1)
     : "";
@@ -137,9 +250,21 @@ export function renderPaper(
     const dd = drawdownSeries(points);
     const pnlPctNow =
       ((eq - state.startingCash) / state.startingCash) * 100;
+    const cockpit = cockpitStats(
+      state,
+      eq,
+      points.map((p) => ({ time: p.time, value: p.equity })),
+    );
+    const bySymbol = attributionBySymbol(state);
+    const byPlaybook = attributionByPlaybook(state);
+    const filteredJournal = filterJournal(state.journal, blotterFilter).slice(
+      0,
+      BLOTTER_TOP_N,
+    );
 
     const schedule = buildSchedule(execAlgo, execSlices);
     const impact = sqrtImpactBps(execQty, execAdv);
+    const childQtys = splitQtyBySchedule(execQty, schedule);
 
     const body = `
       <h1>${esc(t(locale, "paperTitle"))}</h1>
@@ -159,12 +284,21 @@ export function renderPaper(
           ? esc(t(locale, "paperCostOffWarn"))
           : esc(t(locale, "paperCostOn"))
       } · ${esc(t(locale, "paperReflexivityWarn"))}</p>
-      <div class="stats-row paper-stats">
-        <div class="stat"><span class="stat-n">${fmtMoney(state.cash)}</span><span class="stat-l">${esc(t(locale, "paperCash"))}</span></div>
-        <div class="stat"><span class="stat-n">${fmtMoney(eq)}</span><span class="stat-l">${esc(t(locale, "paperEquity"))}</span></div>
-        <div class="stat"><span class="stat-n">${pnlPctNow.toFixed(3)}%</span><span class="stat-l">${esc(t(locale, "paperPnlPct"))}</span></div>
-        <div class="stat"><span class="stat-n">${state.costModelEnabled === false ? "OFF" : "ON"}</span><span class="stat-l">Costs</span></div>
-      </div>
+
+      <section class="cockpit-strip" id="ws-cockpit" aria-label="${esc(t(locale, "cockpitTitle"))}">
+        <h2 class="sr-only">${esc(t(locale, "cockpitTitle"))}</h2>
+        <div class="stats-row paper-stats cockpit-stats">
+          <div class="stat"><span class="stat-n">${fmtMoney(cockpit.equity)}</span><span class="stat-l">${esc(t(locale, "paperEquity"))}</span></div>
+          <div class="stat"><span class="stat-n">${fmtMoney(cockpit.cash)}</span><span class="stat-l">${esc(t(locale, "paperCash"))}</span></div>
+          <div class="stat"><span class="stat-n">${fmtPct(cockpit.dayPnlPct)}</span><span class="stat-l">${esc(t(locale, "cockpitDayPnl"))}</span></div>
+          <div class="stat"><span class="stat-n">${fmtPct(cockpit.maxDdPct)}</span><span class="stat-l">${esc(t(locale, "cockpitMaxDd"))}</span></div>
+          <div class="stat"><span class="stat-n">${fmtPct(cockpit.winRate != null ? cockpit.winRate * 100 : null)}</span><span class="stat-l">${esc(t(locale, "cockpitWinRate"))}</span></div>
+          <div class="stat"><span class="stat-n">${fmtRatio(cockpit.profitFactor)}</span><span class="stat-l">${esc(t(locale, "cockpitPf"))}</span></div>
+          <div class="stat"><span class="stat-n">${cockpit.openNames}</span><span class="stat-l">${esc(t(locale, "cockpitOpen"))}</span></div>
+          <div class="stat"><span class="stat-n">${cockpit.trades}</span><span class="stat-l">${esc(t(locale, "cockpitTrades"))}</span></div>
+        </div>
+        <p class="muted tiny">MTM ${pnlPctNow.toFixed(3)}% · costs ${state.costModelEnabled === false ? "OFF" : "ON"}</p>
+      </section>
 
       <section class="exec-desk" id="ws-exec">
         <h2>${esc(t(locale, "execDesk"))}</h2>
@@ -185,7 +319,14 @@ export function renderPaper(
           <label>${esc(t(locale, "execAdv"))}
             <input type="number" id="exec-adv" min="1" step="1000" value="${execAdv}" />
           </label>
+          <label>${esc(t(locale, "execMatSide"))}
+            <select id="exec-side">
+              <option value="buy"${execSide === "buy" ? " selected" : ""}>buy</option>
+              <option value="sell"${execSide === "sell" ? " selected" : ""}>sell</option>
+            </select>
+          </label>
           <button type="button" class="btn" id="exec-recalc">${esc(t(locale, "execImpact"))}</button>
+          <button type="button" class="btn btn-primary" id="exec-materialize">${esc(t(locale, "execMaterialize"))}</button>
         </div>
         <p class="exec-impact">${esc(t(locale, "execImpact"))}: <strong>${impact.impactBps.toFixed(1)} bps</strong>
           · participation ${(impact.participation * 100).toFixed(2)}%
@@ -200,14 +341,15 @@ export function renderPaper(
           </tr></thead>
           <tbody>
             ${schedule
-              .map(
-                (sl) => `<tr>
+              .map((sl) => {
+                const child = childQtys.find((c) => c.label === sl.label);
+                return `<tr>
                   <td>${esc(sl.label)}</td>
                   <td>${(sl.weight * 100).toFixed(1)}%</td>
                   <td>${(sl.cumFrac * 100).toFixed(1)}%</td>
-                  <td>${Math.round(execQty * sl.weight).toLocaleString()}</td>
-                </tr>`,
-              )
+                  <td>${(child?.qty ?? Math.round(execQty * sl.weight)).toLocaleString()}</td>
+                </tr>`;
+              })
               .join("")}
           </tbody>
         </table></div>
@@ -253,6 +395,14 @@ export function renderPaper(
         </label>
         <label>${esc(t(locale, "paperQty"))}
           <input type="number" id="p-qty" min="1" step="100" value="1000" />
+        </label>
+        <label>${esc(t(locale, "playbookTag"))}
+          <select id="p-playbook">
+            ${PLAYBOOK_TAGS.map(
+              (tag) =>
+                `<option value="${esc(tag)}"${playbookTag === tag ? " selected" : ""}>${esc(tag)}</option>`,
+            ).join("")}
+          </select>
         </label>
         <p class="muted tiny" id="p-preview">${
           previewFill
@@ -312,21 +462,52 @@ export function renderPaper(
         }
       </section>
 
-      <section id="ws-journal">
-        <h2>${esc(t(locale, "paperJournal"))}</h2>
+      <section class="attr-section" id="ws-attr">
+        <h2>${esc(t(locale, "attributionTitle"))}</h2>
+        <p class="muted tiny">${esc(t(locale, "attributionLead"))}</p>
+        <div class="attr-grid">
+          ${attrTableHtml(locale, "attrBySymbol", bySymbol)}
+          ${attrTableHtml(locale, "attrByPlaybook", byPlaybook)}
+        </div>
+      </section>
+
+      <section id="ws-journal" class="blotter-section">
+        <h2>${esc(t(locale, "blotterTitle"))}</h2>
+        <div class="cta-row wrap blotter-filters">
+          <label>${esc(t(locale, "blotterFilterSymbol"))}
+            <input type="text" id="blot-symbol" value="${esc(blotterFilter.symbol)}" placeholder="600519" />
+          </label>
+          <label>${esc(t(locale, "blotterFilterSide"))}
+            <select id="blot-side">
+              <option value="">all</option>
+              <option value="buy"${blotterFilter.side === "buy" ? " selected" : ""}>buy</option>
+              <option value="sell"${blotterFilter.side === "sell" ? " selected" : ""}>sell</option>
+            </select>
+          </label>
+          <label>${esc(t(locale, "blotterFilterSource"))}
+            <select id="blot-source">
+              <option value="">all</option>
+              <option value="manual"${blotterFilter.source === "manual" ? " selected" : ""}>manual</option>
+              <option value="backtest"${blotterFilter.source === "backtest" ? " selected" : ""}>backtest</option>
+              <option value="checklist"${blotterFilter.source === "checklist" ? " selected" : ""}>checklist</option>
+            </select>
+          </label>
+          <button type="button" class="btn" id="blot-apply">${esc(t(locale, "blotterApply"))}</button>
+        </div>
         ${
-          state.journal.length === 0
+          filteredJournal.length === 0
             ? `<p class="muted">${esc(t(locale, "paperNoJournal"))}</p>`
-            : `<div class="table-wrap"><table class="agent-table">
+            : `<div class="table-wrap"><table class="agent-table blotter-table">
                 <thead><tr>
                   <th>Side</th><th>Symbol</th><th>Qty</th><th>Fill</th>
                   <th>${esc(t(locale, "paperFee"))}</th>
                   <th>${esc(t(locale, "paperFillRule"))}</th>
                   <th>Src</th>
+                  <th>${esc(t(locale, "playbookTag"))}</th>
+                  <th>${esc(t(locale, "sliceLabel"))}</th>
                 </tr></thead>
                 <tbody>
-                  ${state.journal
-                    .slice(0, 40)
+                  ${filteredJournal
                     .map(
                       (j) => `<tr>
                         <td>${esc(j.side)}</td>
@@ -340,13 +521,23 @@ export function renderPaper(
                         }</td>
                         <td>${esc(j.fillRule)} <span class="muted tiny">sig ${esc(j.signalDate)}</span></td>
                         <td class="tiny">${esc(j.source ?? "manual")}</td>
+                        <td class="tiny">${esc(j.playbookTag ?? "—")}</td>
+                        <td class="tiny">${esc(j.sliceLabel ?? "—")}</td>
                       </tr>`,
                     )
                     .join("")}
                 </tbody>
-              </table></div>`
+              </table></div>
+              <p class="muted tiny">${esc(t(locale, "blotterTopN"))}: ${BLOTTER_TOP_N}</p>`
         }
       </section>
+
+      ${researchAuditHtml(locale, {
+        costModelEnabled: state.costModelEnabled !== false,
+        fillRuleNextOpen: true,
+        usedTimeSplitNotRandom: true,
+        survivorUniverse: true,
+      })}
 
       <div class="cta-row wrap" id="ws-ops">
         <button type="button" class="btn" id="p-csv">${esc(t(locale, "paperExportCsv"))}</button>
@@ -493,10 +684,12 @@ export function renderPaper(
       const slicesEl = root.querySelector("#exec-slices") as HTMLInputElement | null;
       const qtyEl = root.querySelector("#exec-qty") as HTMLInputElement | null;
       const advEl = root.querySelector("#exec-adv") as HTMLInputElement | null;
+      const sideEl = root.querySelector("#exec-side") as HTMLSelectElement | null;
       if (algoEl) execAlgo = algoEl.value === "vwap" ? "vwap" : "twap";
       if (slicesEl) execSlices = Math.max(1, Math.floor(Number(slicesEl.value) || 1));
       if (qtyEl) execQty = Math.max(1, Number(qtyEl.value) || 1);
       if (advEl) execAdv = Math.max(1, Number(advEl.value) || 1);
+      if (sideEl) execSide = sideEl.value === "sell" ? "sell" : "buy";
     };
     root.querySelector("#exec-recalc")?.addEventListener("click", () => {
       syncExecInputs();
@@ -505,6 +698,91 @@ export function renderPaper(
     root.querySelector("#exec-algo")?.addEventListener("change", () => {
       syncExecInputs();
       paint();
+    });
+    root.querySelector("#p-playbook")?.addEventListener("change", (e) => {
+      const v = (e.target as HTMLSelectElement).value;
+      playbookTag = PLAYBOOK_TAGS.includes(v as PlaybookTag)
+        ? (v as PlaybookTag)
+        : "manual";
+    });
+    root.querySelector("#blot-apply")?.addEventListener("click", () => {
+      blotterFilter = {
+        symbol:
+          (root.querySelector("#blot-symbol") as HTMLInputElement | null)
+            ?.value ?? "",
+        side:
+          (root.querySelector("#blot-side") as HTMLSelectElement | null)
+            ?.value ?? "",
+        source:
+          (root.querySelector("#blot-source") as HTMLSelectElement | null)
+            ?.value ?? "",
+      };
+      paint();
+    });
+    root.querySelector("#exec-materialize")?.addEventListener("click", () => {
+      syncExecInputs();
+      playbookTag = readPlaybookTag(root);
+      const symbol = (root.querySelector("#p-symbol") as HTMLSelectElement)
+        .value;
+      const signalDate = (
+        root.querySelector("#p-signal") as HTMLSelectElement
+      ).value;
+      const row = data.symbols.find((s) => s.symbol === symbol);
+      if (!row) {
+        paint(locale === "zh" ? "无标的" : "No symbol");
+        return;
+      }
+      const fill = resolveNextOpenFill(row.candles, signalDate);
+      if (!fill) {
+        paint("no fill");
+        return;
+      }
+      const sched = buildSchedule(execAlgo, execSlices);
+      const children = splitQtyBySchedule(execQty, sched);
+      if (!children.length) {
+        paint(locale === "zh" ? "无切片数量" : "No slice qty");
+        return;
+      }
+      let okN = 0;
+      let lastErr = "";
+      let next = state;
+      for (const child of children) {
+        const note = `slice:${child.label} · playbook:${playbookTag}`;
+        const result =
+          execSide === "buy"
+            ? applyBuy(next, {
+                symbol,
+                qty: child.qty,
+                fill,
+                note,
+                playbookTag,
+                sliceLabel: child.label,
+                lastCloseBySymbol: lastClose,
+              })
+            : applySell(next, {
+                symbol,
+                qty: child.qty,
+                fill,
+                note,
+                playbookTag,
+                sliceLabel: child.label,
+              });
+        if (!result.ok) {
+          lastErr = result.error;
+          break;
+        }
+        next = result.state;
+        okN += 1;
+      }
+      state = next;
+      savePaperState(state);
+      if (okN === 0) {
+        paint(errMsg(locale, lastErr || "invalid_qty"));
+        return;
+      }
+      paint(
+        `${t(locale, "execMaterialized")}: ${okN}/${children.length} · ${execSide} ${symbol} @ ${fill.fillPrice.toFixed(3)} (${fill.fillRule})`,
+      );
     });
 
     root.querySelector("#p-hard")?.addEventListener("change", (e) => {
@@ -560,6 +838,7 @@ export function renderPaper(
     });
 
     const trade = (side: "buy" | "sell"): void => {
+      playbookTag = readPlaybookTag(root);
       const symbol = (root.querySelector("#p-symbol") as HTMLSelectElement)
         .value;
       const signalDate = (
@@ -580,15 +859,24 @@ export function renderPaper(
         paint("no fill");
         return;
       }
+      const note = `playbook:${playbookTag}`;
       const result =
         side === "buy"
           ? applyBuy(state, {
               symbol,
               qty: norm.qty,
               fill,
+              note,
+              playbookTag,
               lastCloseBySymbol: lastClose,
             })
-          : applySell(state, { symbol, qty: norm.qty, fill });
+          : applySell(state, {
+              symbol,
+              qty: norm.qty,
+              fill,
+              note,
+              playbookTag,
+            });
       if (!result.ok) {
         paint(errMsg(locale, result.error));
         return;
@@ -596,7 +884,7 @@ export function renderPaper(
       state = result.state;
       savePaperState(state);
       paint(
-        `${side.toUpperCase()} ${norm.qty} ${symbol} @ ${fill.fillPrice.toFixed(3)} (${fill.fillRule} ${fill.fillDate})`,
+        `${side.toUpperCase()} ${norm.qty} ${symbol} @ ${fill.fillPrice.toFixed(3)} (${fill.fillRule} ${fill.fillDate}) · ${playbookTag}`,
       );
     };
 

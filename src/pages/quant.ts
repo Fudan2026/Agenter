@@ -49,6 +49,7 @@ import {
   DEFAULT_COST_CONFIG,
   type SlippageModel,
 } from "../lib/paper/costs";
+import { buildResearchAudit } from "../lib/paper/audit";
 import {
   applyBuy,
   applySell,
@@ -848,7 +849,29 @@ function metricsHtml(locale: Locale, res: BacktestResult): string {
         : ""
     }
     <ul class="tiny">${gate.messages.map((msg) => `<li>${esc(locale === "zh" ? msg.zh : msg.en)}</li>`).join("")}</ul>
-  </div>`;
+  </div>
+  ${(() => {
+    const audit = buildResearchAudit({
+      costModelEnabled: res.costModelEnabled,
+      fillRuleNextOpen: res.trades.every((tr) => tr.fillRule === "next_open"),
+      usedTimeSplitNotRandom: res.usedPurgedWf,
+      survivorUniverse: true,
+      haircutSharpe: res.haircutSharpe,
+      nTrials: res.nTrials,
+    });
+    return `<div class="research-audit audit-${esc(audit.level)} lab-audit-strip">
+      <h3>${esc(t(locale, "researchAudit"))}</h3>
+      <p class="muted tiny">${esc(t(locale, "researchAuditLead"))} · score ${audit.score} (${esc(audit.level)})</p>
+      <ul class="audit-flags">
+        ${audit.flags
+          .map(
+            (f) =>
+              `<li class="${f.ok ? "ok" : "warn"}">${f.ok ? "✓" : "!"} ${esc(locale === "zh" ? f.zh : f.en)}</li>`,
+          )
+          .join("")}
+      </ul>
+    </div>`;
+  })()}`;
 }
 
 /** Quant tool home — former site facade, now at /quant only. */

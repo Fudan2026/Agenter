@@ -177,6 +177,8 @@ export function applyBuy(
     fill: FillQuote;
     note?: string;
     source?: PaperJournalEntry["source"];
+    playbookTag?: PaperJournalEntry["playbookTag"];
+    sliceLabel?: string;
     lastCloseBySymbol?: Record<string, number>;
     prevClose?: number;
   },
@@ -275,6 +277,8 @@ export function applyBuy(
     fillRule: opts.fill.fillRule,
     note: opts.note ?? "",
     source: opts.source ?? "manual",
+    playbookTag: opts.playbookTag,
+    sliceLabel: opts.sliceLabel,
   };
 
   return {
@@ -298,6 +302,8 @@ export function applySell(
     fill: FillQuote;
     note?: string;
     source?: PaperJournalEntry["source"];
+    playbookTag?: PaperJournalEntry["playbookTag"];
+    sliceLabel?: string;
     prevClose?: number;
   },
 ): { ok: true; state: PaperState } | { ok: false; error: string } {
@@ -387,6 +393,8 @@ export function applySell(
     fillRule: opts.fill.fillRule,
     note: opts.note ?? "",
     source: opts.source ?? "manual",
+    playbookTag: opts.playbookTag,
+    sliceLabel: opts.sliceLabel,
   };
 
   return {

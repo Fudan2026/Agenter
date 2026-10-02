@@ -92,3 +92,28 @@ export function sqrtImpactBps(
       "Educational √-impact only — not a venue model; Paper/Sim never route live.",
   };
 }
+
+/** Split parent qty into lot-rounded child qtys following schedule weights. */
+export function splitQtyBySchedule(
+  parentQty: number,
+  schedule: ExecSlice[],
+  lot = 100,
+): Array<{ label: string; qty: number }> {
+  const out: Array<{ label: string; qty: number }> = [];
+  let remaining = Math.max(0, Math.floor(parentQty));
+  for (let i = 0; i < schedule.length; i++) {
+    const sl = schedule[i];
+    const raw =
+      i === schedule.length - 1
+        ? remaining
+        : Math.floor((parentQty * sl.weight) / lot) * lot;
+    const qty = Math.max(0, Math.min(remaining, raw));
+    remaining -= qty;
+    if (qty > 0) out.push({ label: sl.label, qty });
+  }
+  if (remaining >= lot) {
+    const last = out[out.length - 1];
+    if (last) last.qty += Math.floor(remaining / lot) * lot;
+  }
+  return out;
+}

@@ -36,6 +36,16 @@ export interface PaperJournalEntry {
   fillRule: "next_open" | "next_close_fallback";
   note: string;
   source?: "manual" | "backtest" | "checklist";
+  /** Paper Pro playbook tag (optional). */
+  playbookTag?:
+    | "momentum"
+    | "mean_rev"
+    | "committee"
+    | "lab"
+    | "manual"
+    | "other";
+  /** Educational TWAP/VWAP slice label when materialized. */
+  sliceLabel?: string;
   rejectReason?: RejectReason;
 }
 

@@ -22,8 +22,8 @@ This README is the **canonical English build brief**.
 | `/#/handbook` | Bilingual deep manual — modules, 13-skill catalog, workflows |
 | `/#/tools` | **Sole hub** for Quant / Paper / Sim / News (secondary tools) |
 | `/#/news` | AI news + A-share announcements + Iwencai finance news digest (via Tools) |
-| `/#/quant` | Quant review + Tier-2 Strategy Lab (deep link; not primary nav) |
-| `/#/paper` | Paper workstation — next-open educational desk (deep link) |
+| `/#/quant` | Quant review + Factor Studio + Committee + Strategy Lab (deep link; not primary nav) |
+| `/#/paper` | Paper Pro workstation — cockpit, blotter, attribution, next-open desk (deep link) |
 | `/#/sim` | Sim Desk — SkillHub「模拟炒股」distill (local ¥100M; deep link) |
 | `/#/asset/:symbol` | Candlestick + MA + factor exposures |
 
@@ -95,9 +95,16 @@ Claude / Cursor / Copilot / Windsurf / Aider / Continue / 通义灵码 / Trae / 
 | Bake window | **250** trading days |
 | Board | Confluence 0–100, filters, pattern heatmap, stale banner |
 | Factor Board | OHLC-proxy momentum / low-vol / ADV / quality · TopN ranks (`factors:bake`) |
+| Factor Studio | Weight sliders, recipes, IC override, TopN→Paper batch |
+| Committee Desk | Six-role bake-only votes → checklist / Paper batch (no browser LLM) |
+| Strategy Composer | Lab params for MA / RSI / confluence / lag strategies |
 | ADF strip | Log-price stationarity diagnostics (量化统计方法 distill) |
-| Strategy Lab | In-browser no-lookahead backtests + fixed/√-impact slippage toggle |
+| Strategy Lab | In-browser no-lookahead backtests + Research Audit strip + fixed/√-impact slip |
 | Data | East Money → Yahoo → cache; browser reads baked JSON only |
+
+### Camp themes (cite briefly)
+
+Site pillars distill **AI金融研学实训营** + SUFE Fin Manus/FinAgent panorama: Quant Agents Compare (P1), multi-agent screening (P2 Committee), interpretable multi-factor Alpha (P3 Studio/Composer; McLean/Kou/AlphaFormer literacy), auditable backtest + Paper Pro (P4; AI篇主题三 / 进阶主题十), event-bucket + Academy (P5). FinCast/TSFM weights and tick LOB remain out of browser scope.
 
 ### Patterns
 
@@ -117,13 +124,22 @@ Legacy 16 unchanged + additive: `510050.SS`, `159919.SZ`, `512690.SS`, `515790.S
 
 ---
 
-## Paper desk
+## Paper desk (Paper Pro)
 
 - Start **¥100,000,000**; A-share cost model **default ON** (commission 2.5 bps/side min ¥5, stamp 5 bps sell, transfer 0.1 bps, slippage 5/10 bps fixed **or** optional √-impact); lots 100; T+1; limit-band rejects
-- Workstation panels: Account · Ticket (half-Kelly) · Positions · Fills · Risk · Performance · Ops
-- Fills: signal-date → next-open; MTM equity / PnL% / drawdown
-- Soft + optional hard gates; checklist export with next-open wording
+- **Cockpit** strip: equity, cash, day PnL%, max DD, win rate, profit factor, open names, trades
+- **Blotter**: filter by symbol/side/source; playbook + slice columns; top-N journal
+- **Attribution**: by symbol and by playbook (momentum / mean_rev / committee / lab / manual)
+- **Exec desk**: TWAP/VWAP schedule + √-impact; **Materialize slices → journal** (next-open educational fills + `sliceLabel`)
+- **Research Audit** card on Paper ops + Lab tear sheet (cost / next-open / time-split / survivorship literacy)
+- Ticket playbook tags stash on journal; soft + optional hard gates; checklist export with next-open wording
 - No xiadan / THS / broker SDKs
+
+### Compare · Academy · skills
+
+- **Quant Agents Compare** (`#/compare` Quant preset): curated quant/AI-finance agents alongside product agents
+- **Academy**: long Handbook modules + Learn pointers (camp curriculum distill)
+- **Skills**: add-only — do not remove vendored SkillHub packages; site distills methodology, agents keep full CLIs
 
 ### Tier 2 paper mechanisms (product, not blog)
 
