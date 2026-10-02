@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T12:25:59.103Z",
+  "generatedAt": "2026-10-02T14:00:20.591Z",
   "source": "同花顺问财",
   "skill": "hithink-zhishu-query",
   "items": [
@@ -29,6 +29,33 @@
       "last": 3135.28,
       "changePct": -0.2319,
       "query": "创业板指最新点位"
+    },
+    {
+      "id": "399001.SZ-0",
+      "code": "399001.SZ",
+      "nameZh": "深证成指",
+      "nameEn": "SZSE Component",
+      "last": 12887.62,
+      "changePct": -0.11100000000000002,
+      "query": "深证成指最新点位"
+    },
+    {
+      "id": "000905.SH-0",
+      "code": "000905.SH",
+      "nameZh": "中证500",
+      "nameEn": "CSI 500",
+      "last": 7435.16,
+      "changePct": -0.0601,
+      "query": "中证500最新点位"
+    },
+    {
+      "id": "000688.SH-0",
+      "code": "000688.SH",
+      "nameZh": "科创50",
+      "nameEn": "STAR 50",
+      "last": 1530.01,
+      "changePct": -2.5061,
+      "query": "科创50最新点位"
     }
   ]
 }

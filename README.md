@@ -19,6 +19,7 @@ This README is the **canonical English build brief**.
 | `/#/` | Brand home — **Agenter** / for better agents (primary CTA → Compare) |
 | `/#/compare` | Apple-style sticky shortlist + dimension matrix + harness presets |
 | `/#/learn` | Guided tour + practice scenarios |
+| `/#/handbook` | Bilingual deep manual — modules, 13-skill catalog, workflows |
 | `/#/tools` | **Sole hub** for Quant / Paper / Sim / News (secondary tools) |
 | `/#/news` | AI news + A-share announcements + Iwencai finance news digest (via Tools) |
 | `/#/quant` | Quant review + Tier-2 Strategy Lab (deep link; not primary nav) |
@@ -26,7 +27,7 @@ This README is the **canonical English build brief**.
 | `/#/sim` | Sim Desk — SkillHub「模拟炒股」distill (local ¥100M; deep link) |
 | `/#/asset/:symbol` | Candlestick + MA + factor exposures |
 
-**Primary nav = Home · Compare · Learn · Tools only.** Quant/Paper/Sim are tools — not the brand face.  
+**Primary nav = Home · Compare · Learn · Handbook · Tools.** Quant/Paper/Sim are tools — not the brand face.  
 **Correction:** Round-1 Quant-as-home was wrong; corrected this round.
 
 **Home must not be Quant-only.** Primary H1 is **Agenter**.

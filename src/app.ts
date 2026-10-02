@@ -7,6 +7,7 @@ import type { ScreensPayload } from "./lib/screens/map";
 import { cleanupAssetPage, renderAsset } from "./pages/asset";
 import { renderBrandHome } from "./pages/brand-home";
 import { loadAgents, renderCompare } from "./pages/compare";
+import { renderHandbook } from "./pages/handbook";
 import { renderLearn } from "./pages/learn";
 import { cleanupPaperPage, renderPaper } from "./pages/paper";
 import { cleanupQuantPage, renderQuant, type RecipesPayload } from "./pages/quant";
@@ -14,6 +15,7 @@ import { cleanupSimPage, renderSim } from "./pages/sim";
 import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
 import type { LatestPayload } from "./pages/types";
 import type { FactorsPayload } from "./lib/factors/cross-section";
+import type { FactorsIcPayload } from "./lib/factors/ic";
 
 let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
@@ -23,6 +25,7 @@ let iwencaiNewsData: IwencaiNewsPayload | null = null;
 let indicesData: IndicesPayload | null = null;
 let screensData: ScreensPayload | null = null;
 let factorsData: FactorsPayload | null = null;
+let factorsIcData: FactorsIcPayload | null = null;
 let recipesData: RecipesPayload | null = null;
 let locale: Locale = detectLocale();
 
@@ -30,6 +33,7 @@ type Route =
   | { page: "home" }
   | { page: "compare" }
   | { page: "learn" }
+  | { page: "handbook" }
   | { page: "tools" }
   | { page: "news" }
   | { page: "quant" }
@@ -125,6 +129,18 @@ async function loadFactors(): Promise<void> {
   }
 }
 
+async function loadFactorsIc(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/factors-ic.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    factorsIcData = (await res.json()) as FactorsIcPayload;
+  } catch {
+    factorsIcData = null;
+  }
+}
+
 async function loadRecipes(): Promise<void> {
   try {
     const res = await fetch(`${import.meta.env.BASE_URL}data/recipes.json`, {
@@ -143,6 +159,7 @@ function parseRoute(): Route {
   if (path === "/" || path === "") return { page: "home" };
   if (path === "/compare") return { page: "compare" };
   if (path === "/learn") return { page: "learn" };
+  if (path === "/handbook") return { page: "handbook" };
   if (path === "/tools") return { page: "tools" };
   if (path === "/news") return { page: "news" };
   if (path === "/quant") return { page: "quant" };
@@ -192,8 +209,18 @@ async function render(): Promise<void> {
       case "learn":
         renderLearn(root, locale);
         break;
+      case "handbook":
+        renderHandbook(root, locale);
+        break;
       case "tools":
-        renderTools(root, locale, newsData, announcementsData, iwencaiNewsData);
+        renderTools(
+          root,
+          locale,
+          newsData,
+          announcementsData,
+          iwencaiNewsData,
+          indicesData,
+        );
         break;
       case "news":
         renderNews(root, locale, newsData, announcementsData, iwencaiNewsData);
@@ -210,6 +237,9 @@ async function render(): Promise<void> {
             screensData,
             factorsData,
             recipesData,
+            announcementsData,
+            iwencaiNewsData,
+            factorsIcData,
           );
         }
         break;
@@ -231,7 +261,14 @@ async function render(): Promise<void> {
         if (quantError || !quantData) {
           root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")}</p></main>`;
         } else {
-          renderAsset(root, quantData, route.symbol, locale, announcementsData);
+          renderAsset(
+            root,
+            quantData,
+            route.symbol,
+            locale,
+            announcementsData,
+            iwencaiNewsData,
+          );
         }
         break;
     }
@@ -253,6 +290,7 @@ export async function startApp(): Promise<void> {
     loadIndices(),
     loadScreens(),
     loadFactors(),
+    loadFactorsIc(),
     loadRecipes(),
   ]);
   await render();

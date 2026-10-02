@@ -97,28 +97,40 @@ function main(): void {
 
   const ashare = WATCHLIST.filter((t) => t.group === "china-ashare");
   const collected: AnnouncementItem[] = [];
+  const seenIds = new Set<string>();
+  /** Two query types per nameZh — latest filings + periodic reports. */
+  const QUERY_SUFFIXES = ["最新公告", "定期报告"] as const;
 
   for (let i = 0; i < ashare.length; i++) {
     const t = ashare[i];
-    const query = `${t.nameZh} 最新公告`;
-    const body = callCli(query);
-    if (!body) {
-      console.warn(`[announcements:bake] miss ${t.symbol}`);
-    } else if (body.status_code !== 0) {
-      console.warn(
-        `[announcements:bake] status_code=${body.status_code} ${t.symbol}`,
-      );
-    } else {
-      const items = mapGatewayResponse(body, {
-        symbol: t.symbol,
-        nameZh: t.nameZh,
-      });
-      console.log(
-        `[announcements:bake] ${t.symbol} → ${items.length} items`,
-      );
-      collected.push(...items);
+    for (let qi = 0; qi < QUERY_SUFFIXES.length; qi++) {
+      const query = `${t.nameZh} ${QUERY_SUFFIXES[qi]}`;
+      const body = callCli(query);
+      if (!body) {
+        console.warn(`[announcements:bake] miss ${t.symbol} (${QUERY_SUFFIXES[qi]})`);
+      } else if (body.status_code !== 0) {
+        console.warn(
+          `[announcements:bake] status_code=${body.status_code} ${t.symbol} (${QUERY_SUFFIXES[qi]})`,
+        );
+      } else {
+        const items = mapGatewayResponse(body, {
+          symbol: t.symbol,
+          nameZh: t.nameZh,
+        });
+        console.log(
+          `[announcements:bake] ${t.symbol} ${QUERY_SUFFIXES[qi]} → ${items.length} items`,
+        );
+        for (const item of items) {
+          if (item.id && seenIds.has(item.id)) continue;
+          if (item.id) seenIds.add(item.id);
+          collected.push(item);
+        }
+      }
+      // Throttle between every CLI call (not only between symbols)
+      const isLast =
+        i === ashare.length - 1 && qi === QUERY_SUFFIXES.length - 1;
+      if (!isLast) sleepSync(THROTTLE_MS);
     }
-    if (i < ashare.length - 1) sleepSync(THROTTLE_MS);
   }
 
   const items = (collected.length ? collected : prev.items)

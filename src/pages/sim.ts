@@ -1,6 +1,10 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import {
+  buildChecklistFromSimPositions,
+  downloadChecklistRows,
+} from "../lib/paper/export";
+import {
   equityMark,
   placeOrder,
   pnlSnapshot,
@@ -248,8 +252,11 @@ export function renderSim(
       </section>
 
       <div class="cta-row wrap">
+        <button type="button" class="btn btn-primary" id="sim-handoff">${esc(t(locale, "simHandoff"))}</button>
+        <a class="btn" href="#/paper">${esc(t(locale, "openPaperLink"))}</a>
         <button type="button" class="btn btn-danger" id="sim-reset">${esc(t(locale, "simReset"))}</button>
       </div>
+      <p class="muted tiny">${esc(t(locale, "simHandoffLead"))}</p>
       <p class="paper-disclaimer sim-attr">${esc(t(locale, "simAttribution"))}</p>
       <p class="muted tiny">${esc(t(locale, "simDistillNote"))}</p>
     `;
@@ -328,6 +335,19 @@ export function renderSim(
 
     root.querySelector("#sim-buy")?.addEventListener("click", () => submit("buy"));
     root.querySelector("#sim-sell")?.addEventListener("click", () => submit("sell"));
+    root.querySelector("#sim-handoff")?.addEventListener("click", () => {
+      const rows = buildChecklistFromSimPositions(ledger.positions, locale);
+      if (!rows.length) {
+        paint(locale === "zh" ? "暂无持仓可导出" : "No positions to export");
+        return;
+      }
+      downloadChecklistRows(rows, "json", "agenter-sim-checklist");
+      paint(
+        locale === "zh"
+          ? `已导出 ${rows.length} 条核对清单`
+          : `Exported ${rows.length} checklist rows`,
+      );
+    });
     root.querySelector("#sim-reset")?.addEventListener("click", () => {
       if (!confirm(t(locale, "simResetConfirm"))) return;
       ledger = resetSimLedger();

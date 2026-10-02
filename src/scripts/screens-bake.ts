@@ -1,5 +1,5 @@
 /**
- * Bake public/data/screens.json from 3 fixed editorial screens via vendored
+ * Bake public/data/screens.json from 6 fixed editorial screens via vendored
  * hithink-astock-selector CLI. Fail-open: keep last-good JSON on missing key / errors.
  */
 
@@ -27,7 +27,7 @@ const CLI = path.join(
 const THROTTLE_MS = 400;
 const TOP_N = 8;
 
-/** Exactly three fixed Chinese editorial screens (not interactive NL in browser). */
+/** Six fixed Chinese editorial screens (not interactive NL in browser). */
 const SCREENS: Array<{
   id: string;
   nameZh: string;
@@ -52,6 +52,24 @@ const SCREENS: Array<{
     nameEn: "Strong semiconductor / chip names",
     // Editorial panel title kept; NL query returns liquid A-share chip names.
     query: "半导体概念股涨幅居前",
+  },
+  {
+    id: "high-div-low-vol",
+    nameZh: "高股息低波动",
+    nameEn: "High dividend · low vol",
+    query: "高股息低波动",
+  },
+  {
+    id: "nev-strong",
+    nameZh: "新能源车强势",
+    nameEn: "NEV leaders strong",
+    query: "新能源车概念股涨幅居前",
+  },
+  {
+    id: "broker-leaders",
+    nameZh: "券商龙头",
+    nameEn: "Brokerage leaders",
+    query: "券商龙头",
   },
 ];
 
@@ -136,7 +154,7 @@ function main(): void {
     const body = callCli(meta.query);
     if (!body) {
       console.warn(`[screens:bake] miss ${meta.query}`);
-      // Keep placeholder panel so UI still shows three editorial slots
+      // Keep placeholder panel so UI still shows six editorial slots
       collected.push({
         id: meta.id,
         nameZh: meta.nameZh,

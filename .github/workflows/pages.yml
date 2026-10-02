@@ -39,6 +39,9 @@ jobs:
       - name: Bake factor board
         run: npm run factors:bake
 
+      - name: Bake factor IC / corr
+        run: npm run factors:ic-bake
+
       - name: Bake AI news
         run: npm run news:bake
         continue-on-error: true

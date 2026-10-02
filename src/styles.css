@@ -701,7 +701,7 @@ a:hover {
 
 .indices-row {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
   gap: 0.65rem;
 }
 
@@ -768,7 +768,7 @@ a:hover {
 
 .screens-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 0.75rem;
   margin-top: 0.65rem;
 }
@@ -1223,4 +1223,343 @@ a:hover {
 
 .sim-attr {
   margin-top: 1.5rem;
+}
+
+/* Handbook */
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.learn-handbook-banner {
+  margin: 0.35rem 0 0.85rem;
+}
+
+.handbook-layout {
+  display: grid;
+  grid-template-columns: minmax(10rem, 14rem) minmax(0, 1fr);
+  gap: 1.25rem 1.5rem;
+  align-items: start;
+}
+
+.handbook-toc {
+  position: sticky;
+  top: 4.5rem;
+  max-height: calc(100vh - 5.5rem);
+  overflow: auto;
+  padding: 0.35rem 0.15rem 0.35rem 0;
+}
+
+.handbook-toc-label {
+  margin: 0 0 0.4rem;
+  font-weight: 650;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.handbook-toc-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.handbook-toc-link {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.35;
+  text-decoration: none;
+  border-left: 2px solid transparent;
+  padding-left: 0.55rem;
+}
+
+.handbook-toc-link:hover {
+  color: var(--text);
+  border-left-color: var(--accent);
+  text-decoration: none;
+}
+
+.handbook-search-label {
+  display: block;
+  margin-bottom: 0.85rem;
+}
+
+.handbook-search {
+  width: min(100%, 28rem);
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: inherit;
+  font: inherit;
+}
+
+.handbook-search:focus {
+  outline: 2px solid var(--accent);
+  outline-offset: 1px;
+}
+
+.handbook-module {
+  margin-bottom: 1.35rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--line);
+  scroll-margin-top: 5rem;
+}
+
+.handbook-module h2 {
+  margin-top: 0;
+}
+
+.handbook-module p {
+  margin: 0.55rem 0;
+  line-height: 1.55;
+}
+
+.handbook-deeplinks {
+  margin-top: 0.75rem;
+}
+
+.skill-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.4rem 0.5rem;
+  margin: 0.65rem 0 0.35rem;
+}
+
+.skill-chip {
+  display: inline-block;
+  padding: 0.2rem 0.55rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: inherit;
+  font-size: 0.82rem;
+  text-decoration: none;
+}
+
+.skill-chip:hover,
+.skill-chip.is-active {
+  border-color: var(--accent);
+  text-decoration: none;
+}
+
+.handbook-skill-table-wrap {
+  overflow-x: auto;
+  margin: 0.75rem 0;
+}
+
+.handbook-skill-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.88rem;
+}
+
+.handbook-skill-table th,
+.handbook-skill-table td {
+  border: 1px solid var(--line);
+  padding: 0.45rem 0.55rem;
+  text-align: left;
+  vertical-align: top;
+}
+
+.handbook-skill-table th {
+  background: var(--card);
+  font-weight: 650;
+}
+
+.handbook-skill-row.is-highlight {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+@media (max-width: 720px) {
+  .handbook-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .handbook-toc {
+    position: static;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .handbook-toc-nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.35rem 0.65rem;
+  }
+
+  .handbook-toc-link {
+    border-left: 0;
+    padding-left: 0;
+    border-bottom: 2px solid transparent;
+  }
+
+  .handbook-toc-link:hover {
+    border-left-color: transparent;
+    border-bottom-color: var(--accent);
+  }
+}
+
+/* Skills ops / IC / corr / exec / filings (handbook-skills-max) */
+.skills-ops-bar {
+  margin: 0.75rem 0 1rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.skills-ops-h {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+}
+
+.skills-ops-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.45rem;
+}
+
+.skills-ops-chip {
+  display: grid;
+  gap: 0.1rem;
+  min-width: 6.5rem;
+  padding: 0.35rem 0.5rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: rgba(18, 35, 31, 0.03);
+}
+
+.skills-ops-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: lowercase;
+}
+
+.skills-ops-ts {
+  font-family: var(--font);
+  font-size: 0.78rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.filings-stub {
+  margin: 0 0 1.1rem;
+}
+
+.filings-list li {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  align-items: baseline;
+}
+
+.ic-panel {
+  margin: 0 0 1.25rem;
+}
+
+.ic-rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.55rem;
+}
+
+.ic-card {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  padding: 0.7rem 0.8rem;
+}
+
+.ic-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.95rem;
+}
+
+.ic-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.85rem;
+  margin-bottom: 0.45rem;
+  font-size: 0.88rem;
+}
+
+.ic-qbar {
+  display: grid;
+  grid-template-columns: 1.6rem 1fr 3.2rem;
+  gap: 0.35rem;
+  align-items: center;
+  margin: 0.2rem 0;
+  font-size: 0.78rem;
+}
+
+.ic-q-track {
+  height: 0.45rem;
+  background: rgba(18, 35, 31, 0.08);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.ic-q-track > span {
+  display: block;
+  height: 100%;
+  background: #0b6e4f;
+}
+
+.ic-qbar.down .ic-q-track > span {
+  background: #b91c1c;
+}
+
+.ic-q-val {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.corr-heatmap-panel {
+  margin: 0 0 1.25rem;
+}
+
+.corr-table tr.corr-hi td:last-child {
+  color: #15803d;
+  font-weight: 600;
+}
+
+.corr-table tr.corr-lo td:last-child {
+  color: #b91c1c;
+  font-weight: 600;
+}
+
+.factor-tilt-bar {
+  margin: 0.45rem 0 0.65rem;
+}
+
+.exec-desk {
+  margin: 0 0 1.25rem;
+  padding: 0.75rem 0.85rem;
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.exec-desk .exec-impact {
+  margin: 0.55rem 0;
+  font-size: 0.92rem;
+}
+
+.exec-controls label {
+  display: grid;
+  gap: 0.2rem;
+  font-size: 0.85rem;
+}
+
+.asset-iwencai-news {
+  margin-top: 1.25rem;
 }

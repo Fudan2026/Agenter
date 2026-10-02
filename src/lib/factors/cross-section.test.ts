@@ -28,4 +28,21 @@ describe("factor board", () => {
     assert.ok(board.factors.every((f) => f.composite != null));
     assert.ok(board.adfStrip.length > 0);
   });
+
+  it("exposes peProxy and pbProxy fields on every score", () => {
+    const rows = [0, 1, 2].map((i) => ({
+      symbol: `S${i}.SS`,
+      nameZh: `名${i}`,
+      nameEn: `N${i}`,
+      group: "china-ashare",
+      candles: synth(i),
+    }));
+    const board = buildFactorBoard(rows, { topN: 3, reportDate: "2026-10-02" });
+    for (const f of board.factors) {
+      assert.ok("peProxy" in f);
+      assert.ok("pbProxy" in f);
+      assert.ok(f.peProxy == null || Number.isFinite(f.peProxy));
+      assert.ok(f.pbProxy == null || Number.isFinite(f.pbProxy));
+    }
+  });
 });

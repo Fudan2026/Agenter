@@ -124,11 +124,13 @@ const SCENARIOS: Scenario[] = [
       "在量化页信号看板选一个偏多/偏空标的。",
       "点「去纸盘」，确认标的预选。",
       "按次日开盘规则下一笔纸盘单。",
+      "完整链路说明见手册「选 Agent → 量化 → 纸盘」。",
     ],
     stepsEn: [
       "On Quant signal board, pick a bullish/bearish name.",
       "Click Open paper; confirm symbol preselect.",
       "Place one paper order under next-open fill rules.",
+      "Full path: Handbook chapter Pick agent → Quant → Paper.",
     ],
     href: "#/quant",
   },
@@ -140,11 +142,13 @@ const SCENARIOS: Scenario[] = [
       "打开动态页，阅读 2–3 条摘要。",
       "思考哪条会影响你的对比维度权重。",
       "回到对比页应用一个预设。",
+      "公告/问财分诊细节见手册「动态与公告」。",
     ],
     stepsEn: [
       "Open News; read 2–3 digests items.",
       "Note which item would shift your Harness weights.",
       "Return to Compare and apply a preset.",
+      "Filings triage depth: Handbook News + announcements chapter.",
     ],
     href: "#/news",
   },
@@ -188,11 +192,13 @@ const SCENARIOS: Scenario[] = [
       "在量化页打开因子看板，确认分数是 OHLC 代理。",
       "对比 ADF 诊断条中主要标的的平稳性。",
       "点开 Top 综合分标的，核对形态与信号。",
+      "需要完整因子 → Lab → 纸盘说明时，打开手册对应章节。",
     ],
     stepsEn: [
       "Open the Factor Board; confirm OHLC-proxy attribution.",
       "Check the ADF strip for major symbols.",
       "Open a top composite name; verify patterns and signals.",
+      "For Factor Board → Lab → Paper depth, open the Handbook chapter.",
     ],
     href: "#/quant",
   },
@@ -201,9 +207,15 @@ const SCENARIOS: Scenario[] = [
 export function renderLearn(root: HTMLElement, locale: Locale): void {
   const done = isLearnDone();
   const progress = loadScenarioProgress();
+  const handbookBanner =
+    locale === "zh"
+      ? `深手册 → <a href="#/handbook">${esc(t(locale, "navHandbook"))}</a>：模块、13 技能目录与工作流。`
+      : `Deep manual → <a href="#/handbook">${esc(t(locale, "navHandbook"))}</a>: modules, 13-skill catalog, workflows.`;
+
   const body = `
     <h1>${esc(t(locale, "learnTitle"))}</h1>
     <p class="lead">${esc(t(locale, "learnLead"))}</p>
+    <p class="learn-handbook-banner muted">${handbookBanner}</p>
     <p class="learn-status ${done ? "done" : ""}">${done ? esc(t(locale, "learnDone")) : ""}</p>
     <section class="explainers">
       <article class="scenario">
@@ -233,6 +245,7 @@ export function renderLearn(root: HTMLElement, locale: Locale): void {
     <div class="cta-row">
       <button type="button" class="btn btn-primary" id="learn-done">${esc(t(locale, "learnMarkDone"))}</button>
       <button type="button" class="btn" id="learn-reset">${esc(t(locale, "learnReset"))}</button>
+      <a class="btn btn-ghost" href="#/handbook">${esc(t(locale, "ctaHandbook"))}</a>
     </div>
   `;
   root.innerHTML = renderShell(locale, "learn", body);

@@ -13,6 +13,7 @@ export function renderBrandHome(root: HTMLElement, locale: Locale): void {
       <div class="cta-row">
         <a class="btn btn-primary" href="#/compare">${esc(t(locale, "ctaCompare"))}</a>
         <a class="btn" href="#/learn">${esc(t(locale, "ctaLearn"))}</a>
+        <a class="btn btn-ghost" href="#/handbook">${esc(t(locale, "ctaHandbook"))}</a>
       </div>
     </section>
     <section class="how-section">

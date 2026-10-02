@@ -26,11 +26,14 @@ const CLI = path.join(
 );
 const THROTTLE_MS = 400;
 
-/** Align with macro / CSI / ChiNext watchlist names. */
+/** Align with macro / CSI / ChiNext / SZ / mid-cap / STAR watchlist names. */
 const INDEX_QUERIES: Array<{ query: string; nameEn: string }> = [
   { query: "上证指数最新点位", nameEn: "SSE Composite" },
   { query: "沪深300最新点位", nameEn: "CSI 300" },
   { query: "创业板指最新点位", nameEn: "ChiNext" },
+  { query: "深证成指最新点位", nameEn: "SZSE Component" },
+  { query: "中证500最新点位", nameEn: "CSI 500" },
+  { query: "科创50最新点位", nameEn: "STAR 50" },
 ];
 
 function sleepSync(ms: number): void {

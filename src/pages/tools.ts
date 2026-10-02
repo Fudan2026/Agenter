@@ -1,6 +1,7 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import type { AnnouncementsPayload } from "../lib/announcements/map";
+import type { IndicesPayload } from "../lib/indices/map";
 import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
@@ -69,6 +70,51 @@ function renderIwencaiNewsLis(
     .join("");
 }
 
+function fmtPct(n: number | null): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+  const sign = n > 0 ? "+" : "";
+  return `${sign}${n.toFixed(2)}%`;
+}
+
+function fmtLast(n: number | null): string {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+}
+
+function renderIndicesStrip(
+  locale: Locale,
+  indices: IndicesPayload | null,
+): string {
+  const items = indices?.items ?? [];
+  if (!items.length) {
+    return `<section class="indices-strip">
+      <h2 class="indices-h">${esc(t(locale, "indicesTitle"))}</h2>
+      <p class="muted tiny">${esc(t(locale, "indicesEmpty"))} · ${esc(t(locale, "iwencaiSource"))}</p>
+    </section>`;
+  }
+  return `<section class="indices-strip">
+    <div class="indices-head">
+      <h2 class="indices-h">${esc(t(locale, "indicesTitle"))}</h2>
+      <p class="muted tiny">${esc(indices?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "iwencaiSource"))}</p>
+    </div>
+    <div class="indices-row">
+      ${items
+        .map((ix) => {
+          const name = locale === "zh" ? ix.nameZh : ix.nameEn;
+          const up = (ix.changePct ?? 0) > 0;
+          const down = (ix.changePct ?? 0) < 0;
+          const cls = up ? "up" : down ? "down" : "flat";
+          return `<div class="index-chip ${cls}">
+            <span class="index-name">${esc(name)}</span>
+            <span class="index-last">${esc(fmtLast(ix.last))}</span>
+            <span class="index-chg">${esc(fmtPct(ix.changePct))}</span>
+          </div>`;
+        })
+        .join("")}
+    </div>
+  </section>`;
+}
+
 export function renderNews(
   root: HTMLElement,
   locale: Locale,
@@ -130,8 +176,14 @@ export function renderTools(
   news: NewsPayload | null,
   announcements: AnnouncementsPayload | null = null,
   iwencaiNews: IwencaiNewsPayload | null = null,
+  indices: IndicesPayload | null = null,
 ): void {
   const cards = [
+    {
+      href: "#/handbook",
+      title: t(locale, "toolHandbook"),
+      desc: t(locale, "toolHandbookDesc"),
+    },
     {
       href: "#/quant",
       title: t(locale, "toolQuant"),
@@ -211,6 +263,7 @@ export function renderTools(
     <h1>${esc(t(locale, "toolsTitle"))}</h1>
     <p class="lead">${esc(t(locale, "toolsLead"))}</p>
     <p class="muted">${esc(t(locale, "toolsSecondaryNote"))}</p>
+    ${renderIndicesStrip(locale, indices)}
     <div class="tool-grid">
       ${cards
         .map(
