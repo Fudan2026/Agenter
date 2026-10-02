@@ -70,19 +70,19 @@ const SCENARIOS: Scenario[] = [
   },
   {
     id: "quant-read",
-    titleZh: "场景 4：读懂量化工具页",
-    titleEn: "Scenario 4: Read the Quant tool",
+    titleZh: "场景 4：打开 Research 台",
+    titleEn: "Scenario 4: Open Research desk",
     stepsZh: [
-      "从工具箱进入量化复盘（不是首页）。",
-      "看信号看板与每日复盘要点。",
-      "点开一只标的，确认形态与均线仅用历史 K 线。",
+      "从首页或导航进入 Desk → Research。",
+      "在左侧观察列表点选 3 只标的，确认中心图联动。",
+      "对照学院阶段 1（Research）进度。",
     ],
     stepsEn: [
-      "Open Quant from Tools (not Home).",
-      "Read the signal board and daily review.",
-      "Open one symbol; confirm patterns/MAs use historical OHLC only.",
+      "From Home or nav open Desk → Research.",
+      "Pin 3 symbols in the watchlist; confirm the chart links.",
+      "Check Academy stage 1 (Research) progress.",
     ],
-    href: "#/quant",
+    href: "#/research",
   },
   {
     id: "paper-drill",
@@ -118,19 +118,19 @@ const SCENARIOS: Scenario[] = [
   },
   {
     id: "signal-to-paper",
-    titleZh: "场景 7：信号 → 纸盘",
-    titleEn: "Scenario 7: Signal → paper",
+    titleZh: "场景 7：扫描器 → 纸盘",
+    titleEn: "Scenario 7: Screener → paper",
     stepsZh: [
-      "在量化页信号看板选一个偏多/偏空标的。",
-      "点「去纸盘」，确认标的预选。",
+      "打开 Screener，设共振分 ≥ 70 并保存预设。",
+      "对一只标的点 Open Paper。",
       "按次日开盘规则下一笔纸盘单。",
     ],
     stepsEn: [
-      "On Quant signal board, pick a bullish/bearish name.",
-      "Click Open paper; confirm symbol preselect.",
+      "Open Screener; set confluence ≥ 70 and save the preset.",
+      "Open Paper on one row.",
       "Place one paper order under next-open fill rules.",
     ],
-    href: "#/quant",
+    href: "#/screener",
   },
   {
     id: "news-skim",
@@ -147,6 +147,22 @@ const SCENARIOS: Scenario[] = [
       "Return to Compare and apply a preset.",
     ],
     href: "#/news",
+  },
+  {
+    id: "academy-start",
+    titleZh: "场景 9：Quant Academy 起步",
+    titleEn: "Scenario 9: Start Quant Academy",
+    stepsZh: [
+      "打开 Academy，阅读阶段 1–2。",
+      "完成 Research 与 Screener 动作后回来勾选。",
+      "查看就绪分与实盘彩排入口。",
+    ],
+    stepsEn: [
+      "Open Academy; read stages 1–2.",
+      "Complete Research + Screener actions, then return to check off.",
+      "Review readiness and the live rehearsal entry.",
+    ],
+    href: "#/academy",
   },
 ];
 

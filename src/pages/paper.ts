@@ -33,8 +33,11 @@ import {
 } from "../lib/paper/journal";
 import { PAPER_START_CASH, type PaperState } from "../lib/paper/types";
 import { esc } from "../lib/util/esc";
-import { renderShell } from "./shell";
+import { renderWorkspaceShell } from "./workspace-shell";
 import type { LatestPayload, SymbolRow } from "./types";
+import { setAcademyFlag } from "../lib/academy/curriculum";
+import { saveSelection } from "../lib/desk/selection";
+import { confluenceScore } from "../lib/signals/board";
 
 let equityChart: IChartApi | null = null;
 
@@ -129,50 +132,64 @@ export function renderPaper(
     const pnlPctNow =
       ((eq - state.startingCash) / state.startingCash) * 100;
 
-    const body = `
-      <h1>${esc(t(locale, "paperTitle"))}</h1>
-      <p class="lead">${esc(t(locale, "paperLead"))}</p>
-      <p class="paper-disclaimer">${esc(t(locale, "paperDisclaimer"))}</p>
-      ${
-        showTopUp
-          ? `<div class="banner-topup">
-              <p>${esc(t(locale, "paperTopUpHint"))}</p>
-              <button type="button" class="btn btn-primary" id="p-topup">${esc(t(locale, "paperTopUp"))}</button>
-            </div>`
-          : ""
-      }
-      ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
-      <p class="muted tiny" id="ws-account">${esc(t(locale, "paperSurvivorship"))} · ${
-        state.costModelEnabled === false
-          ? esc(t(locale, "paperCostOffWarn"))
-          : esc(t(locale, "paperCostOn"))
-      } · ${esc(t(locale, "paperReflexivityWarn"))}</p>
-      <div class="stats-row paper-stats">
-        <div class="stat"><span class="stat-n">${fmtMoney(state.cash)}</span><span class="stat-l">${esc(t(locale, "paperCash"))}</span></div>
-        <div class="stat"><span class="stat-n">${fmtMoney(eq)}</span><span class="stat-l">${esc(t(locale, "paperEquity"))}</span></div>
-        <div class="stat"><span class="stat-n">${pnlPctNow.toFixed(3)}%</span><span class="stat-l">${esc(t(locale, "paperPnlPct"))}</span></div>
-        <div class="stat"><span class="stat-n">${state.costModelEnabled === false ? "OFF" : "ON"}</span><span class="stat-l">Costs</span></div>
-      </div>
+    const watchRows = tradeable
+      .slice(0, 40)
+      .map((s) => {
+        const conf = confluenceScore(s);
+        const pct =
+          s.pct1d == null
+            ? "—"
+            : `${s.pct1d >= 0 ? "+" : ""}${s.pct1d.toFixed(2)}%`;
+        const active = s.symbol === defaultSym ? "active" : "";
+        return `<div class="ws-watch-row ${active}" data-sym="${esc(s.symbol)}">
+          <span>${esc(s.symbol)}</span>
+          <span class="${s.pct1d != null && s.pct1d >= 0 ? "positive" : "negative"}">${pct}</span>
+          <span class="tiny">${conf}</span>
+        </div>`;
+      })
+      .join("");
 
-      <section class="risk-strip ${risk.overweight ? "warn" : ""}" id="ws-risk">
-        <h2>${esc(t(locale, "paperRisk"))}</h2>
-        <ul>
-          <li>${esc(t(locale, "paperCashBuf"))}: ${(risk.cashPct * 100).toFixed(1)}%</li>
-          <li>${esc(t(locale, "paperMaxName"))}: ${
-            risk.maxNameSymbol
-              ? `${esc(risk.maxNameSymbol)} ${(risk.maxNamePct * 100).toFixed(1)}%`
-              : "—"
-          }${risk.overweight ? ` · ${esc(t(locale, "paperOverweight"))}` : ""}</li>
-          <li>${esc(t(locale, "paperConsecLoss"))}: ${risk.consecutiveLosses}</li>
-          <li>${esc(t(locale, "paperStress"))}: −8% / −15% equity shock → ${fmtMoney(eq * 0.92)} / ${fmtMoney(eq * 0.85)}</li>
-        </ul>
-        <label class="tiny"><input type="checkbox" id="p-hard" ${state.hardRiskGates ? "checked" : ""}/> ${esc(t(locale, "paperHardGates"))}</label>
-        <label class="tiny"><input type="checkbox" id="p-cost" ${state.costModelEnabled === false ? "" : "checked"}/> ${esc(t(locale, "paperCostOn"))}</label>
-        <p class="muted tiny">${esc(t(locale, "paperRiskNote"))}</p>
+    const panesHtml = `
+      <aside id="ws-watchlist">
+        <h2 class="tiny">${esc(t(locale, "navPaper"))}</h2>
+        <div class="stats-row paper-stats">
+          <div class="stat"><span class="stat-n">${fmtMoney(state.cash)}</span><span class="stat-l">${esc(t(locale, "paperCash"))}</span></div>
+          <div class="stat"><span class="stat-n">${fmtMoney(eq)}</span><span class="stat-l">${esc(t(locale, "paperEquity"))}</span></div>
+          <div class="stat"><span class="stat-n">${pnlPctNow.toFixed(3)}%</span><span class="stat-l">${esc(t(locale, "paperPnlPct"))}</span></div>
+        </div>
+        ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
+        ${
+          showTopUp
+            ? `<button type="button" class="btn btn-primary" id="p-topup">${esc(t(locale, "paperTopUp"))}</button>`
+            : ""
+        }
+        ${watchRows}
+      </aside>
+      <section id="ws-perf">
+        <div class="cta-row wrap">
+          <button type="button" class="btn ${viewMode === "pnlPct" ? "btn-primary" : ""}" id="v-pnl">${esc(t(locale, "paperViewPnl"))}</button>
+          <button type="button" class="btn ${viewMode === "equity" ? "btn-primary" : ""}" id="v-eq">${esc(t(locale, "paperViewEquity"))}</button>
+          <a class="btn btn-ghost tiny" href="#/live-rehearsal">${esc(t(locale, "liveRehearsalTitle"))}</a>
+        </div>
+        <div class="chart-shell equity-shell"><div id="equity-chart" class="chart equity-chart"></div></div>
+        <div class="chart-shell equity-shell dd-shell"><div id="dd-chart" class="chart equity-chart"></div></div>
+        <p class="muted tiny">${esc(t(locale, "paperMtmNote"))}</p>
       </section>
-
-      <section class="paper-ticket" id="ws-ticket">
+      <section id="ws-ticket">
         <h2>${esc(t(locale, "wsTicket"))}</h2>
+        <section class="risk-strip ${risk.overweight ? "warn" : ""}" id="ws-risk">
+          <ul class="tiny">
+            <li>${esc(t(locale, "paperCashBuf"))}: ${(risk.cashPct * 100).toFixed(1)}%</li>
+            <li>${esc(t(locale, "paperMaxName"))}: ${
+              risk.maxNameSymbol
+                ? `${esc(risk.maxNameSymbol)} ${(risk.maxNamePct * 100).toFixed(1)}%`
+                : "—"
+            }</li>
+            <li>${esc(t(locale, "paperStress"))}: ${fmtMoney(eq * 0.92)} / ${fmtMoney(eq * 0.85)}</li>
+          </ul>
+          <label class="tiny"><input type="checkbox" id="p-hard" ${state.hardRiskGates ? "checked" : ""}/> ${esc(t(locale, "paperHardGates"))}</label>
+          <label class="tiny"><input type="checkbox" id="p-cost" ${state.costModelEnabled === false ? "" : "checked"}/> ${esc(t(locale, "paperCostOn"))}</label>
+        </section>
         <label>${esc(t(locale, "paperSymbol"))}
           <select id="p-symbol">
             ${tradeable
@@ -200,101 +217,97 @@ export function renderPaper(
           <button type="button" class="btn btn-primary" id="p-buy">${esc(t(locale, "paperBuy"))}</button>
           <button type="button" class="btn" id="p-sell">${esc(t(locale, "paperSell"))}</button>
         </div>
+        <p class="muted tiny">${esc(t(locale, "paperDisclaimer"))}</p>
       </section>
-
-      <section id="ws-perf">
-        <h2>${esc(t(locale, "paperEquityCurve"))}</h2>
-        <div class="cta-row wrap">
-          <button type="button" class="btn ${viewMode === "pnlPct" ? "btn-primary" : ""}" id="v-pnl">${esc(t(locale, "paperViewPnl"))}</button>
-          <button type="button" class="btn ${viewMode === "equity" ? "btn-primary" : ""}" id="v-eq">${esc(t(locale, "paperViewEquity"))}</button>
-        </div>
-        <div class="chart-shell equity-shell"><div id="equity-chart" class="chart equity-chart"></div></div>
-        <div class="chart-shell equity-shell dd-shell"><div id="dd-chart" class="chart equity-chart"></div></div>
-        <p class="muted tiny">${esc(t(locale, "paperMtmNote"))} · points=${points.length} · markers=${markers.length}</p>
-      </section>
-
-      <section id="ws-positions">
-        <h2>${esc(t(locale, "paperPositions"))}</h2>
-        ${
-          state.positions.length === 0
-            ? `<p class="muted">${esc(t(locale, "paperEmpty"))}</p>`
-            : `<div class="table-wrap"><table class="agent-table">
-                <thead><tr>
-                  <th>Symbol</th><th>Qty</th><th>Avg</th><th>Mark</th>
-                  <th>${esc(t(locale, "paperWeight"))}</th>
-                  <th>${esc(t(locale, "paperUnrealPnl"))}</th>
-                </tr></thead>
-                <tbody>
-                  ${state.positions
-                    .map((p) => {
-                      const mark = lastClose[p.symbol] ?? p.avgCost;
-                      const mv = p.qty * mark;
-                      const w = eq > 0 ? (mv / eq) * 100 : 0;
-                      const upnl = (mark - p.avgCost) * p.qty;
-                      const cls = upnl >= 0 ? "positive" : "negative";
-                      return `<tr>
-                        <td>${esc(p.symbol)}</td>
-                        <td>${p.qty.toLocaleString()}</td>
-                        <td>${p.avgCost.toFixed(3)}</td>
-                        <td>${mark.toFixed(3)}</td>
-                        <td>${w.toFixed(1)}%</td>
-                        <td class="${cls}">${fmtMoney(upnl)}</td>
-                      </tr>`;
-                    })
-                    .join("")}
-                </tbody>
-              </table></div>`
-        }
-      </section>
-
-      <section id="ws-journal">
-        <h2>${esc(t(locale, "paperJournal"))}</h2>
-        ${
-          state.journal.length === 0
-            ? `<p class="muted">${esc(t(locale, "paperNoJournal"))}</p>`
-            : `<div class="table-wrap"><table class="agent-table">
-                <thead><tr>
-                  <th>Side</th><th>Symbol</th><th>Qty</th><th>Fill</th>
-                  <th>${esc(t(locale, "paperFee"))}</th>
-                  <th>${esc(t(locale, "paperFillRule"))}</th>
-                  <th>Src</th>
-                </tr></thead>
-                <tbody>
-                  ${state.journal
-                    .slice(0, 40)
-                    .map(
-                      (j) => `<tr>
-                        <td>${esc(j.side)}</td>
-                        <td>${esc(j.symbol)}</td>
-                        <td>${j.qty.toLocaleString()}</td>
-                        <td>${j.fillPrice.toFixed(3)} <span class="muted tiny">${esc(j.fillDate)}</span></td>
-                        <td>${j.fee.toFixed(2)}${
-                          j.feeStampDuty
-                            ? ` <span class="muted tiny">(c${(j.feeCommission ?? 0).toFixed(1)}/s${j.feeStampDuty.toFixed(1)})</span>`
-                            : ""
-                        }</td>
-                        <td>${esc(j.fillRule)} <span class="muted tiny">sig ${esc(j.signalDate)}</span></td>
-                        <td class="tiny">${esc(j.source ?? "manual")}</td>
-                      </tr>`,
-                    )
-                    .join("")}
-                </tbody>
-              </table></div>`
-        }
-      </section>
-
-      <div class="cta-row wrap" id="ws-ops">
-        <button type="button" class="btn" id="p-csv">${esc(t(locale, "paperExportCsv"))}</button>
-        <button type="button" class="btn" id="p-json">${esc(t(locale, "paperExportJson"))}</button>
-        <button type="button" class="btn" id="p-jl">${esc(t(locale, "paperDownloadJournal"))}</button>
-        <label class="btn file-btn">${esc(t(locale, "paperImportJournal"))}
-          <input type="file" id="p-import" accept="application/json,.json" hidden />
-        </label>
-        <button type="button" class="btn btn-danger" id="p-reset">${esc(t(locale, "paperReset"))}</button>
+      <div id="ws-blotter">
+        <section id="ws-positions">
+          <h2>${esc(t(locale, "paperPositions"))}</h2>
+          ${
+            state.positions.length === 0
+              ? `<p class="muted">${esc(t(locale, "paperEmpty"))}</p>`
+              : `<div class="table-wrap"><table class="agent-table">
+                  <thead><tr>
+                    <th>Symbol</th><th>Qty</th><th>Avg</th><th>Mark</th>
+                    <th>${esc(t(locale, "paperWeight"))}</th>
+                    <th>${esc(t(locale, "paperUnrealPnl"))}</th>
+                  </tr></thead>
+                  <tbody>
+                    ${state.positions
+                      .map((p) => {
+                        const mark = lastClose[p.symbol] ?? p.avgCost;
+                        const mv = p.qty * mark;
+                        const w = eq > 0 ? (mv / eq) * 100 : 0;
+                        const upnl = (mark - p.avgCost) * p.qty;
+                        const cls = upnl >= 0 ? "positive" : "negative";
+                        return `<tr>
+                          <td>${esc(p.symbol)}</td>
+                          <td>${p.qty.toLocaleString()}</td>
+                          <td>${p.avgCost.toFixed(3)}</td>
+                          <td>${mark.toFixed(3)}</td>
+                          <td>${w.toFixed(1)}%</td>
+                          <td class="${cls}">${fmtMoney(upnl)}</td>
+                        </tr>`;
+                      })
+                      .join("")}
+                  </tbody>
+                </table></div>`
+          }
+        </section>
+        <section id="ws-journal">
+          <h2>${esc(t(locale, "paperJournal"))}</h2>
+          ${
+            state.journal.length === 0
+              ? `<p class="muted">${esc(t(locale, "paperNoJournal"))}</p>`
+              : `<div class="table-wrap"><table class="agent-table">
+                  <thead><tr>
+                    <th>Side</th><th>Symbol</th><th>Qty</th><th>Fill</th>
+                    <th>${esc(t(locale, "paperFee"))}</th>
+                    <th>${esc(t(locale, "paperFillRule"))}</th>
+                  </tr></thead>
+                  <tbody>
+                    ${state.journal
+                      .slice(0, 40)
+                      .map(
+                        (j) => `<tr>
+                          <td>${esc(j.side)}</td>
+                          <td>${esc(j.symbol)}</td>
+                          <td>${j.qty.toLocaleString()}</td>
+                          <td>${j.fillPrice.toFixed(3)} <span class="muted tiny">${esc(j.fillDate)}</span></td>
+                          <td>${j.fee.toFixed(2)}</td>
+                          <td>${esc(j.fillRule)}</td>
+                        </tr>`,
+                      )
+                      .join("")}
+                  </tbody>
+                </table></div>`
+          }
+        </section>
+        <section id="ws-ops">
+          <h2>${esc(t(locale, "wsOps"))}</h2>
+          <div class="cta-row wrap">
+            <button type="button" class="btn" id="p-csv">${esc(t(locale, "paperExportCsv"))}</button>
+            <button type="button" class="btn" id="p-json">${esc(t(locale, "paperExportJson"))}</button>
+            <button type="button" class="btn" id="p-jl">${esc(t(locale, "paperDownloadJournal"))}</button>
+            <label class="btn file-btn">${esc(t(locale, "paperImportJournal"))}
+              <input type="file" id="p-import" accept="application/json,.json" hidden />
+            </label>
+            <button type="button" class="btn btn-danger" id="p-reset">${esc(t(locale, "paperReset"))}</button>
+          </div>
+        </section>
       </div>
     `;
 
-    root.innerHTML = renderShell(locale, "paper", body);
+    root.innerHTML = renderWorkspaceShell({
+      locale,
+      active: "paper",
+      layout: "trade",
+      panesHtml,
+      reportDate: data.reportDate,
+      statusRight:
+        state.costModelEnabled === false
+          ? t(locale, "paperCostOffWarn")
+          : t(locale, "paperCostOn"),
+    });
     document.title = `${t(locale, "paperTitle")} · Agenter`;
 
     const symEl = root.querySelector("#p-symbol") as HTMLSelectElement | null;
@@ -491,6 +504,7 @@ export function renderPaper(
       }
       state = result.state;
       savePaperState(state);
+      setAcademyFlag("paperTrade");
       paint(
         `${side.toUpperCase()} ${norm.qty} ${symbol} @ ${fill.fillPrice.toFixed(3)} (${fill.fillRule} ${fill.fillDate})`,
       );
@@ -498,11 +512,22 @@ export function renderPaper(
 
     root.querySelector("#p-buy")?.addEventListener("click", () => trade("buy"));
     root.querySelector("#p-sell")?.addEventListener("click", () => trade("sell"));
+    root.querySelectorAll<HTMLElement>(".ws-watch-row[data-sym]").forEach((el) => {
+      el.addEventListener("click", () => {
+        const sym = el.dataset.sym;
+        if (!sym || !symEl) return;
+        symEl.value = sym;
+        saveSelection({ symbol: sym });
+        refillSignals();
+      });
+    });
     root.querySelector("#p-csv")?.addEventListener("click", () => {
       downloadChecklist(state, locale, "csv");
+      setAcademyFlag("liveChecklist");
     });
     root.querySelector("#p-json")?.addEventListener("click", () => {
       downloadChecklist(state, locale, "json");
+      setAcademyFlag("liveChecklist");
     });
     root.querySelector("#p-jl")?.addEventListener("click", () => {
       downloadJournalJson(state);

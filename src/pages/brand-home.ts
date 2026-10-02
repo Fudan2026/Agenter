@@ -11,11 +11,13 @@ export function renderBrandHome(root: HTMLElement, locale: Locale): void {
       <p class="hero-sub">${esc(t(locale, "homeSub"))}</p>
       <p class="hero-lead">${esc(t(locale, "homeLead"))}</p>
       <div class="cta-row">
-        <a class="btn btn-primary" href="#/compare">${esc(t(locale, "ctaCompare"))}</a>
-        <a class="btn" href="#/learn">${esc(t(locale, "ctaLearn"))}</a>
+        <a class="btn btn-primary" href="#/compare">${esc(t(locale, "ctaCompareAgents"))}</a>
+        <a class="btn" href="#/desk">${esc(t(locale, "ctaEnterDesk"))}</a>
       </div>
     </section>
     <section class="how-section">
+      <h2>${esc(t(locale, "dualSystemTitle"))}</h2>
+      <p class="muted">${esc(t(locale, "dualSystemLead"))}</p>
       <h2>${esc(t(locale, "howTitle"))}</h2>
       <ol class="how-steps">
         <li>${esc(t(locale, "howStep1"))}</li>
@@ -28,7 +30,8 @@ export function renderBrandHome(root: HTMLElement, locale: Locale): void {
       <h2>${esc(t(locale, "toolsSecondaryNote"))}</h2>
       <p class="muted tiny">${esc(t(locale, "toolsQuantEntry"))}</p>
       <div class="cta-row">
-        <a class="btn btn-ghost" href="#/tools">${esc(t(locale, "ctaTools"))}</a>
+        <a class="btn btn-ghost" href="#/desk">${esc(t(locale, "enterDesk"))}</a>
+        <a class="btn btn-ghost" href="#/learn">${esc(t(locale, "ctaLearn"))}</a>
       </div>
     </section>
   `;

@@ -123,7 +123,7 @@ function icPanelHtml(locale: Locale, symbols: SymbolRow[]): string {
     .map((q) => `<tr><td>Q${q.q}</td><td>${(q.meanRet * 100).toFixed(3)}%</td></tr>`)
     .join("");
   return `<h3>Factor IC (RSI / confluence proxy)</h3>
-    <p class="muted tiny">Spearman IC ${ic == null ? "—" : ic.toFixed(3)} · IR ${summary[0]?.ir.toFixed(2) ?? "—"}</p>
+    <p class="muted tiny">spearmanIC ${ic == null ? "—" : ic.toFixed(3)} · icSummary IR ${summary[0]?.ir.toFixed(2) ?? "—"} · Inspired by Alphalens / FactorHub</p>
     <div class="table-wrap"><table class="agent-table"><thead><tr><th>Quantile</th><th>Mean fwd</th></tr></thead><tbody>${qRows}</tbody></table></div>`;
 }
 

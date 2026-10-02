@@ -23,10 +23,6 @@ function tk(locale: Locale, key: string): string {
   return t(locale, key as Tk);
 }
 
-function tk(locale: Locale, key: string): string {
-  return t(locale, key as Tk);
-}
-
 let playTimer: ReturnType<typeof setInterval> | null = null;
 
 export function cleanupReplayPage(): void {

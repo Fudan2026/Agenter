@@ -57,8 +57,13 @@ export function renderTools(
 ): void {
   const cards = [
     {
-      href: "#/quant",
-      title: t(locale, "toolQuant"),
+      href: "#/desk",
+      title: t(locale, "navDesk"),
+      desc: t(locale, "deskHomeLead"),
+    },
+    {
+      href: "#/lab",
+      title: t(locale, "navLab"),
       desc: t(locale, "toolQuantDesc"),
     },
     {
@@ -67,9 +72,14 @@ export function renderTools(
       desc: t(locale, "toolPaperDesc"),
     },
     {
-      href: "#/paper",
-      title: t(locale, "toolExport"),
+      href: "#/live-rehearsal",
+      title: t(locale, "liveRehearsalTitle"),
       desc: t(locale, "toolExportDesc"),
+    },
+    {
+      href: "#/academy",
+      title: t(locale, "navAcademy"),
+      desc: t(locale, "academyProgress"),
     },
     {
       href: "#/news",

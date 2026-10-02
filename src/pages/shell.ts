@@ -6,13 +6,48 @@ export type RouteName =
   | "home"
   | "compare"
   | "learn"
+  | "desk"
   | "tools"
   | "news"
   | "quant"
   | "paper"
-  | "asset";
+  | "asset"
+  | "research"
+  | "screener"
+  | "timing"
+  | "lab"
+  | "portfolio"
+  | "replay"
+  | "academy"
+  | "live-rehearsal";
 
-const TOOLS_SUBROUTES: RouteName[] = ["quant", "paper", "asset", "news"];
+const TOOLS_SUBROUTES: RouteName[] = [
+  "quant",
+  "paper",
+  "asset",
+  "news",
+  "lab",
+  "screener",
+  "timing",
+  "portfolio",
+  "replay",
+  "academy",
+  "live-rehearsal",
+  "research",
+];
+
+const DESK_SUBROUTES: RouteName[] = [
+  "desk",
+  "research",
+  "screener",
+  "timing",
+  "lab",
+  "paper",
+  "portfolio",
+  "replay",
+  "academy",
+  "live-rehearsal",
+];
 
 export function renderShell(
   locale: Locale,
@@ -24,6 +59,7 @@ export function renderShell(
     { route: "home", href: "#/", label: "navHome" },
     { route: "compare", href: "#/compare", label: "navCompare" },
     { route: "learn", href: "#/learn", label: "navLearn" },
+    { route: "desk", href: "#/desk", label: "navDesk" },
     { route: "tools", href: "#/tools", label: "navTools" },
   ];
 
@@ -41,8 +77,10 @@ export function renderShell(
             .map((n) => {
               const toolsActive =
                 n.route === "tools" && TOOLS_SUBROUTES.includes(active);
+              const deskActive =
+                n.route === "desk" && DESK_SUBROUTES.includes(active);
               const cls =
-                active === n.route || toolsActive ? "active" : "";
+                active === n.route || toolsActive || deskActive ? "active" : "";
               return `<a class="nav-link ${cls}" href="${n.href}">${esc(t(locale, n.label))}</a>`;
             })
             .join("")}
@@ -60,4 +98,9 @@ export function renderShell(
   `;
 }
 
-type StringKeyNav = "navHome" | "navCompare" | "navLearn" | "navTools";
+type StringKeyNav =
+  | "navHome"
+  | "navCompare"
+  | "navLearn"
+  | "navDesk"
+  | "navTools";

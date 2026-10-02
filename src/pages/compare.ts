@@ -264,6 +264,7 @@ export function renderCompare(
       <section>
         <div class="cta-row wrap">
           <h2 style="margin:0;flex:1">${esc(t(locale, "compareMatrix"))}</h2>
+          <a class="btn btn-ghost tiny" href="#/desk">${esc(t(locale, "ctaEnterDesk"))}</a>
           <label class="tiny"><input type="checkbox" id="diff-only" ${diffsOnly ? "checked" : ""}/> ${esc(t(locale, "compareDiffsOnly"))}</label>
         </div>
         ${

@@ -70,6 +70,11 @@ async function main() {
       candlesFull.length > 0
         ? candlesFull[candlesFull.length - 1].close
         : raw?.regularMarketPrice ?? 0;
+    const advSlice = candlesFull.slice(-20);
+    const adv20 =
+      advSlice.length > 0
+        ? advSlice.reduce((s, c) => s + c.volume * c.close, 0) / advSlice.length
+        : null;
 
     return {
       symbol: def.symbol,
@@ -86,6 +91,7 @@ async function main() {
       signals,
       ma20: series.sma20,
       ma60: series.sma60,
+      ...(adv20 != null ? { adv20 } : {}),
     };
   });
 
