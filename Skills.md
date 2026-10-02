@@ -10,14 +10,15 @@ Workspace skill catalog for **all coding agents** (Cursor Cloud Agent, Claude Co
 4. Interpret API JSON in the agent layer; bundled scripts must pass through raw gateway bodies unchanged.
 5. For answers sourced from Iwencai skills, state: **数据来源：同花顺问财**.
 
-The Agenter **website** never calls this API from the browser. Site content comes from bake-time `npm run announcements:bake` → `public/data/announcements.json`. Agents use this CLI interactively.
+The Agenter **website** never calls Iwencai or THS trade APIs from the browser. Announcements come from bake-time `npm run announcements:bake` → `public/data/announcements.json`. Sim Desk `#/sim` is a local distill. Agents use SkillHub CLIs interactively.
 
 ## Environment
 
 | Variable | Required | Default | Purpose |
 |----------|----------|---------|---------|
-| `IWENCAI_API_KEY` | yes | — | Bearer token from [i问财 SkillHub](https://www.iwencai.com/skillhub) (Agent 安装指引) |
+| `IWENCAI_API_KEY` | yes (for agent CLI / bake) | — | Bearer token from [i问财 SkillHub](https://www.iwencai.com/skillhub) (Agent 安装指引) |
 | `IWENCAI_BASE_URL` | no | `https://openapi.iwencai.com` | OpenAPI gateway base URL |
+| `AGENTER_SIM_ACCOUNTS_DIR` | no | `~/.agenter/user_accounts` | Local JSON dir for `模拟炒股` account_manager (never commit) |
 
 Cloud Agent shells may not load `~/.bashrc`. If `IWENCAI_API_KEY` is missing in a run, ask the user to add it to the Cloud Agent environment secrets, or export it in the same shell before calling the script.
 
@@ -44,6 +45,7 @@ After installing a new SkillHub skill, add or update its section in **this file*
 | Slug | Trigger (when to load) | Package path |
 |------|------------------------|--------------|
 | `announcement-search` | A股/港股/基金/ETF 公告；分红、回购、业绩预告、重组等 | `skills/announcement-search/` |
+| `模拟炒股` | A股模拟开户、买入/卖出、持仓/资金/成交/近30日收益 | `skills/模拟炒股/` |
 
 ---
 
@@ -103,6 +105,54 @@ The script must not reshape API fields; summarization happens in the agent after
 
 ---
 
+## 模拟炒股
+
+**Description:** 同花顺模拟炒股服务 — A股开户、委托买卖、持仓/资金/成交/盈利查询。Attribution: **同花顺问财提供模拟炒股服务**.
+
+**Paths (agenter repo root):**
+
+| Artifact | Path |
+|----------|------|
+| Full skill doc | `skills/模拟炒股/SKILL.md` |
+| API reference | `skills/模拟炒股/references/api-spec.md` |
+| Account format | `skills/模拟炒股/references/account-data-format.md` |
+| Account manager | `skills/模拟炒股/scripts/account_manager.py` |
+| Open account | `skills/模拟炒股/scripts/open_account.py` |
+| Trading | `skills/模拟炒股/scripts/stock_trading.py` |
+| Queries | `skills/模拟炒股/scripts/stock_query.py` |
+| Stock search | `skills/模拟炒股/scripts/stock_search.py` |
+
+**Account storage (patched for Agenter):** default `~/.agenter/user_accounts/default.json`. Override with `AGENTER_SIM_ACCOUNTS_DIR`. Never store account JSON in the skill package or git.
+
+**Absolute CLI (Cloud Agent):**
+
+```bash
+# check / generate username
+python3 /agent/repos/agenter/skills/模拟炒股/scripts/account_manager.py --action check
+python3 /agent/repos/agenter/skills/模拟炒股/scripts/account_manager.py --action generate
+
+# open fund account (needs network to trade.10jqka.com.cn:8088)
+python3 /agent/repos/agenter/skills/模拟炒股/scripts/open_account.py --action create --username skill_<ms>
+
+# place order (qty multiples of 100; market 1=SZ 2=SH; B=buy S=sell)
+python3 /agent/repos/agenter/skills/模拟炒股/scripts/stock_trading.py \
+  --usrid <资金账号> --stock-code 600519 --shareholder-account <股东账号> \
+  --market-code 2 --price 1800 --quantity 100 --direction B
+```
+
+### Workflow
+
+1. `account_manager.py --action check`. If missing, generate `skill_<ms>`, `open_account.py --action create`, query shareholders, `save_account` via manager.
+2. Map user intent → buy/sell/positions/fund/today trades/history/30d gain.
+3. Resolve names via `stock_search.py` when needed.
+4. Call the matching script; end every user-facing answer with **同花顺问财提供模拟炒股服务**.
+
+### Website distill
+
+The SPA route `#/sim` (Tools → 模拟炒股台) mirrors open-account / order / positions / funds UX on a **local** ledger (`agenter.sim.ledger.v1`, ¥100M, lot 100, T+1, quotes from baked `latest.json`). It does **not** call `trade.10jqka.com.cn` from the browser. Keep `#/paper` (next-open educational desk) unchanged.
+
+---
+
 ## Cursor discovery
 
-Project-local Cursor skills live under `.cursor/skills/<slug>/SKILL.md`. For `announcement-search`, this repo symlinks that directory to `skills/announcement-search/` so Cursor indexes the same content as SkillHub.
+Project-local Cursor skills live under `.cursor/skills/<slug>/SKILL.md`. For `announcement-search` and `模拟炒股`, this repo symlinks those directories to `skills/<slug>/` so Cursor indexes the same content as SkillHub.

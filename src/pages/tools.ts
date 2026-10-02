@@ -108,6 +108,11 @@ export function renderTools(
       desc: t(locale, "toolPaperDesc"),
     },
     {
+      href: "#/sim",
+      title: t(locale, "toolSim"),
+      desc: t(locale, "toolSimDesc"),
+    },
+    {
       href: "#/paper",
       title: t(locale, "toolExport"),
       desc: t(locale, "toolExportDesc"),
