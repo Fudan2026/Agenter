@@ -1,0 +1,22 @@
+{
+  "name": "agenter",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview",
+    "test": "tsx --test src/lib/patterns/detect.test.ts",
+    "quant:bake": "tsx src/scripts/quant-bake.ts"
+  },
+  "dependencies": {
+    "lightweight-charts": "^4.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.10",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vite": "^6.2.2"
+  }
+}
