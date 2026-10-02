@@ -247,6 +247,7 @@ export function renderQuant(
           : ""
       }
       <div class="banner-stale">${esc(t(locale, "survivorshipBanner"))}</div>
+      <div class="banner-stale">${locale === "zh" ? "策略实验室已迁移至 " : "Strategy Lab moved to "}<a href="#/lab">#/lab</a></div>
       ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
       <div class="stats-row">
         <div class="stat"><span class="stat-n">${data.stats.symbolsOk}</span><span class="stat-l">${esc(t(locale, "statsOk"))}</span></div>

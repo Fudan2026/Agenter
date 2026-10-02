@@ -53,6 +53,8 @@ export interface LatestPayload {
     signals?: SignalSummaryPayload;
     ma20?: Array<{ date: string; value: number }>;
     ma60?: Array<{ date: string; value: number }>;
+    /** Optional 20d average dollar volume from bake (screener speed-up). */
+    adv20?: number;
   }>;
   dailyReview: {
     zh: string[];

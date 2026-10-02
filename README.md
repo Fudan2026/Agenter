@@ -6,7 +6,7 @@ Live site (GitHub Pages): [https://fudan2026.github.io/Agenter/](https://fudan20
 
 Intended custom domain: [https://agenter.si](https://agenter.si) — Cloudflare DNS bind documented below (**not** cut this round).
 
-Agenter helps people **filter, compare, and pick** AI / Agent products. Quant review, signal boards, and **快速实盘** (checklist export + in-browser paper at **¥100,000,000** start) are **secondary tools**.
+Agenter helps people **filter, compare, and pick** AI / Agent products. A peer **Quant OS** desk trains research → timing → paper → live rehearsal (A+C only). Both surfaces are first-class; the brand home stays **for better agents**.
 
 This README is the **canonical English build brief**.
 
@@ -16,19 +16,52 @@ This README is the **canonical English build brief**.
 
 | Route | Purpose |
 |-------|---------|
-| `/#/` | Brand home — **Agenter** / for better agents (primary CTA → Compare) |
+| `/#/` | Brand home — **Agenter** / for better agents · dual CTA → Compare **and** Quant Desk |
 | `/#/compare` | Apple-style sticky shortlist + dimension matrix + harness presets |
-| `/#/learn` | Guided tour + practice scenarios |
-| `/#/tools` | **Sole hub** for Quant / Paper / News (secondary tools) |
-| `/#/news` | AI news digest (via Tools) |
-| `/#/quant` | Quant review + Tier-2 Strategy Lab (deep link; not primary nav) |
-| `/#/paper` | Paper workstation (deep link; not primary nav) |
+| `/#/learn` | Guided tour + practice scenarios (+ Academy cross-links) |
+| `/#/desk` | Quant OS launcher (full-bleed mosaic) |
+| `/#/research` | Research mosaic — watchlist · chart · news · factors |
+| `/#/screener` | Client-side scanner on baked `latest.json` |
+| `/#/timing` | CN session calendar · regime · tomorrow agenda |
+| `/#/lab` | Factor IC/IR + Strategy Lab (Tier-2 gates); `#/quant` soft-redirects here |
+| `/#/paper` | Paper workstation mosaic (trade layout) |
+| `/#/portfolio` | Weight construct · exposures · paper intents |
+| `/#/replay` | Session replay (no lookahead) |
+| `/#/academy` | 7-stage Quant Academy curriculum |
+| `/#/live-rehearsal` | Readiness score + checklist export (never submits) |
+| `/#/tools` | Hub listing Desk modules + News |
+| `/#/news` | AI news digest |
 | `/#/asset/:symbol` | Candlestick + MA + factor exposures |
 
-**Primary nav = Home · Compare · Learn · Tools only.** Quant/Paper are tools — not the brand face.  
-**Correction:** Round-1 Quant-as-home was wrong; corrected this round.
+**Primary nav = Home · Compare · Learn · Desk · Tools.**  
+Desk deep routes use `.workspace-shell` **100vw / 100dvh** (no 1040px cap). Agents routes keep readable `#app { max-width: 1040px }`.
 
 **Home must not be Quant-only.** Primary H1 is **Agenter**.
+
+---
+
+## Quant OS
+
+Full-bleed training system distilled from TWS Mosaic / Launchpad / TradingView / FactorHub / Alphalens / QuantStats / pandas_market_calendars / thinkorswim paperMoney **ideas** (no affiliation claimed — UI footnotes say “Inspired by”).
+
+| Layout preset | Grid |
+|---------------|------|
+| `trade` | watchlist · chart/MTM · ticket · blotter |
+| `research` | watchlist · chart · news |
+| `timing` | calendar · chart · agenda |
+| `review` | single pane (Desk home / Academy) |
+
+Linked panes share `agenter.desk.selection.v1`. Live path = **readiness rehearsal** (checklist + friction + gates), **not** broker order routing.
+
+Academy stages (localStorage `agenter.academy.v1`): Research → Screener → Timing → Lab → Paper → Replay → Live rehearsal.
+
+### Verify (no Computer Use)
+
+```bash
+npm test && npm run build
+# Dist / Pages should contain: workspace-mode, #/desk, #/timing, #/academy, #/replay,
+# ws-layout-trade, spearmanIC/icSummary, half-Kelly, Haircut, compare-matrix, for better agents
+```
 
 ---
 
