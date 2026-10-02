@@ -14,7 +14,12 @@ import {
   type StrategyId,
 } from "../lib/backtest/engine";
 import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
+import type { FactorsPayload } from "../lib/factors/cross-section";
 import { PATTERN_META, type PatternId } from "../lib/patterns/types";
+import {
+  DEFAULT_COST_CONFIG,
+  type SlippageModel,
+} from "../lib/paper/costs";
 import {
   applyBuy,
   applySell,
@@ -35,6 +40,20 @@ import type { ScreensPayload } from "../lib/screens/map";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 import type { LatestPayload, SymbolRow } from "./types";
+
+export interface RecipesPayload {
+  generatedAt: string;
+  attribution: { zh: string; en: string };
+  cards: Array<{
+    id: string;
+    skill: string;
+    titleZh: string;
+    titleEn: string;
+    bodyZh: string;
+    bodyEn: string;
+    href: string;
+  }>;
+}
 
 let labChart: IChartApi | null = null;
 let lastLabResult: BacktestResult | null = null;
@@ -188,6 +207,124 @@ function renderScreensPanel(
   </section>`;
 }
 
+function fmtZ(v: number | null): string {
+  return v == null ? "—" : v.toFixed(2);
+}
+
+function renderFactorBoard(
+  locale: Locale,
+  factors: FactorsPayload | null,
+): string {
+  if (!factors?.factors?.length) return "";
+  const top = factors.factors
+    .filter((f) => f.composite != null)
+    .slice(0, factors.topN ?? 8);
+  const attr = locale === "zh" ? factors.attribution.zh : factors.attribution.en;
+  return `<section class="factor-board-panel">
+    <h2>${esc(t(locale, "factorBoard"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "factorBoardLead"))}</p>
+    <p class="muted tiny">${esc(attr)}</p>
+    <div class="table-wrap"><table class="agent-table">
+      <thead><tr>
+        <th>${esc(t(locale, "factorRank"))}</th>
+        <th>Symbol</th>
+        <th>${esc(t(locale, "factorMomentum"))}</th>
+        <th>${esc(t(locale, "factorLowVol"))}</th>
+        <th>${esc(t(locale, "factorSizeAdv"))}</th>
+        <th>${esc(t(locale, "factorQuality"))}</th>
+        <th>${esc(t(locale, "factorComposite"))}</th>
+      </tr></thead>
+      <tbody>
+        ${top
+          .map((f) => {
+            const name = locale === "zh" ? f.nameZh : f.nameEn;
+            return `<tr>
+              <td>${f.rank ?? "—"}</td>
+              <td><a href="#/asset/${encodeURIComponent(f.symbol)}">${esc(f.symbol)}</a>
+                <div class="muted tiny">${esc(name)}</div></td>
+              <td>${esc(fmtZ(f.momentum))}</td>
+              <td>${esc(fmtZ(f.lowVol))}</td>
+              <td>${esc(fmtZ(f.sizeAdv))}</td>
+              <td>${esc(fmtZ(f.quality))}</td>
+              <td><strong>${esc(fmtZ(f.composite))}</strong></td>
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table></div>
+  </section>`;
+}
+
+function renderAdfStrip(
+  locale: Locale,
+  factors: FactorsPayload | null,
+): string {
+  const rows = factors?.adfStrip ?? [];
+  if (!rows.length) return "";
+  return `<section class="adf-strip-panel">
+    <h2>${esc(t(locale, "adfStrip"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "adfStripLead"))}</p>
+    <div class="table-wrap"><table class="agent-table">
+      <thead><tr>
+        <th>Symbol</th>
+        <th>${esc(t(locale, "adfStat"))}</th>
+        <th>${esc(t(locale, "adfP"))}</th>
+        <th>${esc(t(locale, "adfStationary"))}</th>
+        <th>σ</th>
+      </tr></thead>
+      <tbody>
+        ${rows
+          .map((r) => {
+            const name = locale === "zh" ? r.nameZh : r.nameEn;
+            const st =
+              r.stationary == null
+                ? "—"
+                : r.stationary
+                  ? t(locale, "yes")
+                  : t(locale, "no");
+            return `<tr>
+              <td>${esc(r.symbol)}<div class="muted tiny">${esc(name)}</div></td>
+              <td>${r.adfStat == null ? "—" : r.adfStat.toFixed(2)}</td>
+              <td>${r.adfP == null ? "—" : r.adfP.toFixed(3)}</td>
+              <td>${esc(st)}</td>
+              <td>${r.dailyVol == null ? "—" : (r.dailyVol * 100).toFixed(2) + "%"}</td>
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table></div>
+  </section>`;
+}
+
+function renderRecipeCards(
+  locale: Locale,
+  recipes: RecipesPayload | null,
+): string {
+  const cards = recipes?.cards ?? [];
+  if (!cards.length) return "";
+  const attr =
+    locale === "zh" ? recipes!.attribution.zh : recipes!.attribution.en;
+  return `<section class="recipe-cards-panel">
+    <h2>${esc(t(locale, "recipeCards"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "recipeCardsLead"))}</p>
+    <p class="muted tiny">${esc(attr)}</p>
+    <div class="recipe-grid">
+      ${cards
+        .map((c) => {
+          const title = locale === "zh" ? c.titleZh : c.titleEn;
+          const body = locale === "zh" ? c.bodyZh : c.bodyEn;
+          return `<article class="recipe-card">
+            <h3>${esc(title)}</h3>
+            <p class="muted tiny">${esc(c.skill)}</p>
+            <p>${esc(body)}</p>
+            <a class="btn" href="${esc(c.href)}">${esc(c.skill)}</a>
+          </article>`;
+        })
+        .join("")}
+    </div>
+  </section>`;
+}
+
 function signalDateForRow(row: SymbolRow): string {
   const lastPat = row.recentPatterns.at(-1)?.date;
   if (lastPat && row.candles.some((c) => c.date === lastPat)) return lastPat;
@@ -284,6 +421,8 @@ export function renderQuant(
   locale: Locale,
   indices: IndicesPayload | null = null,
   screens: ScreensPayload | null = null,
+  factors: FactorsPayload | null = null,
+  recipes: RecipesPayload | null = null,
 ): void {
   destroyLabChart();
   const bullets = locale === "zh" ? data.dailyReview.zh : data.dailyReview.en;
@@ -304,6 +443,7 @@ export function renderQuant(
   let sortKey: "confluence" | "rsi" | "bias" = "confluence";
   let labStrategy: StrategyId = strategies[0] ?? "ma_cross";
   let labSymbol: string = tradeable[0]?.symbol ?? "";
+  let labSlip: SlippageModel = "fixed";
 
   const boardRows = (): SymbolRow[] => {
     let rows = data.symbols.filter(
@@ -351,6 +491,9 @@ export function renderQuant(
         <div class="stat"><span class="stat-n">${data.stats.patternHits}</span><span class="stat-l">${esc(t(locale, "statsPatterns"))}</span></div>
       </div>
       ${renderScreensPanel(locale, screens)}
+      ${renderFactorBoard(locale, factors)}
+      ${renderAdfStrip(locale, factors)}
+      ${renderRecipeCards(locale, recipes)}
       <section class="review">
         <h2>${esc(t(locale, "dailyReview"))}</h2>
         <p class="muted tiny">${esc(data.reportDate)} · ${esc(data.generatedAt.slice(0, 19))}Z</p>
@@ -359,7 +502,7 @@ export function renderQuant(
 
       <section class="strategy-lab">
         <h2>${esc(t(locale, "strategyLab"))}</h2>
-        <p class="muted tiny">signal t close → fill t+1 open · 3 bps RT · long-only · 60/40 walk-forward</p>
+        <p class="muted tiny">signal t close → fill t+1 open · long-only · 60/40 walk-forward · ${esc(t(locale, "slipNote"))}</p>
         <div class="lab-controls cta-row wrap">
           <label>Strategy
             <select id="lab-strategy">
@@ -384,6 +527,12 @@ export function renderQuant(
                   return `<option value="${esc(s.symbol)}"${sel}>${esc(s.symbol)} · ${esc(name)}</option>`;
                 })
                 .join("")}
+            </select>
+          </label>
+          <label>${esc(t(locale, "slipModel"))}
+            <select id="lab-slip">
+              <option value="fixed"${labSlip === "fixed" ? " selected" : ""}>${esc(t(locale, "slipFixed"))}</option>
+              <option value="sqrt"${labSlip === "sqrt" ? " selected" : ""}>${esc(t(locale, "slipSqrt"))}</option>
             </select>
           </label>
           <button type="button" class="btn btn-primary" id="lab-run">${esc(t(locale, "strategyRun"))}</button>
@@ -585,6 +734,8 @@ export function renderQuant(
       ).value as StrategyId;
       labSymbol = (root.querySelector("#lab-symbol") as HTMLSelectElement)
         .value;
+      labSlip = ((root.querySelector("#lab-slip") as HTMLSelectElement)
+        ?.value ?? "fixed") as SlippageModel;
       const row = data.symbols.find((s) => s.symbol === labSymbol);
       if (!row || row.candles.length < 60) {
         paint(locale === "zh" ? "K线不足" : "Not enough candles");
@@ -594,11 +745,15 @@ export function renderQuant(
         strategyId: labStrategy,
         symbol: labSymbol,
         candles: row.candles,
+        costConfig: {
+          ...DEFAULT_COST_CONFIG,
+          slippageModel: labSlip,
+        },
       });
       paint(
         locale === "zh"
-          ? `回测完成 · ${lastLabResult.trades.length} 笔`
-          : `Backtest done · ${lastLabResult.trades.length} fills`,
+          ? `回测完成 · ${lastLabResult.trades.length} 笔 · ${labSlip === "sqrt" ? "√冲击" : "固定bps"}`
+          : `Backtest done · ${lastLabResult.trades.length} fills · ${labSlip}`,
       );
     });
 

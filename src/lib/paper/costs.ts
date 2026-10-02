@@ -1,7 +1,10 @@
 /**
  * A-share trading friction model (default ON).
  * Commission / stamp (sell) / transfer / slippage; limit-band helpers.
+ * Slippage: fixed bps (default) or sqrt-impact distill of SkillHub「执行模型」.
  */
+
+export type SlippageModel = "fixed" | "sqrt";
 
 export interface CostBreakdown {
   commission: number;
@@ -19,6 +22,14 @@ export interface CostConfig {
   transferFeeBps: number;
   slippageBpsDefault: number;
   slippageBpsIlliquid: number;
+  /** fixed = flat bps; sqrt = η·σ·√(V/ADV) impact as fraction of notional. */
+  slippageModel?: SlippageModel;
+  /** η for sqrt-impact (Almgren–Chriss style). */
+  sqrtEta?: number;
+  /** Default daily volatility when caller omits dailyVol. */
+  sqrtVolDefault?: number;
+  /** Default participation V/ADV when caller omits participation. */
+  sqrtParticipationDefault?: number;
 }
 
 export const DEFAULT_COST_CONFIG: CostConfig = {
@@ -29,6 +40,10 @@ export const DEFAULT_COST_CONFIG: CostConfig = {
   transferFeeBps: 0.1,
   slippageBpsDefault: 5,
   slippageBpsIlliquid: 10,
+  slippageModel: "fixed",
+  sqrtEta: 0.5,
+  sqrtVolDefault: 0.02,
+  sqrtParticipationDefault: 0.01,
 };
 
 /** Board limit: ChiNext/STAR 20%, main 10%, ETF/index null (skip). */
@@ -69,12 +84,31 @@ export function slippageBpsForSymbol(
   return cfg.slippageBpsDefault;
 }
 
+/**
+ * Sqrt market impact as a fraction of price:
+ * impact = η × σ × √(participation), participation = V/ADV.
+ */
+export function sqrtImpactFraction(opts: {
+  participation: number;
+  dailyVol: number;
+  eta: number;
+}): number {
+  const part = Math.max(0, opts.participation);
+  const vol = Math.max(0, opts.dailyVol);
+  const eta = Math.max(0, opts.eta);
+  return eta * vol * Math.sqrt(part);
+}
+
 export function computeTradeCosts(opts: {
   side: "buy" | "sell";
   notional: number;
   symbol: string;
   cfg: CostConfig;
   advRank01?: number;
+  /** V/ADV for sqrt model (shares or notional ratio). */
+  participation?: number;
+  /** Daily return stdev for sqrt model. */
+  dailyVol?: number;
 }): CostBreakdown {
   if (!opts.cfg.enabled) {
     return {
@@ -93,12 +127,24 @@ export function computeTradeCosts(opts: {
   const stampDuty =
     opts.side === "sell" ? (n * opts.cfg.stampDutyBpsSell) / 10_000 : 0;
   const transferFee = (n * opts.cfg.transferFeeBps) / 10_000;
-  const slipBps = slippageBpsForSymbol(
-    opts.symbol,
-    opts.advRank01 ?? 0.5,
-    opts.cfg,
-  );
-  const slippage = (n * slipBps) / 10_000;
+
+  let slippage: number;
+  if ((opts.cfg.slippageModel ?? "fixed") === "sqrt") {
+    const eta = opts.cfg.sqrtEta ?? 0.5;
+    const dailyVol = opts.dailyVol ?? opts.cfg.sqrtVolDefault ?? 0.02;
+    const participation =
+      opts.participation ?? opts.cfg.sqrtParticipationDefault ?? 0.01;
+    const impact = sqrtImpactFraction({ participation, dailyVol, eta });
+    slippage = n * impact;
+  } else {
+    const slipBps = slippageBpsForSymbol(
+      opts.symbol,
+      opts.advRank01 ?? 0.5,
+      opts.cfg,
+    );
+    slippage = (n * slipBps) / 10_000;
+  }
+
   const total = commission + stampDuty + transferFee + slippage;
   return { commission, stampDuty, transferFee, slippage, total };
 }

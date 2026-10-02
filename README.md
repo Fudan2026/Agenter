@@ -45,7 +45,7 @@ This README is the **canonical English build brief**.
 | Fill rule | Paper: signal `t` → fill **`t+1` open**. Sim: editable limit @ last close |
 | Locales | **zh** + **en** |
 | Stack | Vite + TS SPA; `quant:bake` + `news:bake` + `announcements:bake` + `iwencai-news:bake` + `indices:bake` + `screens:bake`; GitHub Pages |
-| Quant scope | **10** patterns (5 legacy + 5 additive) · **26** symbols (16 legacy + 10 additive) |
+| Quant scope | **15** patterns (5 legacy + 10 additive) · **26** symbols (16 legacy + 10 additive) |
 | DNS | Docs only this round — no cutover |
 
 ---
@@ -56,6 +56,7 @@ This README is the **canonical English build brief**.
 npm ci
 npm test                 # patterns + paper MTM + backtest + board
 npm run quant:bake           # OHLC → public/data/latest.json
+npm run factors:bake         # latest.json → public/data/factors.json (OHLC-proxy Factor Board)
 npm run news:bake            # RSS → public/data/ai-news.json (fail-open)
 npm run announcements:bake   # Iwencai CLI → public/data/announcements.json (fail-open; needs IWENCAI_API_KEY)
 npm run iwencai-news:bake    # news-search CLI → public/data/iwencai-news.json
@@ -88,17 +89,19 @@ Claude / Cursor / Copilot / Windsurf / Aider / Continue / 通义灵码 / Trae / 
 | Item | Value |
 |------|-------|
 | Markets | CN A-share + CN ETF — **26** symbols |
-| Patterns | **10** IDs (legacy five unchanged) |
+| Patterns | **15** IDs (legacy five unchanged) |
 | Indicators | SMA20/60, RSI14, MA align, volume spike (OpenCool distill) |
 | Bake window | **250** trading days |
 | Board | Confluence 0–100, filters, pattern heatmap, stale banner |
-| Strategy Lab | In-browser no-lookahead backtests (pattern / MA / RSI / confluence) + walk-forward tear sheet |
+| Factor Board | OHLC-proxy momentum / low-vol / ADV / quality · TopN ranks (`factors:bake`) |
+| ADF strip | Log-price stationarity diagnostics (量化统计方法 distill) |
+| Strategy Lab | In-browser no-lookahead backtests + fixed/√-impact slippage toggle |
 | Data | East Money → Yahoo → cache; browser reads baked JSON only |
 
 ### Patterns
 
 Legacy: `bullish_engulfing`, `bearish_engulfing`, `hammer`, `shooting_star`, `doji`  
-Additive: `morning_star`, `evening_star`, `three_white_soldiers`, `three_black_crows`, `piercing_line`
+Additive: `morning_star`, `evening_star`, `three_white_soldiers`, `three_black_crows`, `piercing_line`, `inverted_hammer`, `spinning_top`, `bullish_harami`, `bearish_harami`, `dark_cloud_cover`
 
 ### Watchlist
 
@@ -115,7 +118,7 @@ Legacy 16 unchanged + additive: `510050.SS`, `159919.SZ`, `512690.SS`, `515790.S
 
 ## Paper desk
 
-- Start **¥100,000,000**; A-share cost model **default ON** (commission 2.5 bps/side min ¥5, stamp 5 bps sell, transfer 0.1 bps, slippage 5/10 bps); lots 100; T+1; limit-band rejects
+- Start **¥100,000,000**; A-share cost model **default ON** (commission 2.5 bps/side min ¥5, stamp 5 bps sell, transfer 0.1 bps, slippage 5/10 bps fixed **or** optional √-impact); lots 100; T+1; limit-band rejects
 - Workstation panels: Account · Ticket (half-Kelly) · Positions · Fills · Risk · Performance · Ops
 - Fills: signal-date → next-open; MTM equity / PnL% / drawdown
 - Soft + optional hard gates; checklist export with next-open wording
@@ -152,7 +155,8 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 
 - OpenCool OHLC + indicators/signals spirit → `src/lib/ohlc`, `src/lib/indicators`, `src/lib/signals`
 - Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings), `quant-backtest-review` (tear-sheet R/Y/G)
-- Interactive agents: see root **`Skills.md`** (Iwencai `announcement-search`, `news-search`, `hithink-zhishu-query`, `hithink-astock-selector`, `模拟炒股` under `skills/`).
+- Interactive agents: see root **`Skills.md`** (Iwencai OpenAPI skills + nine methodology packages under `skills/`: K线形态识别, 执行模型, factor/ML/stats frameworks, etc.).
+- Site distill: 15 patterns · Factor Board · ADF strip · recipe cards · √-impact costs — agents keep full SkillHub workflows.
 - Site: bake-time JSON only (`latest.json`, `announcements.json`, `iwencai-news.json`, `indices.json`, `screens.json`). **`#/news`** shows RSS AI news + announcements + Iwencai finance news. **`#/quant`** shows index snapshot + three fixed editorial screens. **`#/sim`** is a local distill of SkillHub 模拟炒股. Agents use vendored CLIs; the browser never embeds broker SDKs or `IWENCAI_API_KEY`.
 
 ---

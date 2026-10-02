@@ -1,0 +1,36 @@
+{
+  "generatedAt": "2026-10-02T00:00:00.000Z",
+  "attribution": {
+    "zh": "Agent 方法论文卡（SkillHub distill）。站点不跑 sklearn；完整流程见 Skills.md。",
+    "en": "Agent methodology recipe cards (SkillHub distill). No sklearn in the browser — full workflows in Skills.md."
+  },
+  "cards": [
+    {
+      "id": "ml-walkforward",
+      "skill": "机器学习策略",
+      "titleZh": "滚动训练 → Walk-forward 信号",
+      "titleEn": "Rolling train → walk-forward signals",
+      "bodyZh": "用 ml-strategy 技能：特征工程 → 滚动 sklearn 训练 → 禁未来函数的样本外信号。站点 Strategy Lab 只演示规则策略；ML 训练留在 Agent CLI。",
+      "bodyEn": "Use the ml-strategy skill: features → rolling sklearn fit → no-lookahead OOS signals. Strategy Lab stays rule-based; ML training stays in the Agent CLI.",
+      "href": "#/learn"
+    },
+    {
+      "id": "strategy-generate",
+      "skill": "策略生成与优化",
+      "titleZh": "策略生成 → 回测 → 调参",
+      "titleEn": "Generate → backtest → tune",
+      "bodyZh": "策略生成与优化技能：起草规则、参数网格与评估清单。把候选策略映射到 Lab 的 MA/RSI/形态，再用纸盘练习次日开盘成交。",
+      "bodyEn": "Strategy-generate skill: draft rules, grids, and an evaluation checklist. Map candidates onto Lab MA/RSI/pattern strategies, then practice next-open fills on Paper.",
+      "href": "#/quant"
+    },
+    {
+      "id": "factor-research",
+      "skill": "因子研究框架",
+      "titleZh": "因子 IC → TopN 组合",
+      "titleEn": "Factor IC → TopN book",
+      "bodyZh": "因子研究 / 多因子选股技能指导横截面打分。站点 Factor Board 用 OHLC 代理（动量·低波·ADV·质量）展示排名，非实时基本面。",
+      "bodyEn": "Factor-research / multi-factor skills guide cross-section scoring. The Factor Board shows OHLC-proxy ranks (momentum · low-vol · ADV · quality), not live fundamentals.",
+      "href": "#/quant"
+    }
+  ]
+}

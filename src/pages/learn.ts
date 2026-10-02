@@ -148,6 +148,54 @@ const SCENARIOS: Scenario[] = [
     ],
     href: "#/news",
   },
+  {
+    id: "ml-recipe",
+    titleZh: "场景 9：机器学习策略配方",
+    titleEn: "Scenario 9: ML strategy recipe",
+    stepsZh: [
+      "打开量化页的 Agent 配方卡，阅读「滚动训练 → Walk-forward」。",
+      "在 Skills.md / skills/机器学习策略 了解 sklearn 流程（浏览器不跑训练）。",
+      "回到 Strategy Lab 用规则策略对照无未来函数成交假设。",
+    ],
+    stepsEn: [
+      "Open Quant Agent recipes; read the walk-forward ML card.",
+      "Read Skills.md / skills/机器学习策略 for sklearn (no browser training).",
+      "Compare against Strategy Lab rule fills (no lookahead).",
+    ],
+    href: "#/quant",
+  },
+  {
+    id: "strategy-gen",
+    titleZh: "场景 10：策略生成与优化",
+    titleEn: "Scenario 10: Strategy generate & tune",
+    stepsZh: [
+      "阅读配方卡「策略生成 → 回测 → 调参」。",
+      "在 Lab 切换固定 bps / 平方根冲击滑点，观察成本差异。",
+      "把满意的回测成交发送到纸盘练习。",
+    ],
+    stepsEn: [
+      "Read the generate → backtest → tune recipe card.",
+      "In Lab, toggle fixed vs √-impact slippage; note cost differences.",
+      "Send a gated backtest to Paper for practice.",
+    ],
+    href: "#/quant",
+  },
+  {
+    id: "factor-board",
+    titleZh: "场景 11：因子看板 TopN",
+    titleEn: "Scenario 11: Factor Board TopN",
+    stepsZh: [
+      "在量化页打开因子看板，确认分数是 OHLC 代理。",
+      "对比 ADF 诊断条中主要标的的平稳性。",
+      "点开 Top 综合分标的，核对形态与信号。",
+    ],
+    stepsEn: [
+      "Open the Factor Board; confirm OHLC-proxy attribution.",
+      "Check the ADF strip for major symbols.",
+      "Open a top composite name; verify patterns and signals.",
+    ],
+    href: "#/quant",
+  },
 ];
 
 export function renderLearn(root: HTMLElement, locale: Locale): void {

@@ -1,4 +1,4 @@
-/** Candle pattern IDs — original five retained; five additive classics. */
+/** Candle pattern IDs — original five retained; additive classics → 15 total. */
 
 export type PatternId =
   | "bullish_engulfing"
@@ -10,7 +10,12 @@ export type PatternId =
   | "evening_star"
   | "three_white_soldiers"
   | "three_black_crows"
-  | "piercing_line";
+  | "piercing_line"
+  | "inverted_hammer"
+  | "spinning_top"
+  | "bullish_harami"
+  | "bearish_harami"
+  | "dark_cloud_cover";
 
 export type PatternDirection = "bull" | "bear" | "neutral";
 
@@ -74,6 +79,36 @@ export const PATTERN_META: Record<
     direction: "bull",
     bars: 2,
   },
+  inverted_hammer: {
+    en: "Inverted hammer",
+    zh: "倒锤子",
+    direction: "bull",
+    bars: 1,
+  },
+  spinning_top: {
+    en: "Spinning top",
+    zh: "纺锤线",
+    direction: "neutral",
+    bars: 1,
+  },
+  bullish_harami: {
+    en: "Bullish harami",
+    zh: "看涨孕线",
+    direction: "bull",
+    bars: 2,
+  },
+  bearish_harami: {
+    en: "Bearish harami",
+    zh: "看跌孕线",
+    direction: "bear",
+    bars: 2,
+  },
+  dark_cloud_cover: {
+    en: "Dark cloud cover",
+    zh: "乌云盖顶",
+    direction: "bear",
+    bars: 2,
+  },
 };
 
 export const ALL_PATTERN_IDS: PatternId[] = [
@@ -87,6 +122,11 @@ export const ALL_PATTERN_IDS: PatternId[] = [
   "three_white_soldiers",
   "three_black_crows",
   "piercing_line",
+  "inverted_hammer",
+  "spinning_top",
+  "bullish_harami",
+  "bearish_harami",
+  "dark_cloud_cover",
 ];
 
 /** Original five — must remain forever for add-only invariant. */
