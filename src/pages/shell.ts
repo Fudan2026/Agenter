@@ -10,9 +10,10 @@ export type RouteName =
   | "news"
   | "quant"
   | "paper"
+  | "sim"
   | "asset";
 
-const TOOLS_SUBROUTES: RouteName[] = ["quant", "paper", "asset", "news"];
+const TOOLS_SUBROUTES: RouteName[] = ["quant", "paper", "sim", "asset", "news"];
 
 export function renderShell(
   locale: Locale,

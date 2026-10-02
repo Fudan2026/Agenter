@@ -19,13 +19,14 @@ This README is the **canonical English build brief**.
 | `/#/` | Brand home — **Agenter** / for better agents (primary CTA → Compare) |
 | `/#/compare` | Apple-style sticky shortlist + dimension matrix + harness presets |
 | `/#/learn` | Guided tour + practice scenarios |
-| `/#/tools` | **Sole hub** for Quant / Paper / News (secondary tools) |
+| `/#/tools` | **Sole hub** for Quant / Paper / Sim / News (secondary tools) |
 | `/#/news` | AI news + A-share announcements digest (via Tools) |
 | `/#/quant` | Quant review + Tier-2 Strategy Lab (deep link; not primary nav) |
-| `/#/paper` | Paper workstation (deep link; not primary nav) |
+| `/#/paper` | Paper workstation — next-open educational desk (deep link) |
+| `/#/sim` | Sim Desk — SkillHub「模拟炒股」distill (local ¥100M; deep link) |
 | `/#/asset/:symbol` | Candlestick + MA + factor exposures |
 
-**Primary nav = Home · Compare · Learn · Tools only.** Quant/Paper are tools — not the brand face.  
+**Primary nav = Home · Compare · Learn · Tools only.** Quant/Paper/Sim are tools — not the brand face.  
 **Correction:** Round-1 Quant-as-home was wrong; corrected this round.
 
 **Home must not be Quant-only.** Primary H1 is **Agenter**.
@@ -38,9 +39,10 @@ This README is the **canonical English build brief**.
 |-------|----------|
 | Domain / brand | **Agenter.si**; tagline **for better agents** |
 | Homepage | Brand / compare JTBD — not Quant facade |
-| 快速实盘 | **A + C only** — checklist export + paper. **No** broker/THS API |
+| 快速实盘 | **A + C only** — checklist export + paper. **No** broker/THS API in the browser |
 | Paper | `localStorage` v2 journal; start **100,000,000 CNY**; **3 bps** RT; lots of **100**; one-click top-up from legacy 1M |
-| Fill rule | Signal `t` → fill **`t+1` open** (else labeled close fallback) |
+| Sim Desk | `#/sim` distill of SkillHub「模拟炒股」; `agenter.sim.ledger.v1`; ¥100M; lot 100; T+1; quotes from baked `latest.json` |
+| Fill rule | Paper: signal `t` → fill **`t+1` open**. Sim: editable limit @ last close |
 | Locales | **zh** + **en** |
 | Stack | Vite + TS SPA; `quant:bake` + `news:bake` + `announcements:bake`; GitHub Pages |
 | Quant scope | **10** patterns (5 legacy + 5 additive) · **26** symbols (16 legacy + 10 additive) |
@@ -147,7 +149,8 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 
 - OpenCool OHLC + indicators/signals spirit → `src/lib/ohlc`, `src/lib/indicators`, `src/lib/signals`
 - Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings), `quant-backtest-review` (tear-sheet R/Y/G)
-- Interactive agents: see root **`Skills.md`** (Iwencai `announcement-search` CLI). The site only reads bake-time `public/data/announcements.json` — never calls 同花顺 from the browser.
+- Interactive agents: see root **`Skills.md`** (Iwencai `announcement-search` + `模拟炒股` CLI packages under `skills/`).
+- Site: bake-time JSON only (`announcements.json`, `latest.json`). **`#/sim`** is a local distill of the SkillHub 模拟炒股 UX (open account / order / positions / funds); agents use the vendored package against `trade.10jqka.com.cn`. The browser never embeds broker SDKs or `IWENCAI_API_KEY`.
 
 ---
 
@@ -155,7 +158,7 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 
 - Broker / 同花顺 **live browser** API · DNS cutover · Computer Use QA · removing zh or brand home · HK/US/crypto · mandatory Supabase
 
-Bake-time + agent CLI for `announcement-search` is allowed; browser-side Iwencai calls remain forbidden.
+Bake-time + agent CLI for Iwencai skills is allowed; browser-side Iwencai / THS trade calls remain forbidden.
 
 ---
 

@@ -7,6 +7,7 @@ import { loadAgents, renderCompare } from "./pages/compare";
 import { renderLearn } from "./pages/learn";
 import { cleanupPaperPage, renderPaper } from "./pages/paper";
 import { cleanupQuantPage, renderQuant } from "./pages/quant";
+import { cleanupSimPage, renderSim } from "./pages/sim";
 import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
 import type { LatestPayload } from "./pages/types";
 
@@ -24,6 +25,7 @@ type Route =
   | { page: "news" }
   | { page: "quant" }
   | { page: "paper" }
+  | { page: "sim" }
   | { page: "asset"; symbol: string };
 
 async function loadQuantData(): Promise<void> {
@@ -75,6 +77,7 @@ function parseRoute(): Route {
   if (path === "/news") return { page: "news" };
   if (path === "/quant") return { page: "quant" };
   if (path === "/paper") return { page: "paper" };
+  if (path === "/sim") return { page: "sim" };
   const asset = path.match(/^\/asset\/(.+)$/);
   if (asset) return { page: "asset", symbol: decodeURIComponent(asset[1]) };
   return { page: "home" };
@@ -98,6 +101,7 @@ async function render(): Promise<void> {
   cleanupAssetPage();
   cleanupPaperPage();
   cleanupQuantPage();
+  cleanupSimPage();
   document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
   root.classList.remove("route-enter");
   void root.offsetWidth;
@@ -136,6 +140,13 @@ async function render(): Promise<void> {
           root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
         } else {
           renderPaper(root, quantData, locale);
+        }
+        break;
+      case "sim":
+        if (quantError || !quantData) {
+          root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
+        } else {
+          renderSim(root, quantData, locale);
         }
         break;
       case "asset":
