@@ -58,12 +58,23 @@ function cardHtml(locale: Locale, s: SymbolRow): string {
     .reverse()
     .map((p) => patternChip(locale, p))
     .join("");
+  const bias = s.signals?.bias ?? "neutral";
+  const biasLabel =
+    bias === "bull"
+      ? t(locale, "biasBull")
+      : bias === "bear"
+        ? t(locale, "biasBear")
+        : t(locale, "biasNeutral");
 
   return `<a class="asset-card" href="#/asset/${encodeURIComponent(s.symbol)}">
     <div class="asset-card-top">
       <div>
-        <div class="asset-name">${esc(name)}</div>
-        <div class="asset-meta">${esc(s.symbol)} · ${esc(groupLabel(locale, s.group))} · ${esc(statusLabel(locale, s.dataStatus))}</div>
+        <div class="asset-name">${esc(name)} <span class="chip chip-${esc(bias === "neutral" ? "neutral" : bias === "bull" ? "bull" : "bear")}">${esc(biasLabel)}</span></div>
+        <div class="asset-meta">${esc(s.symbol)} · ${esc(groupLabel(locale, s.group))} · ${esc(statusLabel(locale, s.dataStatus))}${
+          s.signals?.rsi14 != null
+            ? ` · RSI ${s.signals.rsi14.toFixed(0)}`
+            : ""
+        }${s.signals?.volumeSpike ? " · vol↑" : ""}</div>
       </div>
       <div class="asset-price">
         <div class="last-close">${s.lastClose ? s.lastClose.toFixed(2) : "—"}</div>
@@ -85,6 +96,15 @@ export function renderQuant(
 ): void {
   const bullets = locale === "zh" ? data.dailyReview.zh : data.dailyReview.en;
   const groups: SymbolRow["group"][] = ["macro", "china-etf", "china-ashare"];
+  const board = [...data.symbols]
+    .filter((s) => s.signals && s.dataStatus !== "missing")
+    .sort((a, b) => {
+      const rank = (x: SymbolRow) =>
+        x.signals?.bias === "bull" ? 0 : x.signals?.bias === "bear" ? 2 : 1;
+      return rank(a) - rank(b);
+    })
+    .slice(0, 12);
+  const checklist = board.filter((s) => s.signals?.bias !== "neutral").slice(0, 8);
 
   const body = `
     <h1>${esc(t(locale, "quantTitle"))}</h1>
@@ -99,6 +119,50 @@ export function renderQuant(
       <h2>${esc(t(locale, "dailyReview"))}</h2>
       <p class="muted tiny">${esc(data.reportDate)} · ${esc(data.generatedAt.slice(0, 19))}Z</p>
       <ul>${bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
+    </section>
+    <section class="signal-board">
+      <h2>${esc(t(locale, "signalBoard"))}</h2>
+      <div class="table-wrap"><table class="agent-table">
+        <thead><tr><th>Symbol</th><th>Bias</th><th>RSI</th><th>MA</th><th>Tags</th><th></th></tr></thead>
+        <tbody>
+          ${board
+            .map((s) => {
+              const name = locale === "zh" ? s.nameZh : s.nameEn;
+              const sig = s.signals!;
+              const biasLabel =
+                sig.bias === "bull"
+                  ? t(locale, "biasBull")
+                  : sig.bias === "bear"
+                    ? t(locale, "biasBear")
+                    : t(locale, "biasNeutral");
+              return `<tr>
+                <td><a href="#/asset/${encodeURIComponent(s.symbol)}">${esc(s.symbol)}</a><div class="muted tiny">${esc(name)}</div></td>
+                <td><span class="chip chip-${sig.bias === "neutral" ? "neutral" : sig.bias === "bull" ? "bull" : "bear"}">${esc(biasLabel)}</span></td>
+                <td>${sig.rsi14 == null ? "—" : sig.rsi14.toFixed(1)}</td>
+                <td>${esc(sig.maAlign)}</td>
+                <td class="tiny">${esc(sig.tags.join(", ") || "—")}</td>
+                <td><a class="btn" href="#/paper?symbol=${encodeURIComponent(s.symbol)}">${esc(t(locale, "openPaper"))}</a></td>
+              </tr>`;
+            })
+            .join("")}
+        </tbody>
+      </table></div>
+    </section>
+    <section class="tomorrow-list">
+      <h2>${esc(t(locale, "tomorrowList"))}</h2>
+      <p class="muted tiny">${esc(t(locale, "paperDisclaimer"))}</p>
+      <ul>
+        ${
+          checklist.length
+            ? checklist
+                .map((s) => {
+                  const side = s.signals?.bias === "bear" ? "sell/watch" : "buy/watch";
+                  return `<li><strong>${esc(s.symbol)}</strong> — ${esc(side)} @ next open · <a href="#/paper?symbol=${encodeURIComponent(s.symbol)}">${esc(t(locale, "openPaper"))}</a></li>`;
+                })
+                .join("")
+            : `<li class="muted">—</li>`
+        }
+      </ul>
     </section>
     ${groups
       .map((g) => {

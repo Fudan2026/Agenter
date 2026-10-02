@@ -8,7 +8,8 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "test": "tsx --test src/lib/patterns/detect.test.ts src/lib/paper/engine.test.ts",
-    "quant:bake": "tsx src/scripts/quant-bake.ts"
+    "quant:bake": "tsx src/scripts/quant-bake.ts",
+    "news:bake": "tsx src/scripts/news-bake.ts"
   },
   "dependencies": {
     "lightweight-charts": "^4.2.3"

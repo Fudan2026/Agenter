@@ -66,6 +66,14 @@ function mountChart(container: HTMLElement, row: SymbolRow): void {
     close: c.close,
   }));
   series.setData(data);
+  if (row.ma20?.length) {
+    const ma20 = chart.addLineSeries({ color: "#0b6e4f", lineWidth: 2, title: "MA20" });
+    ma20.setData(row.ma20.map((p) => ({ time: p.date as Time, value: p.value })));
+  }
+  if (row.ma60?.length) {
+    const ma60 = chart.addLineSeries({ color: "#1d4e89", lineWidth: 2, title: "MA60" });
+    ma60.setData(row.ma60.map((p) => ({ time: p.date as Time, value: p.value })));
+  }
   chart.timeScale().fitContent();
 
   resizeObs = new ResizeObserver(() => {

@@ -1,5 +1,5 @@
 /**
- * Five candle pattern detectors.
+ * Candle pattern detectors (10 IDs = 5 legacy + 5 additive).
  * No-lookahead: pattern ending at index i uses only candles[0..i].
  */
 
@@ -45,20 +45,14 @@ function isHammer(c: OHLC): boolean {
   if (isDoji(c)) return false;
   const b = body(c);
   if (b === 0) return false;
-  const lw = lowerWick(c);
-  const uw = upperWick(c);
-  // small body near top of range; lower wick ≥ 2× body; upper wick ≤ body
-  return lw >= 2 * b && uw <= b;
+  return lowerWick(c) >= 2 * b && upperWick(c) <= b;
 }
 
 function isShootingStar(c: OHLC): boolean {
   if (isDoji(c)) return false;
   const b = body(c);
   if (b === 0) return false;
-  const lw = lowerWick(c);
-  const uw = upperWick(c);
-  // small body near bottom of range; upper wick ≥ 2× body; lower wick ≤ body
-  return uw >= 2 * b && lw <= b;
+  return upperWick(c) >= 2 * b && lowerWick(c) <= b;
 }
 
 function isBullishEngulfing(prev: OHLC, curr: OHLC): boolean {
@@ -71,16 +65,57 @@ function isBearishEngulfing(prev: OHLC, curr: OHLC): boolean {
   return curr.open >= prev.close && curr.close <= prev.open;
 }
 
+/** Piercing: bearish then bullish closing > midpoint of prior body. */
+function isPiercing(prev: OHLC, curr: OHLC): boolean {
+  if (!isBearish(prev) || !isBullish(curr)) return false;
+  if (curr.open >= prev.close) return false;
+  const mid = (prev.open + prev.close) / 2;
+  return curr.close > mid && curr.close < prev.open;
+}
+
+function isMorningStar(a: OHLC, b: OHLC, c: OHLC): boolean {
+  if (!isBearish(a)) return false;
+  const small = body(b) <= body(a) * 0.5;
+  if (!small) return false;
+  if (!isBullish(c)) return false;
+  const aMid = (a.open + a.close) / 2;
+  return c.close > aMid;
+}
+
+function isEveningStar(a: OHLC, b: OHLC, c: OHLC): boolean {
+  if (!isBullish(a)) return false;
+  const small = body(b) <= body(a) * 0.5;
+  if (!small) return false;
+  if (!isBearish(c)) return false;
+  const aMid = (a.open + a.close) / 2;
+  return c.close < aMid;
+}
+
+function isThreeWhiteSoldiers(a: OHLC, b: OHLC, c: OHLC): boolean {
+  if (!isBullish(a) || !isBullish(b) || !isBullish(c)) return false;
+  if (!(b.close > a.close && c.close > b.close)) return false;
+  // each opens within prior body
+  const inBody = (prev: OHLC, curr: OHLC) =>
+    curr.open >= Math.min(prev.open, prev.close) &&
+    curr.open <= Math.max(prev.open, prev.close);
+  return inBody(a, b) && inBody(b, c);
+}
+
+function isThreeBlackCrows(a: OHLC, b: OHLC, c: OHLC): boolean {
+  if (!isBearish(a) || !isBearish(b) || !isBearish(c)) return false;
+  if (!(b.close < a.close && c.close < b.close)) return false;
+  const inBody = (prev: OHLC, curr: OHLC) =>
+    curr.open <= Math.max(prev.open, prev.close) &&
+    curr.open >= Math.min(prev.open, prev.close);
+  return inBody(a, b) && inBody(b, c);
+}
+
 function dateKey(d: Date): string {
-  // Asia/Shanghai calendar date for CN markets
   return d.toLocaleDateString("en-CA", { timeZone: "Asia/Shanghai" });
 }
 
 /** Detect patterns at a single bar index (uses only candles ≤ i). */
-export function detectAt(
-  candles: OHLC[],
-  i: number,
-): PatternId[] {
+export function detectAt(candles: OHLC[], i: number): PatternId[] {
   if (i < 0 || i >= candles.length) return [];
   const curr = candles[i];
   const hits: PatternId[] = [];
@@ -95,16 +130,21 @@ export function detectAt(
     const prev = candles[i - 1];
     if (isBullishEngulfing(prev, curr)) hits.push("bullish_engulfing");
     if (isBearishEngulfing(prev, curr)) hits.push("bearish_engulfing");
+    if (isPiercing(prev, curr)) hits.push("piercing_line");
+  }
+
+  if (i >= 2) {
+    const a = candles[i - 2];
+    const b = candles[i - 1];
+    if (isMorningStar(a, b, curr)) hits.push("morning_star");
+    if (isEveningStar(a, b, curr)) hits.push("evening_star");
+    if (isThreeWhiteSoldiers(a, b, curr)) hits.push("three_white_soldiers");
+    if (isThreeBlackCrows(a, b, curr)) hits.push("three_black_crows");
   }
 
   return hits;
 }
 
-/**
- * Scan candles and return pattern hits.
- * Only last `windowDays` bars are included in the result list.
- * Evaluation at each bar uses no future data.
- */
 export function detectRecentPatterns(
   candles: OHLC[],
   windowDays = 60,
@@ -114,8 +154,6 @@ export function detectRecentPatterns(
 
   const start = Math.max(0, candles.length - windowDays);
   for (let i = start; i < candles.length; i++) {
-    // Pass full prefix up to i so 2-bar patterns can read prev;
-    // detectAt only reads ≤ i — no lookahead.
     const found = detectAt(candles, i);
     for (const patternId of found) {
       hits.push({
@@ -128,8 +166,7 @@ export function detectRecentPatterns(
   return hits;
 }
 
-/** Assert only the five allowed IDs exist. */
-export function assertKnownPatternIds(ids: string[]): void {
+export function assertKnownPatternId(ids: string[]): void {
   for (const id of ids) {
     if (!ALL_PATTERN_IDS.includes(id as PatternId)) {
       throw new Error(`Unknown patternId: ${id}`);

@@ -4,24 +4,14 @@ import { cleanupAssetPage, renderAsset } from "./pages/asset";
 import { renderBrandHome } from "./pages/brand-home";
 import { loadAgents, renderCompare } from "./pages/compare";
 import { renderLearn } from "./pages/learn";
-import { renderPaper } from "./pages/paper";
+import { cleanupPaperPage, renderPaper } from "./pages/paper";
 import { renderQuant } from "./pages/quant";
-import { renderTools } from "./pages/tools";
+import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
 import type { LatestPayload } from "./pages/types";
 
 let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
-let newsData: {
-  generatedAt: string;
-  items: Array<{
-    id: string;
-    date: string;
-    titleZh: string;
-    titleEn: string;
-    summaryZh: string;
-    summaryEn: string;
-  }>;
-} | null = null;
+let newsData: NewsPayload | null = null;
 let locale: Locale = detectLocale();
 
 type Route =
@@ -29,6 +19,7 @@ type Route =
   | { page: "compare" }
   | { page: "learn" }
   | { page: "tools" }
+  | { page: "news" }
   | { page: "quant" }
   | { page: "paper" }
   | { page: "asset"; symbol: string };
@@ -53,7 +44,7 @@ async function loadNews(): Promise<void> {
       cache: "no-cache",
     });
     if (!res.ok) return;
-    newsData = await res.json();
+    newsData = (await res.json()) as NewsPayload;
   } catch {
     newsData = null;
   }
@@ -61,11 +52,12 @@ async function loadNews(): Promise<void> {
 
 function parseRoute(): Route {
   const hash = location.hash.replace(/^#/, "") || "/";
-  const path = hash.split("?")[0] || "/";
+  const path = (hash.split("?")[0] || "/").replace(/\/$/, "") || "/";
   if (path === "/" || path === "") return { page: "home" };
   if (path === "/compare") return { page: "compare" };
   if (path === "/learn") return { page: "learn" };
   if (path === "/tools") return { page: "tools" };
+  if (path === "/news") return { page: "news" };
   if (path === "/quant") return { page: "quant" };
   if (path === "/paper") return { page: "paper" };
   const asset = path.match(/^\/asset\/(.+)$/);
@@ -89,7 +81,11 @@ async function render(): Promise<void> {
   const root = document.getElementById("app");
   if (!root) return;
   cleanupAssetPage();
+  cleanupPaperPage();
   document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
+  root.classList.remove("route-enter");
+  void root.offsetWidth;
+  root.classList.add("route-enter");
 
   const route = parseRoute();
 
@@ -108,6 +104,9 @@ async function render(): Promise<void> {
         break;
       case "tools":
         renderTools(root, locale, newsData);
+        break;
+      case "news":
+        renderNews(root, locale, newsData);
         break;
       case "quant":
         if (quantError || !quantData) {

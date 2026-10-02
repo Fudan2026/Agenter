@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-02T00:00:00.000Z",
-  "sourceNote": "Curated public-knowledge draft for Agenter Compare MVP. Scores are editorial heuristics (1–5), not benchmarks. Sources listed in README §Agent catalog sources.",
+  "generatedAt": "2026-10-02T06:00:00.000Z",
+  "sourceNote": "Curated public-knowledge catalog for Agenter Compare. Scores are editorial heuristics (1–5), not benchmarks. Sources listed in README.",
   "agents": [
     {
       "id": "claude-code",
@@ -379,6 +379,468 @@
         "privacyControl": 2,
         "costEfficiency": 4,
         "cnAccessibility": 1,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "codex-cli",
+      "nameZh": "Codex CLI",
+      "nameEn": "Codex CLI",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "subscription",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "CLI coding agent",
+      "privacy": "Cloud (OpenAI)",
+      "links": {
+        "homepage": "https://openai.com/codex"
+      },
+      "scores": {
+        "codingAbility": 5,
+        "toolUse": 5,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 1,
+        "learningCurve": 3
+      },
+      "notesEn": "OpenAI coding agent CLI.",
+      "notesZh": "OpenAI 终端编码 Agent。"
+    },
+    {
+      "id": "devin",
+      "nameZh": "Devin",
+      "nameEn": "Devin",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "enterprise",
+      "contextWindow": "long",
+      "toolsMcp": "Autonomous software engineer",
+      "privacy": "Cloud",
+      "links": {
+        "homepage": "https://devin.ai"
+      },
+      "scores": {
+        "codingAbility": 5,
+        "toolUse": 5,
+        "contextMemory": 4,
+        "privacyControl": 2,
+        "costEfficiency": 2,
+        "cnAccessibility": 1,
+        "learningCurve": 3
+      }
+    },
+    {
+      "id": "replit-agent",
+      "nameZh": "Replit Agent",
+      "nameEn": "Replit Agent",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Cloud IDE agent",
+      "privacy": "Cloud",
+      "links": {
+        "homepage": "https://replit.com"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 2,
+        "costEfficiency": 4,
+        "cnAccessibility": 2,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "zed-ai",
+      "nameZh": "Zed AI",
+      "nameEn": "Zed AI",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Editor agent",
+      "privacy": "Cloud / BYOK options",
+      "links": {
+        "homepage": "https://zed.dev"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 4,
+        "costEfficiency": 4,
+        "cnAccessibility": 2,
+        "learningCurve": 3
+      }
+    },
+    {
+      "id": "tabnine",
+      "nameZh": "Tabnine",
+      "nameEn": "Tabnine",
+      "region": "Global",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "IDE completion / chat",
+      "privacy": "Cloud or private deployment",
+      "links": {
+        "homepage": "https://www.tabnine.com"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 5,
+        "costEfficiency": 4,
+        "cnAccessibility": 3,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "codeium",
+      "nameZh": "Codeium / Windsurf lineage",
+      "nameEn": "Codeium",
+      "region": "US",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "IDE autocomplete / Cascade",
+      "privacy": "Cloud",
+      "links": {
+        "homepage": "https://codeium.com"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 5,
+        "cnAccessibility": 3,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "qwen-code",
+      "nameZh": "Qwen 编码助手",
+      "nameEn": "Qwen Code",
+      "region": "CN",
+      "category": "coding",
+      "pricingBand": "freemium / API",
+      "contextWindow": "long",
+      "toolsMcp": "API + IDE plugins",
+      "privacy": "Cloud (Alibaba)",
+      "links": {
+        "homepage": "https://tongyi.aliyun.com"
+      },
+      "scores": {
+        "codingAbility": 4,
+        "toolUse": 3,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 5,
+        "cnAccessibility": 5,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "baidu-comate",
+      "nameZh": "文心快码",
+      "nameEn": "Baidu Comate",
+      "region": "CN",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "IDE plugin",
+      "privacy": "Cloud (Baidu)",
+      "links": {
+        "homepage": "https://comate.baidu.com"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 4,
+        "cnAccessibility": 5,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "tencent-codebuddy",
+      "nameZh": "CodeBuddy",
+      "nameEn": "Tencent CodeBuddy",
+      "region": "CN",
+      "category": "coding",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "IDE / cloud",
+      "privacy": "Cloud (Tencent)",
+      "links": {
+        "homepage": "https://copilot.tencent.com"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 3,
+        "costEfficiency": 4,
+        "cnAccessibility": 5,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "grok",
+      "nameZh": "Grok",
+      "nameEn": "Grok",
+      "region": "US",
+      "category": "chat",
+      "pricingBand": "subscription",
+      "contextWindow": "long",
+      "toolsMcp": "Chat + tools",
+      "privacy": "Cloud (xAI)",
+      "links": {
+        "homepage": "https://x.ai"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 3,
+        "contextMemory": 4,
+        "privacyControl": 2,
+        "costEfficiency": 3,
+        "cnAccessibility": 1,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "yuanbao",
+      "nameZh": "腾讯元宝",
+      "nameEn": "Yuanbao",
+      "region": "CN",
+      "category": "chat",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Chat apps",
+      "privacy": "Cloud (Tencent)",
+      "links": {
+        "homepage": "https://yuanbao.tencent.com"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 2,
+        "costEfficiency": 5,
+        "cnAccessibility": 5,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "wenxin",
+      "nameZh": "文心一言",
+      "nameEn": "Ernie Bot",
+      "region": "CN",
+      "category": "chat",
+      "pricingBand": "freemium",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Chat + plugins",
+      "privacy": "Cloud (Baidu)",
+      "links": {
+        "homepage": "https://yiyan.baidu.com"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 3,
+        "contextMemory": 3,
+        "privacyControl": 2,
+        "costEfficiency": 4,
+        "cnAccessibility": 5,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "chatgpt-team",
+      "nameZh": "ChatGPT Team",
+      "nameEn": "ChatGPT Team",
+      "region": "US",
+      "category": "chat",
+      "pricingBand": "subscription",
+      "contextWindow": "model-dependent",
+      "toolsMcp": "Workspace GPTs",
+      "privacy": "Cloud (OpenAI org)",
+      "links": {
+        "homepage": "https://chatgpt.com"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 4,
+        "privacyControl": 3,
+        "costEfficiency": 3,
+        "cnAccessibility": 1,
+        "learningCurve": 5
+      }
+    },
+    {
+      "id": "midjourney",
+      "nameZh": "Midjourney",
+      "nameEn": "Midjourney",
+      "region": "US",
+      "category": "image",
+      "pricingBand": "subscription",
+      "contextWindow": "n/a",
+      "toolsMcp": "Discord / web image gen",
+      "privacy": "Cloud",
+      "links": {
+        "homepage": "https://www.midjourney.com"
+      },
+      "scores": {
+        "codingAbility": 1,
+        "toolUse": 2,
+        "contextMemory": 2,
+        "privacyControl": 2,
+        "costEfficiency": 3,
+        "cnAccessibility": 2,
+        "learningCurve": 3
+      }
+    },
+    {
+      "id": "flux",
+      "nameZh": "FLUX",
+      "nameEn": "FLUX",
+      "region": "Global",
+      "category": "image",
+      "pricingBand": "API / freemium",
+      "contextWindow": "n/a",
+      "toolsMcp": "Image gen API",
+      "privacy": "Cloud / local options",
+      "links": {
+        "homepage": "https://blackforestlabs.ai"
+      },
+      "scores": {
+        "codingAbility": 1,
+        "toolUse": 2,
+        "contextMemory": 1,
+        "privacyControl": 4,
+        "costEfficiency": 4,
+        "cnAccessibility": 3,
+        "learningCurve": 3
+      }
+    },
+    {
+      "id": "langchain",
+      "nameZh": "LangChain",
+      "nameEn": "LangChain",
+      "region": "Global",
+      "category": "tooling",
+      "pricingBand": "open / cloud",
+      "contextWindow": "n/a",
+      "toolsMcp": "Agent framework + LangGraph",
+      "privacy": "Self-host or cloud",
+      "links": {
+        "homepage": "https://www.langchain.com"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 5,
+        "contextMemory": 3,
+        "privacyControl": 5,
+        "costEfficiency": 4,
+        "cnAccessibility": 4,
+        "learningCurve": 2
+      }
+    },
+    {
+      "id": "llamaindex",
+      "nameZh": "LlamaIndex",
+      "nameEn": "LlamaIndex",
+      "region": "Global",
+      "category": "tooling",
+      "pricingBand": "open / cloud",
+      "contextWindow": "RAG-oriented",
+      "toolsMcp": "Data agents / RAG",
+      "privacy": "Self-host or cloud",
+      "links": {
+        "homepage": "https://www.llamaindex.ai"
+      },
+      "scores": {
+        "codingAbility": 3,
+        "toolUse": 4,
+        "contextMemory": 4,
+        "privacyControl": 5,
+        "costEfficiency": 4,
+        "cnAccessibility": 4,
+        "learningCurve": 2
+      }
+    },
+    {
+      "id": "dify",
+      "nameZh": "Dify",
+      "nameEn": "Dify",
+      "region": "Global",
+      "category": "tooling",
+      "pricingBand": "open / cloud",
+      "contextWindow": "n/a",
+      "toolsMcp": "LLMOps / agent apps",
+      "privacy": "Self-host friendly",
+      "links": {
+        "homepage": "https://dify.ai"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 5,
+        "contextMemory": 3,
+        "privacyControl": 5,
+        "costEfficiency": 5,
+        "cnAccessibility": 5,
+        "learningCurve": 3
+      }
+    },
+    {
+      "id": "coze",
+      "nameZh": "扣子 Coze",
+      "nameEn": "Coze",
+      "region": "CN",
+      "category": "tooling",
+      "pricingBand": "freemium",
+      "contextWindow": "n/a",
+      "toolsMcp": "Bot builder / plugins",
+      "privacy": "Cloud (ByteDance)",
+      "links": {
+        "homepage": "https://www.coze.cn"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 2,
+        "costEfficiency": 5,
+        "cnAccessibility": 5,
+        "learningCurve": 4
+      }
+    },
+    {
+      "id": "you-com",
+      "nameZh": "You.com",
+      "nameEn": "You.com",
+      "region": "US",
+      "category": "research",
+      "pricingBand": "freemium",
+      "contextWindow": "search-grounded",
+      "toolsMcp": "Search agents",
+      "privacy": "Cloud",
+      "links": {
+        "homepage": "https://you.com"
+      },
+      "scores": {
+        "codingAbility": 2,
+        "toolUse": 4,
+        "contextMemory": 3,
+        "privacyControl": 2,
+        "costEfficiency": 4,
+        "cnAccessibility": 2,
         "learningCurve": 5
       }
     }

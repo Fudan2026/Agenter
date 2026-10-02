@@ -1,11 +1,16 @@
-/** Five fixed pattern IDs (plan §5). */
+/** Candle pattern IDs — original five retained; five additive classics. */
 
 export type PatternId =
   | "bullish_engulfing"
   | "bearish_engulfing"
   | "hammer"
   | "shooting_star"
-  | "doji";
+  | "doji"
+  | "morning_star"
+  | "evening_star"
+  | "three_white_soldiers"
+  | "three_black_crows"
+  | "piercing_line";
 
 export type PatternDirection = "bull" | "bear" | "neutral";
 
@@ -39,9 +44,53 @@ export const PATTERN_META: Record<
     bars: 1,
   },
   doji: { en: "Doji", zh: "十字星", direction: "neutral", bars: 1 },
+  morning_star: {
+    en: "Morning star",
+    zh: "启明星",
+    direction: "bull",
+    bars: 3,
+  },
+  evening_star: {
+    en: "Evening star",
+    zh: "黄昏星",
+    direction: "bear",
+    bars: 3,
+  },
+  three_white_soldiers: {
+    en: "Three white soldiers",
+    zh: "三白兵",
+    direction: "bull",
+    bars: 3,
+  },
+  three_black_crows: {
+    en: "Three black crows",
+    zh: "三只乌鸦",
+    direction: "bear",
+    bars: 3,
+  },
+  piercing_line: {
+    en: "Piercing line",
+    zh: "刺透形态",
+    direction: "bull",
+    bars: 2,
+  },
 };
 
 export const ALL_PATTERN_IDS: PatternId[] = [
+  "bullish_engulfing",
+  "bearish_engulfing",
+  "hammer",
+  "shooting_star",
+  "doji",
+  "morning_star",
+  "evening_star",
+  "three_white_soldiers",
+  "three_black_crows",
+  "piercing_line",
+];
+
+/** Original five — must remain forever for add-only invariant. */
+export const LEGACY_PATTERN_IDS: PatternId[] = [
   "bullish_engulfing",
   "bearish_engulfing",
   "hammer",

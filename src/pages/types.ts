@@ -1,11 +1,20 @@
-/** Shared payload types for baked latest.json (plan §6). */
+/** Shared payload types for baked latest.json. */
 
-export type PatternId =
-  | "bullish_engulfing"
-  | "bearish_engulfing"
-  | "hammer"
-  | "shooting_star"
-  | "doji";
+import type { PatternId } from "../lib/patterns/types";
+import type { MaAlignment, RsiZone } from "../lib/indicators/core";
+
+export type { PatternId };
+
+export interface SignalSummaryPayload {
+  sma20: number | null;
+  sma60: number | null;
+  rsi14: number | null;
+  rsiZone: RsiZone;
+  maAlign: MaAlignment;
+  volumeSpike: boolean;
+  bias: "bull" | "bear" | "neutral";
+  tags: string[];
+}
 
 export interface LatestPayload {
   generatedAt: string;
@@ -41,6 +50,9 @@ export interface LatestPayload {
       date: string;
       direction: "bull" | "bear" | "neutral";
     }>;
+    signals?: SignalSummaryPayload;
+    ma20?: Array<{ date: string; value: number }>;
+    ma60?: Array<{ date: string; value: number }>;
   }>;
   dailyReview: {
     zh: string[];

@@ -4,9 +4,9 @@
 
 Live site (GitHub Pages): [https://fudan2026.github.io/Agenter/](https://fudan2026.github.io/Agenter/)
 
-Intended custom domain: [https://agenter.si](https://agenter.si) — see **Phase 4: Cloudflare bind** below (owner DNS required).
+Intended custom domain: [https://agenter.si](https://agenter.si) — Cloudflare DNS bind documented below (**not** cut this round).
 
-Agenter helps people **filter, compare, and pick** AI / Agent products (coding agents prioritized, mixed catalog). Quant review and **快速实盘** (signal/list export + in-browser paper) are **secondary tools**, not the homepage face.
+Agenter helps people **filter, compare, and pick** AI / Agent products. Quant review, signal boards, and **快速实盘** (checklist export + in-browser paper at **¥100,000,000** start) are **secondary tools**.
 
 This README is the **canonical English build brief**.
 
@@ -17,14 +17,15 @@ This README is the **canonical English build brief**.
 | Route | Purpose |
 |-------|---------|
 | `/#/` | Brand home — **Agenter** / ZH「挑选更合适的 Agent」 · EN「for better agents — compare and choose」 |
-| `/#/compare` | Catalog filter + side-by-side + Harness weights (`localStorage`) |
-| `/#/learn` | Guided tour + ≥5 practice scenarios |
-| `/#/tools` | Tools hub (Quant / Paper / export / AI-news stub) |
-| `/#/quant` | Quant review (moved off home) |
-| `/#/paper` | Paper desk + broker checklist CSV/JSON export |
-| `/#/asset/:symbol` | Candlestick detail (under Quant) |
+| `/#/compare` | Catalog filter/search + side-by-side + Harness presets/weights + share links |
+| `/#/learn` | Guided tour + ≥8 practice scenarios + Harness / no-lookahead explainers |
+| `/#/tools` | Tools hub |
+| `/#/news` | AI news digest (baked RSS / fixture) |
+| `/#/quant` | Quant review + signal board + next-open checklist |
+| `/#/paper` | Paper desk (¥100M) + risk strip + equity curve + checklist export |
+| `/#/asset/:symbol` | Candlestick + MA overlays |
 
-**Home must not be Quant-only.** Primary H1 is the brand name **Agenter**.
+**Home must not be Quant-only.** Primary H1 is **Agenter**.
 
 ---
 
@@ -34,14 +35,13 @@ This README is the **canonical English build brief**.
 |-------|----------|
 | Domain / brand | **Agenter.si**; tagline **for better agents** |
 | Homepage | Brand / compare JTBD — not Quant facade |
-| 快速实盘 | **A + C only**: signals/list export + paper loop. **No** broker/THS API (no B) |
-| Paper | `localStorage` journal; start **1,000,000 CNY**; **3 bps** round-trip simplified; A-share/ETF lots of **100** |
-| Paper / signals fill | Signal bar `t` → fill at **`t+1` open** (else labeled close fallback) — no lookahead |
-| Export checklist | **Next-open** wording; humans order elsewhere |
-| Locales | **zh** and **en** only |
-| Stack | Vite + TypeScript SPA; `quant:bake`; GitHub Pages (`/Agenter/` base) |
-| Quant scope | Exactly **5** patterns · **16** symbols — no growth without plan revision |
-| Cloudflare | Documented in Phase 4; cutover needs owner CF account |
+| 快速实盘 | **A + C only** — checklist export + paper. **No** broker/THS API |
+| Paper | `localStorage` v2 journal; start **100,000,000 CNY**; **3 bps** RT; lots of **100**; one-click top-up from legacy 1M |
+| Fill rule | Signal `t` → fill **`t+1` open** (else labeled close fallback) |
+| Locales | **zh** + **en** |
+| Stack | Vite + TS SPA; `quant:bake` + `news:bake`; GitHub Pages |
+| Quant scope | **10** patterns (5 legacy + 5 additive) · **26** symbols (16 legacy + 10 additive) |
+| DNS | Docs only this round — no cutover |
 
 ---
 
@@ -49,167 +49,86 @@ This README is the **canonical English build brief**.
 
 ```bash
 npm ci
-npm test                 # pattern + paper no-lookahead tests
-npm run quant:bake       # fetch OHLC → public/data/latest.json (gate: ok+stale ≥ 8)
-npm run build            # vite build → dist/
-npm run dev              # local preview
+npm test                 # patterns + paper (incl. ¥100M + no-lookahead)
+npm run quant:bake       # OHLC → public/data/latest.json
+npm run news:bake        # RSS → public/data/ai-news.json (fail-open)
+npm run build
+npm run dev
 ```
 
-Bake success gate: `symbolsOk + symbolsStale ≥ 8`, else exit code 1. Fixture `public/data/latest.json` is committed for offline builds.
+Bake gate: `ok+stale >= max(8, floor(n/2))`.
 
 ---
 
-## Compare catalog (`public/data/agents.json`)
+## Compare catalog
 
-Curated **16** agents/products (coding + chat mix, CN/US/Global). Scores are **editorial heuristics (1–5)**, not vendor benchmarks. Owner may edit anytime.
+Curated **36** agents in `public/data/agents.json` (16 original IDs kept; 20 additive). Scores are editorial heuristics 1–5.
 
-### Agent catalog sources (public knowledge)
+Harness presets: Coding IDE · CN-reachable · Privacy/BYOK · Research. Share via `#/compare?ids=…&w=…`.
 
-Drafted from public product pages / docs (not scraped registries):
+### Catalog sources (public knowledge)
 
-| Product | Public reference |
-|---------|------------------|
-| Claude Code / Claude | anthropic.com / claude.ai |
-| Cursor | cursor.com / docs.cursor.com |
-| GitHub Copilot | github.com/features/copilot |
-| Windsurf | windsurf.com |
-| Aider | aider.chat |
-| Continue | continue.dev |
-| 通义灵码 | lingma.aliyun.com |
-| Trae | trae.ai |
-| ChatGPT | chatgpt.com |
-| Kimi | kimi.moonshot.cn |
-| 豆包 | doubao.com |
-| DeepSeek | deepseek.com |
-| Perplexity | perplexity.ai |
-| Gemini | gemini.google.com |
-| OpenClaw | public GitHub org references |
-
-Field ideas distilled (not forked wholesale) from open compare landscapes such as Doris26/ai-agent-compare, sehoon787/agent-hub, odykyi/agentic-comparison.
-
-Harness weights default to **coding-agent dimensions prioritized** (`codingAbility`, `toolUse`, …) and persist in `localStorage`.
+Claude / Cursor / Copilot / Windsurf / Aider / Continue / 通义灵码 / Trae / ChatGPT / Kimi / 豆包 / DeepSeek / Perplexity / Gemini / OpenClaw / Codex CLI / Devin / Replit / Zed / Tabnine / Codeium / Qwen / Comate / CodeBuddy / Grok / 元宝 / 文心 / Midjourney / FLUX / LangChain / LlamaIndex / Dify / Coze / You.com — public product pages. Field ideas from open compare landscapes (not forked wholesale).
 
 ---
 
-## Quant tool (secondary)
+## Quant tool
 
 | Item | Value |
 |------|-------|
-| Markets | CN A-share + CN ETF — **16** symbols |
-| Patterns | Exactly **5** (unchanged IDs) |
-| Data | East Money → Yahoo → last-good cache |
-| Browser | Reads baked JSON only |
+| Markets | CN A-share + CN ETF — **26** symbols |
+| Patterns | **10** IDs (legacy five unchanged) |
+| Indicators | SMA20/60, RSI14, MA align, volume spike (OpenCool distill) |
+| Data | East Money → Yahoo → cache; browser reads baked JSON only |
 
-### Five patterns (fixed IDs)
+### Patterns
 
-| patternId | EN | ZH |
-|-----------|----|----|
-| `bullish_engulfing` | Bullish engulfing | 看涨吞没 |
-| `bearish_engulfing` | Bearish engulfing | 看跌吞没 |
-| `hammer` | Hammer | 锤子线 |
-| `shooting_star` | Shooting star | 射击之星 |
-| `doji` | Doji | 十字星 |
+Legacy: `bullish_engulfing`, `bearish_engulfing`, `hammer`, `shooting_star`, `doji`  
+Additive: `morning_star`, `evening_star`, `three_white_soldiers`, `three_black_crows`, `piercing_line`
 
-**No-lookahead:** pattern at bar `i` uses only candles `≤ i` (unit-tested).
+### Watchlist
 
-### Watchlist (16)
-
-Macro: `000001.SS`, `399001.SZ`  
-ETF: `510300.SS`, `510500.SS`, `159915.SZ`, `588000.SS`, `512880.SS`, `512480.SS`  
-A-share: `600519.SS`, `600036.SS`, `000858.SZ`, `002594.SZ`, `601012.SS`, `000001.SZ`, `600276.SS`, `601888.SS`
+Legacy 16 unchanged + additive: `510050.SS`, `159919.SZ`, `512690.SS`, `515790.SS`, `601318.SS`, `600900.SS`, `000333.SZ`, `002415.SZ`, `300750.SZ`, `601166.SS`
 
 ---
 
-## Paper desk + checklist (A + C)
+## Paper desk
 
-- Virtual cash / positions / journal in **`localStorage`** (`agenter.paper.journal.v1`).
-- Fill rule aligns with `quant-no-lookahead`: next session **open**.
-- Export CSV/JSON broker checklist with **next-open** notes — **list not live order** (`quant-daily-ops` spirit).
-- **No** `xiadan` / THS / broker SDKs.
+- Start **¥100,000,000**; fee 3 bps RT; A-share/ETF lots 100
+- Equity curve, portfolio weights / unrealized PnL, soft risk strip (`quant-risk-gates` spirit)
+- Import/export journal JSON; broker checklist CSV/JSON with **next-open** wording
+- No xiadan / THS / broker SDKs
 
 ---
 
-## Phase 4: Cloudflare DNS bind for `agenter.si`
+## Phase 4: Cloudflare DNS (docs only — not this round)
 
-GitHub Pages stays the primary ship path until the owner completes DNS. **Do not** commit a `CNAME` that points away from Pages until Cloudflare (or registrar) is ready — that would break `fudan2026.github.io/Agenter/`.
+Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 
-### Owner steps (Cloudflare)
-
-1. Create a **Cloudflare Pages** project (or keep GitHub Pages and only proxy DNS — pick one source of truth).
-2. Preferred mirror path:
-   - Connect the `Fudan2026/Agenter` repo, production branch `main`, build command `npm ci && npm test && npm run quant:bake && npm run build`, output `dist`.
-   - Set Pages path base carefully: this Vite app uses `base: "/Agenter/"` for GitHub project pages. For apex `agenter.si`, change `vite.config.ts` `base` to `'/'` in a follow-up deploy profile **or** host under a Workers/Pages rewrite — owner chooses. Document choice in the CF project env before cutting DNS.
-3. In Cloudflare DNS for `agenter.si`:
-   - Apex: `CNAME` flattened / `ALIAS` to the Pages target Cloudflare shows, **or** A/AAAA records Cloudflare provides for Pages.
-   - `www`: `CNAME` → same Pages hostname.
-4. Enable HTTPS (Cloudflare Universal SSL).
-5. Optional: redirect `https://fudan2026.github.io/Agenter/` → `https://agenter.si/` (GitHub Pages custom domain + `CNAME` file **only after** DNS answers correctly).
-6. Verify: `curl -sI https://agenter.si/` → 200; HTML/JS shows brand H1 **Agenter**, not Quant-only title; `/#/quant` still loads the pattern demo.
-
-### If using GitHub Pages custom domain instead of CF Pages
-
-1. Repo **Settings → Pages → Custom domain** → `agenter.si`.
-2. At Cloudflare DNS (domain must use CF nameservers):
-   - `CNAME` `agenter.si` → `fudan2026.github.io` (Cloudflare CNAME flattening), or the A records GitHub documents for Pages.
-   - `CNAME` `www` → `fudan2026.github.io`.
-3. GitHub will then expect a `CNAME` file in `dist/` / `public/`. Add `public/CNAME` containing `agenter.si` **only when** DNS is ready; until then leave it out so project Pages keep working on `github.io`.
-4. Turn on “Enforce HTTPS” after the certificate provisions.
-
-### API note
-
-This agent cannot cut DNS or bind Cloudflare without the owner’s Cloudflare credentials. README steps above are the deliverable for Phase 4 docs; GH Pages must remain green.
+1. Cloudflare Pages or GitHub Pages custom domain
+2. DNS CNAME/ALIAS for `agenter.si` / `www`
+3. HTTPS; optional redirect from github.io
+4. For apex on CF Pages, consider Vite `base: '/'` in a follow-up deploy profile
 
 ---
 
 ## Distill sources
 
-### OpenCool — [`fudan2026/opencool`](https://github.com/fudan2026/opencool)
-
-OHLC bake modules under `src/lib/ohlc/` (CN only). Upstream lineage: [`leiting-eric/DailyBrief`](https://github.com/leiting-eric/DailyBrief).
-
-### Skills spirit
-
-- `quant-no-lookahead` — enforced on pattern detectors + paper fills.
-- `quant-daily-ops` — **list not live order**; checklist export only.
+- OpenCool OHLC + indicators/signals spirit → `src/lib/ohlc`, `src/lib/indicators`, `src/lib/signals`
+- Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings)
 
 ---
 
-## NOT in scope (hard stop)
+## NOT this round
 
-- Broker / 同花顺 / any live order API (capability B)
-- Claiming the site places real trades or gives investment advice
-- Agent runtime / orchestration (“arrange agents for me”)
-- Quant as homepage identity
-- New pattern IDs or watchlist growth without plan revision
-- HK/US equity expansion in Quant/paper
-- Locales beyond zh/en
-- Computer Use–based QA
-- Mandatory Supabase in this ship
-- Huachuang / 看线宝 commercial APIs
+- Broker / 同花顺 live API · DNS cutover · Computer Use QA · removing zh or brand home · HK/US/crypto · mandatory Supabase
 
 ---
 
 ## Dependency allowlist
 
 **Allowed:** `vite`, `typescript`, `tsx`, `@types/node`, `lightweight-charts`  
-**Forbidden:** Supabase (this round), wrangler (optional later), Playwright, Puppeteer, broker/THS SDKs, OpenAI/Anthropic SDKs in the SPA, Huachuang clients
-
----
-
-## Agent operating notes
-
-1. English README is canonical; homepage is brand-first.
-2. Verify with `npm test`, `npm run build`, and HTTP fetch of Pages — no Computer Use.
-3. No secrets in git. Pages workflow uses default `GITHUB_TOKEN` only.
-4. Touch only this repo unless a separate task says otherwise.
-
----
-
-## License / status
-
-**Status:** Brand-first SPA on GitHub Pages; Quant/paper as tools; `agenter.si` DNS bind pending owner Cloudflare.
-
-License: TBD by maintainers.
+**Forbidden:** broker/THS SDKs, Playwright, Huachuang clients
 
 ---
 
@@ -219,5 +138,4 @@ License: TBD by maintainers.
 |----------|-----|
 | Live Pages | https://fudan2026.github.io/Agenter/ |
 | Intended domain | https://agenter.si |
-| This repo | https://github.com/Fudan2026/Agenter |
-| OpenCool (OHLC distill) | https://github.com/fudan2026/opencool |
+| Repo | https://github.com/Fudan2026/Agenter |

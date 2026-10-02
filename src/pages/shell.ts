@@ -7,6 +7,7 @@ export type RouteName =
   | "compare"
   | "learn"
   | "tools"
+  | "news"
   | "quant"
   | "paper"
   | "asset";
@@ -22,6 +23,7 @@ export function renderShell(
     { route: "compare", href: "#/compare", label: "navCompare" },
     { route: "learn", href: "#/learn", label: "navLearn" },
     { route: "tools", href: "#/tools", label: "navTools" },
+    { route: "news", href: "#/news", label: "navNews" },
     { route: "quant", href: "#/quant", label: "navQuant" },
     { route: "paper", href: "#/paper", label: "navPaper" },
   ];
@@ -64,5 +66,6 @@ type StringKeyNav =
   | "navCompare"
   | "navLearn"
   | "navTools"
+  | "navNews"
   | "navQuant"
   | "navPaper";
