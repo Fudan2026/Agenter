@@ -54,8 +54,9 @@ describe("paper execution desk", () => {
     const sched = vwapSchedule(5);
     const children = splitQtyBySchedule(1_050, sched, 100);
     const sum = children.reduce((a, c) => a + c.qty, 0);
-    assert.ok(sum <= 1_050);
-    assert.equal(sum % 100, 0);
-    assert.ok(sum >= 1000);
+    // Last child may include non-lot remainder so parent qty is conserved.
+    assert.equal(sum, 1_050);
+    assert.ok(children.length >= 1);
+    assert.ok(children.every((c) => c.qty > 0 && c.label));
   });
 });
