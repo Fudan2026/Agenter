@@ -10,15 +10,9 @@ import {
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import { PATTERN_META } from "../lib/patterns/types";
+import { esc } from "../lib/util/esc";
+import { renderShell } from "./shell";
 import type { LatestPayload, SymbolRow } from "./types";
-
-function esc(s: string): string {
-  return s
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 let chart: IChartApi | null = null;
 let series: ISeriesApi<"Candlestick"> | null = null;
@@ -93,11 +87,12 @@ export function renderAsset(
   destroyChart();
   const row = data.symbols.find((s) => s.symbol === symbol);
   if (!row) {
-    root.innerHTML = `
-      <main class="page">
-        <p><a href="#/">${esc(t(locale, "backHome"))}</a></p>
-        <p>${esc(t(locale, "missingSymbol"))}: ${esc(symbol)}</p>
-      </main>`;
+    root.innerHTML = renderShell(
+      locale,
+      "asset",
+      `<p><a href="#/quant">${esc(t(locale, "backQuant"))}</a></p>
+       <p>${esc(t(locale, "missingSymbol"))}: ${esc(symbol)}</p>`,
+    );
     return;
   }
 
@@ -116,35 +111,28 @@ export function renderAsset(
           })
           .join("")}</ul>`;
 
-  root.innerHTML = `
-    <header class="site-header">
-      <div class="brand-block">
-        <a class="back" href="#/">${esc(t(locale, "backHome"))}</a>
-        <div class="brand">${esc(t(locale, "brand"))}</div>
+  const body = `
+    <p><a class="back" href="#/quant">${esc(t(locale, "backQuant"))}</a></p>
+    <div class="asset-header">
+      <div>
+        <h1>${esc(name)}</h1>
+        <p class="asset-meta">${esc(row.symbol)} · ${esc(statusLabel(locale, row.dataStatus))} · ${esc(row.dataNote)}</p>
       </div>
-      <div class="locale-toggle" role="group" aria-label="locale">
-        <button type="button" data-locale="zh" class="${locale === "zh" ? "active" : ""}">${esc(t(locale, "localeZh"))}</button>
-        <button type="button" data-locale="en" class="${locale === "en" ? "active" : ""}">${esc(t(locale, "localeEn"))}</button>
-      </div>
-    </header>
-    <main class="page asset-page">
-      <div class="asset-header">
-        <div>
-          <h1>${esc(name)}</h1>
-          <p class="asset-meta">${esc(row.symbol)} · ${esc(statusLabel(locale, row.dataStatus))} · ${esc(row.dataNote)}</p>
-        </div>
-        <button type="button" class="btn" id="fs-btn">${esc(t(locale, "fullscreen"))}</button>
-      </div>
-      <div class="chart-shell" id="chart-shell">
-        <div id="chart" class="chart"></div>
-      </div>
-      <section class="patterns">
-        <h2>${esc(t(locale, "recentPatterns"))}</h2>
-        ${patternList}
-      </section>
-    </main>
-    <footer class="site-footer"><p>${esc(t(locale, "disclaimer"))}</p></footer>
+      <button type="button" class="btn" id="fs-btn">${esc(t(locale, "fullscreen"))}</button>
+    </div>
+    <div class="chart-shell" id="chart-shell">
+      <div id="chart" class="chart"></div>
+    </div>
+    <section class="patterns">
+      <h2>${esc(t(locale, "recentPatterns"))}</h2>
+      ${patternList}
+    </section>
   `;
+
+  root.innerHTML = renderShell(locale, "asset", body, {
+    subtitle: t(locale, "quantSubtitle"),
+  });
+  document.title = `${name} · Agenter`;
 
   const chartEl = root.querySelector("#chart") as HTMLElement | null;
   if (chartEl && row.candles.length) {

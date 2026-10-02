@@ -7,7 +7,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "test": "tsx --test src/lib/patterns/detect.test.ts",
+    "test": "tsx --test src/lib/patterns/detect.test.ts src/lib/paper/engine.test.ts",
     "quant:bake": "tsx src/scripts/quant-bake.ts"
   },
   "dependencies": {
