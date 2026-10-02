@@ -671,6 +671,16 @@ a:hover {
   margin-bottom: 0.2rem;
 }
 
+.news-section {
+  margin-top: 1.5rem;
+}
+
+.news-stub,
+.announcements-stub,
+.asset-announcements {
+  margin-top: 1.25rem;
+}
+
 .paper-ticket {
   display: grid;
   grid-template-columns: 2fr 1fr;

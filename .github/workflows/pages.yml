@@ -40,6 +40,12 @@ jobs:
         run: npm run news:bake
         continue-on-error: true
 
+      - name: Bake A-share announcements
+        run: npm run announcements:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
       - name: Build
         run: npm run build
 

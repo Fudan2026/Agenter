@@ -20,7 +20,7 @@ This README is the **canonical English build brief**.
 | `/#/compare` | Apple-style sticky shortlist + dimension matrix + harness presets |
 | `/#/learn` | Guided tour + practice scenarios |
 | `/#/tools` | **Sole hub** for Quant / Paper / News (secondary tools) |
-| `/#/news` | AI news digest (via Tools) |
+| `/#/news` | AI news + A-share announcements digest (via Tools) |
 | `/#/quant` | Quant review + Tier-2 Strategy Lab (deep link; not primary nav) |
 | `/#/paper` | Paper workstation (deep link; not primary nav) |
 | `/#/asset/:symbol` | Candlestick + MA + factor exposures |
@@ -42,7 +42,7 @@ This README is the **canonical English build brief**.
 | Paper | `localStorage` v2 journal; start **100,000,000 CNY**; **3 bps** RT; lots of **100**; one-click top-up from legacy 1M |
 | Fill rule | Signal `t` → fill **`t+1` open** (else labeled close fallback) |
 | Locales | **zh** + **en** |
-| Stack | Vite + TS SPA; `quant:bake` + `news:bake`; GitHub Pages |
+| Stack | Vite + TS SPA; `quant:bake` + `news:bake` + `announcements:bake`; GitHub Pages |
 | Quant scope | **10** patterns (5 legacy + 5 additive) · **26** symbols (16 legacy + 10 additive) |
 | DNS | Docs only this round — no cutover |
 
@@ -53,13 +53,16 @@ This README is the **canonical English build brief**.
 ```bash
 npm ci
 npm test                 # patterns + paper MTM + backtest + board
-npm run quant:bake       # OHLC → public/data/latest.json
-npm run news:bake        # RSS → public/data/ai-news.json (fail-open)
+npm run quant:bake           # OHLC → public/data/latest.json
+npm run news:bake            # RSS → public/data/ai-news.json (fail-open)
+npm run announcements:bake   # Iwencai CLI → public/data/announcements.json (fail-open; needs IWENCAI_API_KEY)
 npm run build
 npm run dev
 ```
 
 Bake gate: `ok+stale >= max(8, floor(n/2))`.
+
+`announcements:bake` queries each A-share watchlist name via the vendored `skills/announcement-search` CLI. CI refreshes need repo secret `IWENCAI_API_KEY`; without it the step fail-opens and keeps the committed JSON.
 
 ---
 
@@ -144,12 +147,15 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 
 - OpenCool OHLC + indicators/signals spirit → `src/lib/ohlc`, `src/lib/indicators`, `src/lib/signals`
 - Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings), `quant-backtest-review` (tear-sheet R/Y/G)
+- Interactive agents: see root **`Skills.md`** (Iwencai `announcement-search` CLI). The site only reads bake-time `public/data/announcements.json` — never calls 同花顺 from the browser.
 
 ---
 
 ## NOT this round
 
-- Broker / 同花顺 live API · DNS cutover · Computer Use QA · removing zh or brand home · HK/US/crypto · mandatory Supabase
+- Broker / 同花顺 **live browser** API · DNS cutover · Computer Use QA · removing zh or brand home · HK/US/crypto · mandatory Supabase
+
+Bake-time + agent CLI for `announcement-search` is allowed; browser-side Iwencai calls remain forbidden.
 
 ---
 
