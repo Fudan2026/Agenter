@@ -932,9 +932,98 @@ a:hover {
   font-weight: 600;
 }
 
+.compare-sticky {
+  position: sticky;
+  top: 64px;
+  z-index: 15;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(140px, 1fr));
+  gap: 0.75rem;
+  padding: 0.75rem 0;
+  margin: 0.5rem 0 1rem;
+  background: rgba(247, 251, 248, 0.96);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+
+.compare-slot {
+  position: relative;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.75rem;
+  background: var(--card);
+}
+
+.compare-slot.empty {
+  border-style: dashed;
+  opacity: 0.85;
+}
+
+.compare-slot .slot-name {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+}
+
+.compare-slot .slot-x {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.35rem;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--muted);
+}
+
+.compare-matrix-wrap {
+  overflow-x: auto;
+}
+
+.compare-matrix th:first-child,
+.compare-matrix td:first-child {
+  position: sticky;
+  left: 0;
+  background: var(--card);
+  z-index: 1;
+}
+
+.compare-matrix td.best {
+  font-weight: 700;
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+
+.compare-matrix .group-row th {
+  text-align: left;
+  background: rgba(18, 35, 31, 0.04);
+  font-size: 0.8rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.catalog-details {
+  margin: 1.5rem 0;
+}
+
+.tools-secondary {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+}
+
+.presets-first {
+  margin-bottom: 1rem;
+}
+
 @media (max-width: 720px) {
   .paper-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .compare-sticky {
+    grid-template-columns: repeat(2, minmax(120px, 1fr));
+    top: 56px;
   }
 
   .sticky-first table th:first-child,

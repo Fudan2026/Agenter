@@ -12,6 +12,8 @@ export type RouteName =
   | "paper"
   | "asset";
 
+const TOOLS_SUBROUTES: RouteName[] = ["quant", "paper", "asset", "news"];
+
 export function renderShell(
   locale: Locale,
   active: RouteName,
@@ -23,9 +25,6 @@ export function renderShell(
     { route: "compare", href: "#/compare", label: "navCompare" },
     { route: "learn", href: "#/learn", label: "navLearn" },
     { route: "tools", href: "#/tools", label: "navTools" },
-    { route: "news", href: "#/news", label: "navNews" },
-    { route: "quant", href: "#/quant", label: "navQuant" },
-    { route: "paper", href: "#/paper", label: "navPaper" },
   ];
 
   const brandSub = opts?.subtitle;
@@ -40,10 +39,10 @@ export function renderShell(
         <nav class="site-nav" aria-label="primary">
           ${nav
             .map((n) => {
+              const toolsActive =
+                n.route === "tools" && TOOLS_SUBROUTES.includes(active);
               const cls =
-                active === n.route || (active === "asset" && n.route === "quant")
-                  ? "active"
-                  : "";
+                active === n.route || toolsActive ? "active" : "";
               return `<a class="nav-link ${cls}" href="${n.href}">${esc(t(locale, n.label))}</a>`;
             })
             .join("")}
@@ -61,11 +60,4 @@ export function renderShell(
   `;
 }
 
-type StringKeyNav =
-  | "navHome"
-  | "navCompare"
-  | "navLearn"
-  | "navTools"
-  | "navNews"
-  | "navQuant"
-  | "navPaper";
+type StringKeyNav = "navHome" | "navCompare" | "navLearn" | "navTools";

@@ -99,6 +99,7 @@ export function renderTools(
   const body = `
     <h1>${esc(t(locale, "toolsTitle"))}</h1>
     <p class="lead">${esc(t(locale, "toolsLead"))}</p>
+    <p class="muted">${esc(t(locale, "toolsSecondaryNote"))}</p>
     <div class="tool-grid">
       ${cards
         .map(

@@ -16,14 +16,17 @@ This README is the **canonical English build brief**.
 
 | Route | Purpose |
 |-------|---------|
-| `/#/` | Brand home — **Agenter** / ZH「挑选更合适的 Agent」 · EN「for better agents — compare and choose」 |
-| `/#/compare` | Catalog filter/search + side-by-side + Harness presets/weights + share links |
-| `/#/learn` | Guided tour + ≥8 practice scenarios + Harness / no-lookahead explainers |
-| `/#/tools` | Tools hub |
-| `/#/news` | AI news digest (baked RSS / fixture) |
-| `/#/quant` | Quant review + Strategy Lab + confluence board + heatmap + checklist→paper |
-| `/#/paper` | Paper desk (¥100M) + signal-date fills + MTM equity / PnL% + risk gates |
-| `/#/asset/:symbol` | Candlestick + MA overlays |
+| `/#/` | Brand home — **Agenter** / for better agents (primary CTA → Compare) |
+| `/#/compare` | Apple-style sticky shortlist + dimension matrix + harness presets |
+| `/#/learn` | Guided tour + practice scenarios |
+| `/#/tools` | **Sole hub** for Quant / Paper / News (secondary tools) |
+| `/#/news` | AI news digest (via Tools) |
+| `/#/quant` | Quant review + Tier-2 Strategy Lab (deep link; not primary nav) |
+| `/#/paper` | Paper workstation (deep link; not primary nav) |
+| `/#/asset/:symbol` | Candlestick + MA + factor exposures |
+
+**Primary nav = Home · Compare · Learn · Tools only.** Quant/Paper are tools — not the brand face.  
+**Correction:** Round-1 Quant-as-home was wrong; corrected this round.
 
 **Home must not be Quant-only.** Primary H1 is **Agenter**.
 

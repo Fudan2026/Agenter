@@ -13,7 +13,6 @@ export function renderBrandHome(root: HTMLElement, locale: Locale): void {
       <div class="cta-row">
         <a class="btn btn-primary" href="#/compare">${esc(t(locale, "ctaCompare"))}</a>
         <a class="btn" href="#/learn">${esc(t(locale, "ctaLearn"))}</a>
-        <a class="btn btn-ghost" href="#/tools">${esc(t(locale, "ctaTools"))}</a>
       </div>
     </section>
     <section class="how-section">
@@ -24,10 +23,12 @@ export function renderBrandHome(root: HTMLElement, locale: Locale): void {
         <li>${esc(t(locale, "howStep3"))}</li>
       </ol>
       <p class="muted">${esc(t(locale, "toolsTeaser"))}</p>
+    </section>
+    <section class="tools-secondary">
+      <h2>${esc(t(locale, "toolsSecondaryNote"))}</h2>
+      <p class="muted tiny">${esc(t(locale, "toolsQuantEntry"))}</p>
       <div class="cta-row">
-        <a class="btn" href="#/quant">${esc(t(locale, "navQuant"))}</a>
-        <a class="btn" href="#/paper">${esc(t(locale, "navPaper"))}</a>
-        <a class="btn" href="#/news">${esc(t(locale, "navNews"))}</a>
+        <a class="btn btn-ghost" href="#/tools">${esc(t(locale, "ctaTools"))}</a>
       </div>
     </section>
   `;
