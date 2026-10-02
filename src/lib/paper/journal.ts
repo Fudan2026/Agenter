@@ -21,6 +21,7 @@ function normalizeState(parsed: Partial<PaperState> & { version?: number }): Pap
         : base.feeBpsRoundTrip,
     positions: Array.isArray(parsed.positions) ? parsed.positions : [],
     journal: Array.isArray(parsed.journal) ? parsed.journal : [],
+    hardRiskGates: Boolean(parsed.hardRiskGates),
     version: 2,
   };
 }
@@ -104,4 +105,18 @@ export function downloadJournalJson(state: PaperState): void {
   a.download = `agenter-paper-journal-${new Date().toISOString().slice(0, 10)}.json`;
   a.click();
   URL.revokeObjectURL(url);
+}
+
+/** Append backtest fills into paper journal without wiping positions rebuild — replay via applyBuy/Sell preferred from UI. */
+export function appendJournalEntries(
+  state: PaperState,
+  entries: PaperState["journal"],
+): PaperState {
+  const next: PaperState = {
+    ...state,
+    version: 2,
+    journal: [...entries, ...state.journal],
+  };
+  savePaperState(next);
+  return next;
 }

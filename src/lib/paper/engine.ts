@@ -149,12 +149,41 @@ export function applyBuy(
     qty: number;
     fill: FillQuote;
     note?: string;
+    source?: PaperJournalEntry["source"];
+    lastCloseBySymbol?: Record<string, number>;
   },
 ): { ok: true; state: PaperState } | { ok: false; error: string } {
   const notional = opts.qty * opts.fill.fillPrice;
   const fee = feeForSide(notional, state.feeBpsRoundTrip);
   const cost = notional + fee;
   if (cost > state.cash + 1e-9) return { ok: false, error: "insufficient_cash" };
+
+  if (state.hardRiskGates && opts.lastCloseBySymbol) {
+    const projectedCash = state.cash - cost;
+    const projectedPositions = [...state.positions];
+    const idx = projectedPositions.findIndex((p) => p.symbol === opts.symbol);
+    if (idx >= 0) {
+      const prev = projectedPositions[idx];
+      projectedPositions[idx] = {
+        ...prev,
+        qty: prev.qty + opts.qty,
+      };
+    } else {
+      projectedPositions.push({
+        symbol: opts.symbol,
+        qty: opts.qty,
+        avgCost: opts.fill.fillPrice,
+      });
+    }
+    const shadow: PaperState = {
+      ...state,
+      cash: projectedCash,
+      positions: projectedPositions,
+    };
+    const risk = paperRiskSnapshot(shadow, opts.lastCloseBySymbol);
+    if (risk.overweight) return { ok: false, error: "risk_overweight" };
+    if (risk.cashPct < 0.1) return { ok: false, error: "risk_cash" };
+  }
 
   const positions = [...state.positions];
   const idx = positions.findIndex((p) => p.symbol === opts.symbol);
@@ -184,6 +213,7 @@ export function applyBuy(
     fillDate: opts.fill.fillDate,
     fillRule: opts.fill.fillRule,
     note: opts.note ?? "",
+    source: opts.source ?? "manual",
   };
 
   return {
@@ -205,6 +235,7 @@ export function applySell(
     qty: number;
     fill: FillQuote;
     note?: string;
+    source?: PaperJournalEntry["source"];
   },
 ): { ok: true; state: PaperState } | { ok: false; error: string } {
   const idx = state.positions.findIndex((p) => p.symbol === opts.symbol);
@@ -233,6 +264,7 @@ export function applySell(
     fillDate: opts.fill.fillDate,
     fillRule: opts.fill.fillRule,
     note: opts.note ?? "",
+    source: opts.source ?? "manual",
   };
 
   return {

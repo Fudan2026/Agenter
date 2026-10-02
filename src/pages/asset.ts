@@ -9,12 +9,15 @@ import {
 
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
+import { rsi } from "../lib/indicators/core";
 import { PATTERN_META } from "../lib/patterns/types";
+import { loadPaperState } from "../lib/paper/journal";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 import type { LatestPayload, SymbolRow } from "./types";
 
 let chart: IChartApi | null = null;
+let rsiChart: IChartApi | null = null;
 let series: ISeriesApi<"Candlestick"> | null = null;
 let resizeObs: ResizeObserver | null = null;
 
@@ -26,6 +29,10 @@ function destroyChart(): void {
     chart = null;
     series = null;
   }
+  if (rsiChart) {
+    rsiChart.remove();
+    rsiChart = null;
+  }
 }
 
 function statusLabel(locale: Locale, status: SymbolRow["dataStatus"]): string {
@@ -34,7 +41,12 @@ function statusLabel(locale: Locale, status: SymbolRow["dataStatus"]): string {
   return t(locale, "dataMissing");
 }
 
-function mountChart(container: HTMLElement, row: SymbolRow): void {
+function mountChart(
+  container: HTMLElement,
+  row: SymbolRow,
+  showRsi: boolean,
+  rsiContainer: HTMLElement | null,
+): void {
   destroyChart();
   chart = createChart(container, {
     layout: {
@@ -67,14 +79,79 @@ function mountChart(container: HTMLElement, row: SymbolRow): void {
   }));
   series.setData(data);
   if (row.ma20?.length) {
-    const ma20 = chart.addLineSeries({ color: "#0b6e4f", lineWidth: 2, title: "MA20" });
-    ma20.setData(row.ma20.map((p) => ({ time: p.date as Time, value: p.value })));
+    const ma20 = chart.addLineSeries({
+      color: "#0b6e4f",
+      lineWidth: 2,
+      title: "MA20",
+    });
+    ma20.setData(
+      row.ma20.map((p) => ({ time: p.date as Time, value: p.value })),
+    );
   }
   if (row.ma60?.length) {
-    const ma60 = chart.addLineSeries({ color: "#1d4e89", lineWidth: 2, title: "MA60" });
-    ma60.setData(row.ma60.map((p) => ({ time: p.date as Time, value: p.value })));
+    const ma60 = chart.addLineSeries({
+      color: "#1d4e89",
+      lineWidth: 2,
+      title: "MA60",
+    });
+    ma60.setData(
+      row.ma60.map((p) => ({ time: p.date as Time, value: p.value })),
+    );
   }
+
+  // Paper journal markers for this symbol
+  const journal = loadPaperState().journal.filter((j) => j.symbol === row.symbol);
+  if (journal.length) {
+    series.setMarkers(
+      journal
+        .map((j) => ({
+          time: j.fillDate as Time,
+          position: (j.side === "buy" ? "belowBar" : "aboveBar") as
+            | "belowBar"
+            | "aboveBar",
+          color: j.side === "buy" ? "#15803d" : "#b91c1c",
+          shape: (j.side === "buy" ? "arrowUp" : "arrowDown") as
+            | "arrowUp"
+            | "arrowDown",
+          text: j.side.toUpperCase(),
+        }))
+        .sort((a, b) => String(a.time).localeCompare(String(b.time))),
+    );
+  }
+
   chart.timeScale().fitContent();
+
+  if (showRsi && rsiContainer) {
+    const closes = row.candles.map((c) => c.close);
+    const vals = rsi(closes, 14);
+    const offset = closes.length - vals.length;
+    rsiChart = createChart(rsiContainer, {
+      layout: {
+        background: { type: ColorType.Solid, color: "#f7f4ef" },
+        textColor: "#1c1917",
+      },
+      width: rsiContainer.clientWidth,
+      height: 140,
+      rightPriceScale: { borderVisible: false },
+      timeScale: { borderVisible: false },
+      grid: {
+        vertLines: { color: "rgba(28,25,23,0.08)" },
+        horzLines: { color: "rgba(28,25,23,0.08)" },
+      },
+    });
+    const line = rsiChart.addLineSeries({
+      color: "#1d4e89",
+      lineWidth: 2,
+      title: "RSI14",
+    });
+    line.setData(
+      vals.map((v, i) => ({
+        time: row.candles[offset + i].date as Time,
+        value: v,
+      })),
+    );
+    rsiChart.timeScale().fitContent();
+  }
 
   resizeObs = new ResizeObserver(() => {
     if (!chart) return;
@@ -82,6 +159,9 @@ function mountChart(container: HTMLElement, row: SymbolRow): void {
       width: container.clientWidth,
       height: Math.max(320, container.clientHeight || 360),
     });
+    if (rsiChart && rsiContainer) {
+      rsiChart.applyOptions({ width: rsiContainer.clientWidth });
+    }
   });
   resizeObs.observe(container);
 }
@@ -104,6 +184,7 @@ export function renderAsset(
     return;
   }
 
+  let showRsi = false;
   const name = locale === "zh" ? row.nameZh : row.nameEn;
   const patterns = [...row.recentPatterns].reverse();
   const patternList =
@@ -119,56 +200,64 @@ export function renderAsset(
           })
           .join("")}</ul>`;
 
-  const body = `
-    <p><a class="back" href="#/quant">${esc(t(locale, "backQuant"))}</a></p>
-    <div class="asset-header">
-      <div>
-        <h1>${esc(name)}</h1>
-        <p class="asset-meta">${esc(row.symbol)} · ${esc(statusLabel(locale, row.dataStatus))} · ${esc(row.dataNote)}</p>
+  const paint = (): void => {
+    destroyChart();
+    const body = `
+      <p><a class="back" href="#/quant">${esc(t(locale, "backQuant"))}</a></p>
+      <div class="asset-header">
+        <div>
+          <h1>${esc(name)}</h1>
+          <p class="asset-meta">${esc(row.symbol)} · ${esc(statusLabel(locale, row.dataStatus))} · ${esc(row.dataNote)}</p>
+        </div>
+        <div class="cta-row wrap">
+          <label class="tiny"><input type="checkbox" id="rsi-toggle" ${showRsi ? "checked" : ""}/> RSI</label>
+          <a class="btn" href="#/paper?symbol=${encodeURIComponent(row.symbol)}">${esc(t(locale, "openPaper"))}</a>
+          <button type="button" class="btn" id="fs-btn">${esc(t(locale, "fullscreen"))}</button>
+        </div>
       </div>
-      <button type="button" class="btn" id="fs-btn">${esc(t(locale, "fullscreen"))}</button>
-    </div>
-    <div class="chart-shell" id="chart-shell">
-      <div id="chart" class="chart"></div>
-    </div>
-    <section class="patterns">
-      <h2>${esc(t(locale, "recentPatterns"))}</h2>
-      ${patternList}
-    </section>
-  `;
+      <div class="chart-shell" id="chart-shell">
+        <div id="chart" class="chart"></div>
+      </div>
+      <div class="chart-shell rsi-shell" id="rsi-shell" ${showRsi ? "" : "hidden"}>
+        <div id="rsi-chart" class="chart rsi-chart"></div>
+      </div>
+      <section class="patterns">
+        <h2>${esc(t(locale, "recentPatterns"))}</h2>
+        ${patternList}
+      </section>
+    `;
 
-  root.innerHTML = renderShell(locale, "asset", body, {
-    subtitle: t(locale, "quantSubtitle"),
-  });
-  document.title = `${name} · Agenter`;
+    root.innerHTML = renderShell(locale, "asset", body, {
+      subtitle: t(locale, "quantSubtitle"),
+    });
+    document.title = `${name} · Agenter`;
 
-  const chartEl = root.querySelector("#chart") as HTMLElement | null;
-  if (chartEl && row.candles.length) {
-    mountChart(chartEl, row);
-  }
-
-  const fsBtn = root.querySelector("#fs-btn") as HTMLButtonElement | null;
-  const shell = root.querySelector("#chart-shell") as HTMLElement | null;
-  fsBtn?.addEventListener("click", async () => {
-    if (!shell) return;
-    if (!document.fullscreenElement) {
-      await shell.requestFullscreen?.();
-      fsBtn.textContent = t(locale, "exitFullscreen");
-    } else {
-      await document.exitFullscreen?.();
-      fsBtn.textContent = t(locale, "fullscreen");
+    const chartEl = root.querySelector("#chart") as HTMLElement | null;
+    const rsiEl = root.querySelector("#rsi-chart") as HTMLElement | null;
+    if (chartEl && row.candles.length) {
+      mountChart(chartEl, row, showRsi, rsiEl);
     }
-  });
-  document.addEventListener(
-    "fullscreenchange",
-    () => {
-      if (!fsBtn) return;
-      fsBtn.textContent = document.fullscreenElement
-        ? t(locale, "exitFullscreen")
-        : t(locale, "fullscreen");
-    },
-    { once: false },
-  );
+
+    root.querySelector("#rsi-toggle")?.addEventListener("change", (e) => {
+      showRsi = (e.target as HTMLInputElement).checked;
+      paint();
+    });
+
+    const fsBtn = root.querySelector("#fs-btn") as HTMLButtonElement | null;
+    const shell = root.querySelector("#chart-shell") as HTMLElement | null;
+    fsBtn?.addEventListener("click", async () => {
+      if (!shell) return;
+      if (!document.fullscreenElement) {
+        await shell.requestFullscreen?.();
+        fsBtn.textContent = t(locale, "exitFullscreen");
+      } else {
+        await document.exitFullscreen?.();
+        fsBtn.textContent = t(locale, "fullscreen");
+      }
+    });
+  };
+
+  paint();
 }
 
 export function cleanupAssetPage(): void {

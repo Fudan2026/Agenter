@@ -18,6 +18,8 @@ export interface PaperJournalEntry {
   fillDate: string;
   fillRule: "next_open" | "next_close_fallback";
   note: string;
+  /** Additive provenance. */
+  source?: "manual" | "backtest" | "checklist";
 }
 
 export interface PaperState {
@@ -27,6 +29,8 @@ export interface PaperState {
   feeBpsRoundTrip: number;
   positions: PaperPosition[];
   journal: PaperJournalEntry[];
+  /** When true, overweight / low cash blocks new buys. */
+  hardRiskGates?: boolean;
 }
 
 export const PAPER_KEY = "agenter.paper.journal.v2";
@@ -38,3 +42,4 @@ export const PAPER_FEE_BPS_RT = 3;
 export const ASHARE_LOT = 100;
 /** Soft risk: warn when a single name exceeds this fraction of equity. */
 export const PAPER_MAX_NAME_PCT = 0.2;
+export const PAPER_MIN_CASH_PCT = 0.1;

@@ -21,8 +21,8 @@ This README is the **canonical English build brief**.
 | `/#/learn` | Guided tour + ≥8 practice scenarios + Harness / no-lookahead explainers |
 | `/#/tools` | Tools hub |
 | `/#/news` | AI news digest (baked RSS / fixture) |
-| `/#/quant` | Quant review + signal board + next-open checklist |
-| `/#/paper` | Paper desk (¥100M) + risk strip + equity curve + checklist export |
+| `/#/quant` | Quant review + Strategy Lab + confluence board + heatmap + checklist→paper |
+| `/#/paper` | Paper desk (¥100M) + signal-date fills + MTM equity / PnL% + risk gates |
 | `/#/asset/:symbol` | Candlestick + MA overlays |
 
 **Home must not be Quant-only.** Primary H1 is **Agenter**.
@@ -49,7 +49,7 @@ This README is the **canonical English build brief**.
 
 ```bash
 npm ci
-npm test                 # patterns + paper (incl. ¥100M + no-lookahead)
+npm test                 # patterns + paper MTM + backtest + board
 npm run quant:bake       # OHLC → public/data/latest.json
 npm run news:bake        # RSS → public/data/ai-news.json (fail-open)
 npm run build
@@ -79,6 +79,9 @@ Claude / Cursor / Copilot / Windsurf / Aider / Continue / 通义灵码 / Trae / 
 | Markets | CN A-share + CN ETF — **26** symbols |
 | Patterns | **10** IDs (legacy five unchanged) |
 | Indicators | SMA20/60, RSI14, MA align, volume spike (OpenCool distill) |
+| Bake window | **250** trading days |
+| Board | Confluence 0–100, filters, pattern heatmap, stale banner |
+| Strategy Lab | In-browser no-lookahead backtests (pattern / MA / RSI / confluence) + walk-forward tear sheet |
 | Data | East Money → Yahoo → cache; browser reads baked JSON only |
 
 ### Patterns
@@ -90,13 +93,22 @@ Additive: `morning_star`, `evening_star`, `three_white_soldiers`, `three_black_c
 
 Legacy 16 unchanged + additive: `510050.SS`, `159919.SZ`, `512690.SS`, `515790.SS`, `601318.SS`, `600900.SS`, `000333.SZ`, `002415.SZ`, `300750.SZ`, `601166.SS`
 
+### Strategy Lab
+
+- Execution: signal on bar **t** close → fill at **t+1** open (never same-bar)
+- Fees 3 bps RT; A-share/ETF lots 100; long-only
+- Tear sheet: return, max DD, Sharpe, win rate, profit factor, IS/OOS split
+- **Send fills to Paper** appends labeled `source: backtest` journal entries (additive)
+
 ---
 
 ## Paper desk
 
 - Start **¥100,000,000**; fee 3 bps RT; A-share/ETF lots 100
-- Equity curve, portfolio weights / unrealized PnL, soft risk strip (`quant-risk-gates` spirit)
-- Import/export journal JSON; broker checklist CSV/JSON with **next-open** wording
+- Fills: **signal-date picker** → next-open (fallback labeled); deep-link `?symbol=&signal=`
+- Equity: **mark-to-market** daily closes between fills; dual view Equity CNY / PnL %; drawdown sparkline; buy/sell markers
+- Soft risk strip + optional hard gates (name >20% or cash <10% block buys)
+- Checklist batch “paper these” (1% equity) from Quant; import/export journal JSON; broker checklist with **next-open** wording
 - No xiadan / THS / broker SDKs
 
 ---
@@ -115,7 +127,7 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 ## Distill sources
 
 - OpenCool OHLC + indicators/signals spirit → `src/lib/ohlc`, `src/lib/indicators`, `src/lib/signals`
-- Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings)
+- Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings), `quant-backtest-review` (tear-sheet R/Y/G)
 
 ---
 

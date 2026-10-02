@@ -855,6 +855,83 @@ a:hover {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
 
+.banner-stale {
+  border: 1px solid rgba(185, 28, 28, 0.35);
+  background: rgba(185, 28, 28, 0.06);
+  padding: 0.75rem 1rem;
+  margin: 0.75rem 0 1rem;
+  border-radius: 4px;
+}
+
+.strategy-lab,
+.heatmap-section {
+  margin: 1.5rem 0;
+}
+
+.lab-controls label,
+.filter-bar label,
+.paper-ticket label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  font-size: 0.85rem;
+}
+
+.tear-sheet {
+  margin: 0.75rem 0;
+  padding: 0.75rem;
+  border-left: 3px solid var(--muted, #64748b);
+}
+
+.tear-sheet.verdict-green {
+  border-left-color: #15803d;
+}
+
+.tear-sheet.verdict-yellow {
+  border-left-color: #ca8a04;
+}
+
+.tear-sheet.verdict-red {
+  border-left-color: #b91c1c;
+}
+
+.heatmap-wrap {
+  overflow-x: auto;
+}
+
+.heatmap-table th,
+.heatmap-table td {
+  text-align: center;
+  padding: 0.2rem 0.3rem;
+  font-size: 0.75rem;
+}
+
+.heat-cell.heat-lo {
+  background: rgba(11, 110, 79, 0.12);
+}
+
+.heat-cell.heat-mid {
+  background: rgba(11, 110, 79, 0.28);
+}
+
+.heat-cell.heat-hi {
+  background: rgba(11, 110, 79, 0.48);
+  color: #fff;
+}
+
+.rsi-chart {
+  height: 140px;
+}
+
+.dd-shell {
+  margin-top: 0.5rem;
+}
+
+.flash {
+  color: #0b6e4f;
+  font-weight: 600;
+}
+
 @media (max-width: 720px) {
   .paper-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));

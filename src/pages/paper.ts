@@ -17,6 +17,11 @@ import {
   resolveNextOpenFill,
 } from "../lib/paper/engine";
 import {
+  buildMarkToMarketSeries,
+  defaultSignalDate,
+  drawdownSeries,
+} from "../lib/paper/equity";
+import {
   downloadJournalJson,
   importPaperState,
   loadPaperState,
@@ -46,6 +51,8 @@ function errMsg(locale: Locale, code: string): string {
     invalid_qty: "paperErrQty",
     no_position: "paperErrPos",
     insufficient_qty: "paperErrInsuff",
+    risk_overweight: "paperErrOverweight",
+    risk_cash: "paperErrCashGate",
   };
   const key = map[code];
   return key ? t(locale, key) : code;
@@ -58,29 +65,13 @@ function fmtMoney(n: number): string {
   });
 }
 
-function buildEquitySeries(
-  state: PaperState,
-  lastCloseBySymbol: Record<string, number>,
-): Array<{ time: string; value: number }> {
-  const chronological = [...state.journal].reverse();
-  let cash = state.startingCash;
-  const points: Array<{ time: string; value: number }> = [];
-  if (!chronological.length) {
-    const today = new Date().toISOString().slice(0, 10);
-    return [{ time: today, value: equityMark(state, lastCloseBySymbol) }];
-  }
-  for (const j of chronological) {
-    const notional = j.qty * j.fillPrice;
-    if (j.side === "buy") cash -= notional + j.fee;
-    else cash += notional - j.fee;
-    points.push({ time: j.fillDate, value: cash });
-  }
-  const last = points[points.length - 1];
-  const eq = equityMark(state, lastCloseBySymbol);
-  if (last) points.push({ time: last.time, value: eq });
-  const byDay = new Map<string, number>();
-  for (const p of points) byDay.set(p.time, p.value);
-  return [...byDay.entries()].map(([time, value]) => ({ time, value }));
+function ohlcMap(data: LatestPayload): Record<
+  string,
+  SymbolRow["candles"]
+> {
+  const out: Record<string, SymbolRow["candles"]> = {};
+  for (const s of data.symbols) out[s.symbol] = s.candles;
+  return out;
 }
 
 export function renderPaper(
@@ -90,11 +81,13 @@ export function renderPaper(
 ): void {
   destroyEquityChart();
   let state: PaperState = loadPaperState();
+  let viewMode: "equity" | "pnlPct" = "pnlPct";
   const hashQ = location.hash.includes("?")
     ? location.hash.slice(location.hash.indexOf("?") + 1)
     : "";
   const params = new URLSearchParams(hashQ);
   const preselect = params.get("symbol") ?? "";
+  const preSignal = params.get("signal") ?? "";
   const tradeable = data.symbols.filter(
     (s) => s.dataStatus !== "missing" && s.candles.length >= 2,
   );
@@ -114,6 +107,23 @@ export function renderPaper(
         : null) ??
       tradeable[0]?.symbol ??
       "";
+    const row0 = data.symbols.find((s) => s.symbol === defaultSym);
+    const sigDefault =
+      preSignal ||
+      (row0 ? defaultSignalDate(row0.candles) : null) ||
+      "";
+
+    const previewFill = row0
+      ? resolveNextOpenFill(row0.candles, sigDefault || undefined)
+      : null;
+
+    const { points, markers } = buildMarkToMarketSeries(
+      state,
+      ohlcMap(data),
+    );
+    const dd = drawdownSeries(points);
+    const pnlPctNow =
+      ((eq - state.startingCash) / state.startingCash) * 100;
 
     const body = `
       <h1>${esc(t(locale, "paperTitle"))}</h1>
@@ -131,7 +141,7 @@ export function renderPaper(
       <div class="stats-row paper-stats">
         <div class="stat"><span class="stat-n">${fmtMoney(state.cash)}</span><span class="stat-l">${esc(t(locale, "paperCash"))}</span></div>
         <div class="stat"><span class="stat-n">${fmtMoney(eq)}</span><span class="stat-l">${esc(t(locale, "paperEquity"))}</span></div>
-        <div class="stat"><span class="stat-n">${fmtMoney(PAPER_START_CASH)}</span><span class="stat-l">${esc(t(locale, "paperStart"))}</span></div>
+        <div class="stat"><span class="stat-n">${pnlPctNow.toFixed(3)}%</span><span class="stat-l">${esc(t(locale, "paperPnlPct"))}</span></div>
         <div class="stat"><span class="stat-n">${state.feeBpsRoundTrip}</span><span class="stat-l">bps RT</span></div>
       </div>
 
@@ -146,6 +156,7 @@ export function renderPaper(
           }${risk.overweight ? ` · ${esc(t(locale, "paperOverweight"))}` : ""}</li>
           <li>${esc(t(locale, "paperConsecLoss"))}: ${risk.consecutiveLosses}</li>
         </ul>
+        <label class="tiny"><input type="checkbox" id="p-hard" ${state.hardRiskGates ? "checked" : ""}/> ${esc(t(locale, "paperHardGates"))}</label>
         <p class="muted tiny">${esc(t(locale, "paperRiskNote"))}</p>
       </section>
 
@@ -160,9 +171,17 @@ export function renderPaper(
               .join("")}
           </select>
         </label>
-        <label>${esc(t(locale, "paperQty"))}
-          <input type="number" id="p-qty" min="1" step="100" value="100" />
+        <label>${esc(t(locale, "paperSignalDate"))}
+          <select id="p-signal"></select>
         </label>
+        <label>${esc(t(locale, "paperQty"))}
+          <input type="number" id="p-qty" min="1" step="100" value="1000" />
+        </label>
+        <p class="muted tiny" id="p-preview">${
+          previewFill
+            ? `${esc(t(locale, "paperFillPreview"))}: ${previewFill.fillRule} @ ${previewFill.fillPrice.toFixed(3)} on ${previewFill.fillDate}`
+            : ""
+        }</p>
         <div class="cta-row">
           <button type="button" class="btn btn-primary" id="p-buy">${esc(t(locale, "paperBuy"))}</button>
           <button type="button" class="btn" id="p-sell">${esc(t(locale, "paperSell"))}</button>
@@ -171,7 +190,13 @@ export function renderPaper(
 
       <section>
         <h2>${esc(t(locale, "paperEquityCurve"))}</h2>
+        <div class="cta-row wrap">
+          <button type="button" class="btn ${viewMode === "pnlPct" ? "btn-primary" : ""}" id="v-pnl">${esc(t(locale, "paperViewPnl"))}</button>
+          <button type="button" class="btn ${viewMode === "equity" ? "btn-primary" : ""}" id="v-eq">${esc(t(locale, "paperViewEquity"))}</button>
+        </div>
         <div class="chart-shell equity-shell"><div id="equity-chart" class="chart equity-chart"></div></div>
+        <div class="chart-shell equity-shell dd-shell"><div id="dd-chart" class="chart equity-chart"></div></div>
+        <p class="muted tiny">${esc(t(locale, "paperMtmNote"))} · points=${points.length} · markers=${markers.length}</p>
       </section>
 
       <section>
@@ -218,6 +243,7 @@ export function renderPaper(
                   <th>Side</th><th>Symbol</th><th>Qty</th><th>Fill</th>
                   <th>${esc(t(locale, "paperFee"))}</th>
                   <th>${esc(t(locale, "paperFillRule"))}</th>
+                  <th>Src</th>
                 </tr></thead>
                 <tbody>
                   ${state.journal
@@ -230,6 +256,7 @@ export function renderPaper(
                         <td>${j.fillPrice.toFixed(3)} <span class="muted tiny">${esc(j.fillDate)}</span></td>
                         <td>${j.fee.toFixed(2)}</td>
                         <td>${esc(j.fillRule)} <span class="muted tiny">sig ${esc(j.signalDate)}</span></td>
+                        <td class="tiny">${esc(j.source ?? "manual")}</td>
                       </tr>`,
                     )
                     .join("")}
@@ -253,18 +280,59 @@ export function renderPaper(
     document.title = `${t(locale, "paperTitle")} · Agenter`;
 
     const symEl = root.querySelector("#p-symbol") as HTMLSelectElement | null;
+    const sigEl = root.querySelector("#p-signal") as HTMLSelectElement | null;
     if (symEl && defaultSym) symEl.value = defaultSym;
 
-    const series = buildEquitySeries(state, lastClose);
+    const refillSignals = (): void => {
+      if (!symEl || !sigEl) return;
+      const row = data.symbols.find((s) => s.symbol === symEl.value);
+      if (!row) return;
+      const prefer = defaultSignalDate(row.candles);
+      sigEl.innerHTML = row.candles
+        .map((c, i) => {
+          const hasNext = i < row.candles.length - 1;
+          const label = hasNext
+            ? `${c.date} → next_open`
+            : `${c.date} (fallback)`;
+          return `<option value="${esc(c.date)}">${esc(label)}</option>`;
+        })
+        .join("");
+      sigEl.value = prefer ?? row.candles[row.candles.length - 1]?.date ?? "";
+      updatePreview();
+    };
+
+    const updatePreview = (): void => {
+      const prev = root.querySelector("#p-preview");
+      if (!symEl || !sigEl || !prev) return;
+      const row = data.symbols.find((s) => s.symbol === symEl.value);
+      if (!row) return;
+      const fill = resolveNextOpenFill(row.candles, sigEl.value);
+      prev.textContent = fill
+        ? `${t(locale, "paperFillPreview")}: ${fill.fillRule} @ ${fill.fillPrice.toFixed(3)} on ${fill.fillDate}`
+        : "";
+    };
+
+    refillSignals();
+    if (sigDefault && sigEl) {
+      const opts = [...sigEl.options].map((o) => o.value);
+      if (opts.includes(sigDefault)) sigEl.value = sigDefault;
+      updatePreview();
+    }
+
+    symEl?.addEventListener("change", () => refillSignals());
+    sigEl?.addEventListener("change", () => updatePreview());
+
+    // Charts
     const chartEl = root.querySelector("#equity-chart") as HTMLElement | null;
-    if (chartEl && series.length) {
+    const ddEl = root.querySelector("#dd-chart") as HTMLElement | null;
+    if (chartEl && points.length) {
       equityChart = createChart(chartEl, {
         layout: {
           background: { type: ColorType.Solid, color: "#f7fbf8" },
           textColor: "#12231f",
         },
         width: chartEl.clientWidth,
-        height: 220,
+        height: 240,
         rightPriceScale: { borderVisible: false },
         timeScale: { borderVisible: false },
         grid: {
@@ -276,35 +344,104 @@ export function renderPaper(
         color: "#0b6e4f",
         lineWidth: 2,
       });
-      line.setData(
-        series.map((p) => ({ time: p.time as Time, value: p.value })),
+      const seriesData = points.map((p) => ({
+        time: p.time as Time,
+        value: viewMode === "pnlPct" ? p.pnlPct : p.equity,
+      }));
+      line.setData(seriesData);
+      for (const m of markers) {
+        // lightweight-charts markers via setMarkers on series
+      }
+      line.setMarkers(
+        markers.map((m) => ({
+          time: m.time as Time,
+          position: m.side === "buy" ? "belowBar" : "aboveBar",
+          color: m.side === "buy" ? "#15803d" : "#b91c1c",
+          shape: m.side === "buy" ? "arrowUp" : "arrowDown",
+          text: m.side.toUpperCase(),
+        })),
       );
       equityChart.timeScale().fitContent();
     }
+    if (ddEl && dd.length) {
+      const ddChart = createChart(ddEl, {
+        layout: {
+          background: { type: ColorType.Solid, color: "#f7fbf8" },
+          textColor: "#12231f",
+        },
+        width: ddEl.clientWidth,
+        height: 120,
+        rightPriceScale: { borderVisible: false },
+        timeScale: { borderVisible: false },
+        grid: {
+          vertLines: { color: "rgba(18,35,31,0.06)" },
+          horzLines: { color: "rgba(18,35,31,0.06)" },
+        },
+      });
+      const area = ddChart.addAreaSeries({
+        lineColor: "#b91c1c",
+        topColor: "rgba(185,28,28,0.35)",
+        bottomColor: "rgba(185,28,28,0.02)",
+        lineWidth: 1,
+      });
+      area.setData(dd.map((p) => ({ time: p.time as Time, value: p.value })));
+      ddChart.timeScale().fitContent();
+      // store on equityChart cleanup path — remove with paint destroy only main; dd removed on next paint via orphan GCC
+      const prev = equityChart;
+      equityChart = {
+        remove: () => {
+          prev?.remove();
+          ddChart.remove();
+        },
+      } as IChartApi;
+    }
+
+    root.querySelector("#v-pnl")?.addEventListener("click", () => {
+      viewMode = "pnlPct";
+      paint();
+    });
+    root.querySelector("#v-eq")?.addEventListener("click", () => {
+      viewMode = "equity";
+      paint();
+    });
+
+    root.querySelector("#p-hard")?.addEventListener("change", (e) => {
+      state = {
+        ...state,
+        hardRiskGates: (e.target as HTMLInputElement).checked,
+      };
+      savePaperState(state);
+    });
 
     const trade = (side: "buy" | "sell"): void => {
       const symbol = (root.querySelector("#p-symbol") as HTMLSelectElement)
         .value;
+      const signalDate = (
+        root.querySelector("#p-signal") as HTMLSelectElement
+      ).value;
       const qtyRaw = Number(
         (root.querySelector("#p-qty") as HTMLInputElement).value,
       );
-      const row = data.symbols.find((s) => s.symbol === symbol) as
-        | SymbolRow
-        | undefined;
+      const row = data.symbols.find((s) => s.symbol === symbol);
       if (!row) return;
       const norm = normalizeQty(qtyRaw, row.group);
       if (norm.error) {
         paint(errMsg(locale, norm.error));
         return;
       }
-      const fill = resolveNextOpenFill(row.candles);
+      const fill = resolveNextOpenFill(row.candles, signalDate);
       if (!fill) {
         paint("no fill");
         return;
       }
       const result =
         side === "buy"
-          ? applyBuy(state, { symbol, qty: norm.qty, fill })
+          ? applyBuy(state, {
+              symbol,
+              qty: norm.qty,
+              fill,
+              lastCloseBySymbol: lastClose,
+            })
           : applySell(state, { symbol, qty: norm.qty, fill });
       if (!result.ok) {
         paint(errMsg(locale, result.error));
@@ -313,7 +450,7 @@ export function renderPaper(
       state = result.state;
       savePaperState(state);
       paint(
-        `${side.toUpperCase()} ${norm.qty} ${symbol} @ ${fill.fillPrice.toFixed(3)} (${fill.fillRule})`,
+        `${side.toUpperCase()} ${norm.qty} ${symbol} @ ${fill.fillPrice.toFixed(3)} (${fill.fillRule} ${fill.fillDate})`,
       );
     };
 
@@ -340,8 +477,7 @@ export function renderPaper(
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
       try {
-        const text = await file.text();
-        const next = importPaperState(JSON.parse(text) as unknown);
+        const next = importPaperState(JSON.parse(await file.text()) as unknown);
         if (!next) {
           paint(locale === "zh" ? "导入失败" : "Import failed");
           return;

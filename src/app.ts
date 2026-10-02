@@ -5,7 +5,7 @@ import { renderBrandHome } from "./pages/brand-home";
 import { loadAgents, renderCompare } from "./pages/compare";
 import { renderLearn } from "./pages/learn";
 import { cleanupPaperPage, renderPaper } from "./pages/paper";
-import { renderQuant } from "./pages/quant";
+import { cleanupQuantPage, renderQuant } from "./pages/quant";
 import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
 import type { LatestPayload } from "./pages/types";
 
@@ -82,6 +82,7 @@ async function render(): Promise<void> {
   if (!root) return;
   cleanupAssetPage();
   cleanupPaperPage();
+  cleanupQuantPage();
   document.documentElement.lang = locale === "zh" ? "zh-CN" : "en";
   root.classList.remove("route-enter");
   void root.offsetWidth;

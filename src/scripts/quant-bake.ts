@@ -20,7 +20,7 @@ const TITLE = {
 
 const OUT = path.join("public", "data", "latest.json");
 const GATE_MIN = Math.max(8, Math.floor(WATCHLIST.length / 2));
-const CANDLE_DAYS = 120;
+const CANDLE_DAYS = 250;
 const SPARK_DAYS = 30;
 const PATTERN_WINDOW = 60;
 
