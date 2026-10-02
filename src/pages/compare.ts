@@ -10,8 +10,11 @@ import type {
 import { DIMENSION_IDS } from "../lib/agents/types";
 import {
   DEFAULT_WEIGHTS,
+  encodeCompareShare,
+  HARNESS_PRESETS,
   loadPicks,
   loadWeights,
+  parseCompareShare,
   savePicks,
   saveWeights,
   weightedScore,
@@ -19,7 +22,16 @@ import {
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 
-const DIM_LABEL: Record<DimensionId, "dimCoding" | "dimToolUse" | "dimContext" | "dimPrivacy" | "dimCost" | "dimCnAccess" | "dimLearn"> = {
+const DIM_LABEL: Record<
+  DimensionId,
+  | "dimCoding"
+  | "dimToolUse"
+  | "dimContext"
+  | "dimPrivacy"
+  | "dimCost"
+  | "dimCnAccess"
+  | "dimLearn"
+> = {
   codingAbility: "dimCoding",
   toolUse: "dimToolUse",
   contextMemory: "dimContext",
@@ -53,35 +65,58 @@ export async function loadAgents(): Promise<AgentRecord[]> {
   return agentsCache;
 }
 
+function dimBars(scores: Record<DimensionId, number>): string {
+  return `<div class="dim-bars" aria-hidden="true">${DIMENSION_IDS.map((id) => {
+    const v = scores[id] ?? 0;
+    const pct = (v / 5) * 100;
+    return `<div class="dim-bar"><span style="width:${pct}%"></span></div>`;
+  }).join("")}</div>`;
+}
+
 export function renderCompare(
   root: HTMLElement,
   locale: Locale,
   agents: AgentRecord[],
 ): void {
+  const shared = parseCompareShare(location.hash);
   let region: AgentRegion | "all" = "all";
   let category: AgentCategory | "all" = "all";
-  let picks = new Set(loadPicks());
-  let weights = loadWeights();
+  let search = "";
+  let pricing = "";
+  let toolsQ = "";
+  let picks = new Set(shared.ids.length ? shared.ids : loadPicks());
+  let weights = shared.weights ?? loadWeights();
 
+  let flash = "";
   const paint = (): void => {
     const filtered = agents.filter((a) => {
       if (region !== "all" && a.region !== region) return false;
       if (category !== "all" && a.category !== category) return false;
+      if (pricing && !a.pricingBand.toLowerCase().includes(pricing.toLowerCase()))
+        return false;
+      if (toolsQ && !a.toolsMcp.toLowerCase().includes(toolsQ.toLowerCase()))
+        return false;
+      if (search) {
+        const hay = `${a.nameZh} ${a.nameEn} ${a.id} ${a.notesEn ?? ""} ${a.notesZh ?? ""}`.toLowerCase();
+        if (!hay.includes(search.toLowerCase())) return false;
+      }
       return true;
     });
 
     const picked = agents.filter((a) => picks.has(a.id));
     const ranked = [...picked]
-      .map((a) => ({
-        agent: a,
-        score: weightedScore(a.scores, weights),
-      }))
+      .map((a) => ({ agent: a, score: weightedScore(a.scores, weights) }))
       .sort((a, b) => b.score - a.score);
 
     const body = `
       <h1>${esc(t(locale, "compareTitle"))}</h1>
       <p class="lead">${esc(t(locale, "compareLead"))}</p>
+      <p class="muted tiny">${esc(t(locale, "editorialNote"))}</p>
+      ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
       <div class="filters">
+        <label>${esc(t(locale, "searchAgents"))}
+          <input type="search" id="f-search" value="${esc(search)}" placeholder="Cursor / Kimi…" />
+        </label>
         <label>${esc(t(locale, "filterRegion"))}
           <select id="f-region">
             <option value="all"${region === "all" ? " selected" : ""}>${esc(t(locale, "filterAll"))}</option>
@@ -101,9 +136,15 @@ export function renderCompare(
               .join("")}
           </select>
         </label>
+        <label>${esc(t(locale, "filterPricing"))}
+          <input type="text" id="f-pricing" value="${esc(pricing)}" placeholder="freemium / BYOK" />
+        </label>
+        <label>${esc(t(locale, "filterTools"))}
+          <input type="text" id="f-tools" value="${esc(toolsQ)}" placeholder="MCP / CLI" />
+        </label>
       </div>
       <p class="muted tiny">${esc(t(locale, "pickHint"))}</p>
-      <div class="table-wrap">
+      <div class="table-wrap sticky-first">
         <table class="agent-table">
           <thead>
             <tr>
@@ -134,6 +175,15 @@ export function renderCompare(
 
       <section class="harness">
         <h2>${esc(t(locale, "harnessWeights"))}</h2>
+        <div class="cta-row wrap preset-row">
+          <button type="button" class="btn" data-preset="coding">${esc(t(locale, "presetCoding"))}</button>
+          <button type="button" class="btn" data-preset="cn">${esc(t(locale, "presetCn"))}</button>
+          <button type="button" class="btn" data-preset="privacy">${esc(t(locale, "presetPrivacy"))}</button>
+          <button type="button" class="btn" data-preset="research">${esc(t(locale, "presetResearch"))}</button>
+          <button type="button" class="btn" id="reset-weights">${esc(t(locale, "resetWeights"))}</button>
+          <button type="button" class="btn btn-primary" id="copy-share">${esc(t(locale, "copyShare"))}</button>
+          <button type="button" class="btn" id="export-scores">${esc(t(locale, "exportScores"))}</button>
+        </div>
         <div class="weight-grid">
           ${DIMENSION_IDS.map((id) => {
             return `<label class="weight-row">${esc(t(locale, DIM_LABEL[id]))}
@@ -142,7 +192,6 @@ export function renderCompare(
             </label>`;
           }).join("")}
         </div>
-        <button type="button" class="btn" id="reset-weights">${esc(t(locale, "resetWeights"))}</button>
       </section>
 
       <section class="side-by-side">
@@ -159,6 +208,7 @@ export function renderCompare(
                     return `<article class="compare-card">
                       <h3>${esc(name)}</h3>
                       <p class="score-big">${score.toFixed(2)}</p>
+                      ${dimBars(a.scores)}
                       <ul class="dim-list">
                         ${DIMENSION_IDS.map(
                           (id) =>
@@ -183,14 +233,32 @@ export function renderCompare(
     root.innerHTML = renderShell(locale, "compare", body);
     document.title = `${t(locale, "compareTitle")} · Agenter`;
 
-    root.querySelector("#f-region")?.addEventListener("change", (e) => {
-      region = (e.target as HTMLSelectElement).value as AgentRegion | "all";
-      paint();
+    const bindInput = (sel: string, fn: (v: string) => void) => {
+      root.querySelector(sel)?.addEventListener("input", (e) => {
+        fn((e.target as HTMLInputElement).value);
+        paint();
+      });
+      root.querySelector(sel)?.addEventListener("change", (e) => {
+        fn((e.target as HTMLInputElement | HTMLSelectElement).value);
+        paint();
+      });
+    };
+    bindInput("#f-search", (v) => {
+      search = v;
     });
-    root.querySelector("#f-cat")?.addEventListener("change", (e) => {
-      category = (e.target as HTMLSelectElement).value as AgentCategory | "all";
-      paint();
+    bindInput("#f-region", (v) => {
+      region = v as AgentRegion | "all";
     });
+    bindInput("#f-cat", (v) => {
+      category = v as AgentCategory | "all";
+    });
+    bindInput("#f-pricing", (v) => {
+      pricing = v;
+    });
+    bindInput("#f-tools", (v) => {
+      toolsQ = v;
+    });
+
     root.querySelectorAll<HTMLInputElement>("[data-pick]").forEach((el) => {
       el.addEventListener("change", () => {
         const id = el.dataset.pick!;
@@ -200,9 +268,7 @@ export function renderCompare(
             return;
           }
           picks.add(id);
-        } else {
-          picks.delete(id);
-        }
+        } else picks.delete(id);
         savePicks([...picks]);
         paint();
       });
@@ -212,9 +278,6 @@ export function renderCompare(
         const id = el.dataset.weight as DimensionId;
         weights = { ...weights, [id]: Number(el.value) };
         saveWeights(weights);
-        const val = root.querySelector(`[data-weight-val="${id}"]`);
-        if (val) val.textContent = Number(el.value).toFixed(1);
-        // light update of scores without full paint for snappiness — full paint OK
         paint();
       });
     });
@@ -222,6 +285,46 @@ export function renderCompare(
       weights = { ...DEFAULT_WEIGHTS };
       saveWeights(weights);
       paint();
+    });
+    root.querySelectorAll<HTMLButtonElement>("[data-preset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.preset!;
+        const preset = HARNESS_PRESETS[key];
+        if (!preset) return;
+        weights = { ...preset };
+        saveWeights(weights);
+        paint();
+      });
+    });
+    root.querySelector("#copy-share")?.addEventListener("click", async () => {
+      const link =
+        location.origin +
+        location.pathname +
+        encodeCompareShare([...picks], weights);
+      try {
+        await navigator.clipboard.writeText(link);
+        flash = t(locale, "copied");
+      } catch {
+        flash = link;
+      }
+      paint();
+    });
+    root.querySelector("#export-scores")?.addEventListener("click", () => {
+      const rows = ranked.map(({ agent: a, score }) => [
+        a.id,
+        locale === "zh" ? a.nameZh : a.nameEn,
+        score.toFixed(3),
+        ...DIMENSION_IDS.map((id) => String(a.scores[id])),
+      ]);
+      const header = ["id", "name", "weighted", ...DIMENSION_IDS].join(",");
+      const csv = [header, ...rows.map((r) => r.join(","))].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "agenter-shortlist.csv";
+      a.click();
+      URL.revokeObjectURL(url);
     });
   };
 

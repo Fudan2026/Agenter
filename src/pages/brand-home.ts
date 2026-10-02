@@ -16,6 +16,20 @@ export function renderBrandHome(root: HTMLElement, locale: Locale): void {
         <a class="btn btn-ghost" href="#/tools">${esc(t(locale, "ctaTools"))}</a>
       </div>
     </section>
+    <section class="how-section">
+      <h2>${esc(t(locale, "howTitle"))}</h2>
+      <ol class="how-steps">
+        <li>${esc(t(locale, "howStep1"))}</li>
+        <li>${esc(t(locale, "howStep2"))}</li>
+        <li>${esc(t(locale, "howStep3"))}</li>
+      </ol>
+      <p class="muted">${esc(t(locale, "toolsTeaser"))}</p>
+      <div class="cta-row">
+        <a class="btn" href="#/quant">${esc(t(locale, "navQuant"))}</a>
+        <a class="btn" href="#/paper">${esc(t(locale, "navPaper"))}</a>
+        <a class="btn" href="#/news">${esc(t(locale, "navNews"))}</a>
+      </div>
+    </section>
   `;
   root.innerHTML = renderShell(locale, "home", body, {
     subtitle: t(locale, "homeSub"),

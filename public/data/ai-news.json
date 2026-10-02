@@ -1,33 +1,240 @@
 {
-  "generatedAt": "2026-10-02T00:00:00.000Z",
-  "source": "static-fixture",
+  "generatedAt": "2026-10-02T06:15:04.109Z",
+  "source": "rss-bake",
   "items": [
     {
-      "id": "stub-1",
+      "id": "huggingface-blog-2026-10-02-0",
+      "date": "2026-10-02",
+      "titleZh": "AutoSynthData: Generating Training Data for Enterprise Agents",
+      "titleEn": "AutoSynthData: Generating Training Data for Enterprise Agents",
+      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
+      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ],
+      "url": "https://huggingface.co/blog/ServiceNow-AI/autosynthdata"
+    },
+    {
+      "id": "openai-news-2026-10-01-0",
       "date": "2026-10-01",
-      "titleZh": "编码 Agent 工具链继续向 MCP / CLI 收敛",
-      "titleEn": "Coding agents keep converging on MCP / CLI toolchains",
-      "summaryZh": "静态占位：对比页可关注 toolUse 与 privacy 维度，而非单一模型名。",
-      "summaryEn": "Static stub: Compare on toolUse and privacy dimensions, not model names alone.",
-      "tags": ["coding", "tools"]
+      "titleZh": "The eternal complement",
+      "titleEn": "The eternal complement",
+      "summaryZh": "（英）Advanced AI may matter most for the routine work behind breakthrough ideas. Explore why execution could shape the next economy and the pace of progress.",
+      "summaryEn": "Advanced AI may matter most for the routine work behind breakthrough ideas. Explore why execution could shape the next economy and the pace of progress.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/the-eternal-complement"
     },
     {
-      "id": "stub-2",
+      "id": "openai-news-2026-10-01-1",
+      "date": "2026-10-01",
+      "titleZh": "How Albertsons Companies is reimagining retail from the inside out",
+      "titleEn": "How Albertsons Companies is reimagining retail from the inside out",
+      "summaryZh": "（英）Albertsons Cos. is using ChatGPT Enterprise and the OpenAI API to help teams work faster and make grocery shopping easier for millions of customers.",
+      "summaryEn": "Albertsons Cos. is using ChatGPT Enterprise and the OpenAI API to help teams work faster and make grocery shopping easier for millions of customers.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/albertsons-reimagining-retail"
+    },
+    {
+      "id": "openai-news-2026-10-01-2",
+      "date": "2026-10-01",
+      "titleZh": "The Den frees up 10-15 hours a week to grow with ChatGPT Work",
+      "titleEn": "The Den frees up 10-15 hours a week to grow with ChatGPT Work",
+      "summaryZh": "（英）As it opens a new location, the social club prepares grant applications in 2 hours instead of 3 days and liquor-license materials in 3 hours instead of 4 days.",
+      "summaryEn": "As it opens a new location, the social club prepares grant applications in 2 hours instead of 3 days and liquor-license materials in 3 hours instead of 4 days.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/the-den-family-social"
+    },
+    {
+      "id": "huggingface-blog-2026-10-01-1",
+      "date": "2026-10-01",
+      "titleZh": "Introducing Olmo-core 3: Open, scalable training infrastructure for large MoEs",
+      "titleEn": "Introducing Olmo-core 3: Open, scalable training infrastructure for large MoEs",
+      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
+      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ],
+      "url": "https://huggingface.co/blog/allenai/olmocore3"
+    },
+    {
+      "id": "qbitai-2026-10-01-0",
+      "date": "2026-10-01",
+      "titleZh": "何恺明团队新作：看猫片就能学会ARC挑战",
+      "titleEn": "何恺明团队新作：看猫片就能学会ARC挑战",
+      "summaryZh": "用ImageNet训练encoder",
+      "summaryEn": "(ZH) 用ImageNet训练encoder",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/10/499812.html"
+    },
+    {
+      "id": "qbitai-2026-10-01-1",
+      "date": "2026-10-01",
+      "titleZh": "谷歌Gemini 4突然发布！RSI加持，GPT和Opus都让让",
+      "titleEn": "谷歌Gemini 4突然发布！RSI加持，GPT和Opus都让让",
+      "summaryZh": "价格只有Astra一半",
+      "summaryEn": "(ZH) 价格只有Astra一半",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/10/499663.html"
+    },
+    {
+      "id": "openai-news-2026-09-30-3",
+      "date": "2026-09-30",
+      "titleZh": "Disrupting a coordinated model-distillation campaign",
+      "titleEn": "Disrupting a coordinated model-distillation campaign",
+      "summaryZh": "（英）Learn how OpenAI disrupted a campaign to extract protected model reasoning and is strengthening defenses against adversarial distillation.",
+      "summaryEn": "Learn how OpenAI disrupted a campaign to extract protected model reasoning and is strengthening defenses against adversarial distillation.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/disrupting-a-coordinated-model-distillation-campaign"
+    },
+    {
+      "id": "openai-news-2026-09-30-4",
+      "date": "2026-09-30",
+      "titleZh": "Helping small businesses put AI to work",
+      "titleEn": "Helping small businesses put AI to work",
+      "summaryZh": "（英）OpenAI is partnering with America’s SBDC to expand hands-on AI training and local support for small businesses, alongside a new report on how small teams are using AI.",
+      "summaryEn": "OpenAI is partnering with America’s SBDC to expand hands-on AI training and local support for small businesses, alongside a new report on how small teams are using AI.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/helping-small-businesses-put-ai-to-work"
+    },
+    {
+      "id": "huggingface-blog-2026-09-30-2",
+      "date": "2026-09-30",
+      "titleZh": "Open TTS Leaderboard: Scalable Evaluation for Multilingual Text-to-Speech and Voice Cloning",
+      "titleEn": "Open TTS Leaderboard: Scalable Evaluation for Multilingual Text-to-Speech and Voice Cloning",
+      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
+      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ],
+      "url": "https://huggingface.co/blog/open-tts-leaderboard"
+    },
+    {
+      "id": "qbitai-2026-09-30-2",
+      "date": "2026-09-30",
+      "titleZh": "OpenAI推理之父最新访谈！数学只是多智能体时代的开胃菜",
+      "titleEn": "OpenAI推理之父最新访谈！数学只是多智能体时代的开胃菜",
+      "summaryZh": "千禧年难题的突破，10000个Agent最多占了10%的功劳。",
+      "summaryEn": "(ZH) 千禧年难题的突破，10000个Agent最多占了10%的功劳。",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/09/499654.html"
+    },
+    {
+      "id": "qbitai-2026-09-30-3",
+      "date": "2026-09-30",
+      "titleZh": "直播回顾：工业AI的下一个机会在哪？",
+      "titleEn": "直播回顾：工业AI的下一个机会在哪？",
+      "summaryZh": "什么样的AI才适合工业现场？企业真正开始做工业AI时，又该从哪里下手？",
+      "summaryEn": "(ZH) 什么样的AI才适合工业现场？企业真正开始做工业AI时，又该从哪里下手？",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/09/499605.html"
+    },
+    {
+      "id": "qbitai-2026-09-30-4",
+      "date": "2026-09-30",
+      "titleZh": "Anthropic，你是来给智谱打广告的吧！",
+      "titleEn": "Anthropic，你是来给智谱打广告的吧！",
+      "summaryZh": "实测说GLM-5.3很强",
+      "summaryEn": "(ZH) 实测说GLM-5.3很强",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/09/499597.html"
+    },
+    {
+      "id": "qbitai-2026-09-30-5",
+      "date": "2026-09-30",
+      "titleZh": "Manus 2.0回来了！给AI配手机号和钱包，还能拉群干活",
+      "titleEn": "Manus 2.0回来了！给AI配手机号和钱包，还能拉群干活",
+      "summaryZh": "给Agent配上手机号，再拉个群",
+      "summaryEn": "(ZH) 给Agent配上手机号，再拉个群",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/09/499592.html"
+    },
+    {
+      "id": "openai-news-2026-09-29-5",
+      "date": "2026-09-29",
+      "titleZh": "Introducing GPT-6.1 Sol",
+      "titleEn": "Introducing GPT-6.1 Sol",
+      "summaryZh": "（英）Meet GPT-6.1 Sol: near-Astra intelligence for coding, computer use, and professional work at one-fifth of Astra’s standard API input and output token prices.",
+      "summaryEn": "Meet GPT-6.1 Sol: near-Astra intelligence for coding, computer use, and professional work at one-fifth of Astra’s standard API input and output token prices.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/introducing-gpt-6-1-sol"
+    },
+    {
+      "id": "huggingface-blog-2026-09-29-3",
+      "date": "2026-09-29",
+      "titleZh": "NVIDIA Kumo Tabular Sets a New Accuracy-Efficiency Frontier for Tabular Prediction",
+      "titleEn": "NVIDIA Kumo Tabular Sets a New Accuracy-Efficiency Frontier for Tabular Prediction",
+      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
+      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ],
+      "url": "https://huggingface.co/blog/nvidia/kumo-tabular"
+    },
+    {
+      "id": "huggingface-blog-2026-09-29-4",
+      "date": "2026-09-29",
+      "titleZh": "Getting the Source Right, Not Just the Fact: Source-Aware Verification for MCP Agents",
+      "titleEn": "Getting the Source Right, Not Just the Fact: Source-Aware Verification for MCP Agents",
+      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
+      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ],
+      "url": "https://huggingface.co/blog/MultiverseComputingCAI/getting-the-source-right-not-just-the-fact-source"
+    },
+    {
+      "id": "huggingface-blog-2026-09-28-5",
       "date": "2026-09-28",
-      "titleZh": "国内可达性仍是选型硬约束",
-      "titleEn": "CN accessibility remains a hard filter",
-      "summaryZh": "静态占位：Harness 中 cnAccessibility 权重可反映网络与支付可达性。",
-      "summaryEn": "Static stub: Weight cnAccessibility for network and payment reachability.",
-      "tags": ["CN", "access"]
-    },
-    {
-      "id": "stub-3",
-      "date": "2026-09-20",
-      "titleZh": "纸盘与清单导出：站点不下真单",
-      "titleEn": "Paper + checklist export: sites should not place live orders",
-      "summaryZh": "静态占位：快速实盘 = 信号清单 + 纸盘，券商侧人工下单。",
-      "summaryEn": "Static stub: fast practice = signal list + paper; humans order at the broker.",
-      "tags": ["paper", "risk"]
+      "titleZh": "Holo4: powering generalist computer-use agents",
+      "titleEn": "Holo4: powering generalist computer-use agents",
+      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
+      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ],
+      "url": "https://huggingface.co/blog/Hcompany/holo4"
     }
   ]
 }

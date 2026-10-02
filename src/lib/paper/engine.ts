@@ -85,12 +85,60 @@ export function normalizeQty(
 
 export function defaultPaperState(): PaperState {
   return {
-    version: 1,
+    version: 2,
     cash: PAPER_START_CASH,
     startingCash: PAPER_START_CASH,
     feeBpsRoundTrip: PAPER_FEE_BPS_RT,
     positions: [],
     journal: [],
+  };
+}
+
+/** Soft risk snapshot (quant-risk-gates spirit — warnings only). */
+export function paperRiskSnapshot(
+  state: PaperState,
+  lastCloseBySymbol: Record<string, number>,
+  maxNamePct = 0.2,
+): {
+  equity: number;
+  cashPct: number;
+  maxNamePct: number;
+  maxNameSymbol: string | null;
+  overweight: boolean;
+  consecutiveLosses: number;
+} {
+  const eq = equityMark(state, lastCloseBySymbol);
+  let maxPct = 0;
+  let maxSym: string | null = null;
+  for (const p of state.positions) {
+    const px = lastCloseBySymbol[p.symbol] ?? p.avgCost;
+    const pct = eq > 0 ? (p.qty * px) / eq : 0;
+    if (pct > maxPct) {
+      maxPct = pct;
+      maxSym = p.symbol;
+    }
+  }
+  let consecutiveLosses = 0;
+  for (const j of state.journal) {
+    if (j.side !== "sell") break;
+    const posCost = j.fillPrice; // approximate; count sell after buy loss via note not needed
+    // Count sells where fill < typical: use fee-adjusted vs last matching buy avg — simplified: loss if note has "loss" skip
+    // Better: compare sell fill to most recent buy avg for symbol from remaining journal
+    const buy = state.journal.find(
+      (x) => x.side === "buy" && x.symbol === j.symbol && x.ts < j.ts,
+    );
+    const avg = buy?.fillPrice ?? j.fillPrice;
+    const pnl = (j.fillPrice - avg) * j.qty - j.fee;
+    if (pnl < 0) consecutiveLosses += 1;
+    else break;
+  }
+  return {
+    equity: eq,
+    cashPct: eq > 0 ? state.cash / eq : 1,
+    maxNamePct: maxPct,
+    maxNameSymbol: maxSym,
+    overweight: maxPct > maxNamePct,
+    consecutiveLosses,
   };
 }
 
@@ -142,6 +190,7 @@ export function applyBuy(
     ok: true,
     state: {
       ...state,
+      version: 2,
       cash: state.cash - cost,
       positions,
       journal: [entry, ...state.journal],
@@ -190,6 +239,7 @@ export function applySell(
     ok: true,
     state: {
       ...state,
+      version: 2,
       cash: state.cash + proceeds,
       positions,
       journal: [entry, ...state.journal],

@@ -1,6 +1,5 @@
 /**
- * Exact 16-symbol A-share / CN ETF watchlist (plan §2).
- * Names distilled from OpenCool lib/trading/watchlist.ts.
+ * Exact watchlist — original 16 retained; +10 liquid CN names (additive).
  */
 
 export type AssetGroup = "macro" | "china-etf" | "china-ashare";
@@ -13,7 +12,6 @@ export interface TickerDef {
 }
 
 export const WATCHLIST: TickerDef[] = [
-  // Macro (2)
   {
     symbol: "000001.SS",
     nameZh: "上证指数",
@@ -26,7 +24,6 @@ export const WATCHLIST: TickerDef[] = [
     nameEn: "SZSE Component",
     group: "macro",
   },
-  // ETF (6)
   {
     symbol: "510300.SS",
     nameZh: "沪深300ETF",
@@ -63,7 +60,6 @@ export const WATCHLIST: TickerDef[] = [
     nameEn: "Semiconductor ETF",
     group: "china-etf",
   },
-  // A-share (8) — includes 600519 from OpenCool china-ashare
   {
     symbol: "600519.SS",
     nameZh: "贵州茅台",
@@ -112,8 +108,72 @@ export const WATCHLIST: TickerDef[] = [
     nameEn: "China Tourism Group Duty Free",
     group: "china-ashare",
   },
+  {
+    symbol: "510050.SS",
+    nameZh: "上证50ETF",
+    nameEn: "SSE 50 ETF",
+    group: "china-etf",
+  },
+  {
+    symbol: "159919.SZ",
+    nameZh: "沪深300ETF嘉实",
+    nameEn: "CSI 300 ETF (Harvest)",
+    group: "china-etf",
+  },
+  {
+    symbol: "512690.SS",
+    nameZh: "酒ETF",
+    nameEn: "Liquor ETF",
+    group: "china-etf",
+  },
+  {
+    symbol: "515790.SS",
+    nameZh: "光伏ETF",
+    nameEn: "PV ETF",
+    group: "china-etf",
+  },
+  {
+    symbol: "601318.SS",
+    nameZh: "中国平安",
+    nameEn: "Ping An Insurance",
+    group: "china-ashare",
+  },
+  {
+    symbol: "600900.SS",
+    nameZh: "长江电力",
+    nameEn: "China Yangtze Power",
+    group: "china-ashare",
+  },
+  {
+    symbol: "000333.SZ",
+    nameZh: "美的集团",
+    nameEn: "Midea Group",
+    group: "china-ashare",
+  },
+  {
+    symbol: "002415.SZ",
+    nameZh: "海康威视",
+    nameEn: "Hikvision",
+    group: "china-ashare",
+  },
+  {
+    symbol: "300750.SZ",
+    nameZh: "宁德时代",
+    nameEn: "CATL",
+    group: "china-ashare",
+  },
+  {
+    symbol: "601166.SS",
+    nameZh: "兴业银行",
+    nameEn: "Industrial Bank",
+    group: "china-ashare",
+  },
 ];
 
-if (WATCHLIST.length !== 16) {
-  throw new Error(`WATCHLIST must have exactly 16 symbols, got ${WATCHLIST.length}`);
+export const LEGACY_WATCHLIST_COUNT = 16;
+
+if (WATCHLIST.length < LEGACY_WATCHLIST_COUNT) {
+  throw new Error(
+    `WATCHLIST must keep >= ${LEGACY_WATCHLIST_COUNT} symbols, got ${WATCHLIST.length}`,
+  );
 }

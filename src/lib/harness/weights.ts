@@ -6,6 +6,7 @@ import {
 export const HARNESS_KEY = "agenter.harness.weights.v1";
 export const COMPARE_PICK_KEY = "agenter.compare.picks.v1";
 export const LEARN_DONE_KEY = "agenter.learn.completed.v1";
+export const LEARN_SCENARIO_KEY = "agenter.learn.scenarios.v1";
 
 /** Default weights prioritize coding-agent dimensions (plan default #6). */
 export const DEFAULT_WEIGHTS: Record<DimensionId, number> = {
@@ -16,6 +17,48 @@ export const DEFAULT_WEIGHTS: Record<DimensionId, number> = {
   costEfficiency: 1.0,
   cnAccessibility: 0.9,
   learningCurve: 0.8,
+};
+
+export const HARNESS_PRESETS: Record<
+  string,
+  Record<DimensionId, number>
+> = {
+  coding: {
+    codingAbility: 1.6,
+    toolUse: 1.5,
+    contextMemory: 1.2,
+    privacyControl: 0.9,
+    costEfficiency: 1.0,
+    cnAccessibility: 0.7,
+    learningCurve: 0.8,
+  },
+  cn: {
+    codingAbility: 1.1,
+    toolUse: 1.1,
+    contextMemory: 1.0,
+    privacyControl: 1.0,
+    costEfficiency: 1.1,
+    cnAccessibility: 1.8,
+    learningCurve: 1.0,
+  },
+  privacy: {
+    codingAbility: 1.0,
+    toolUse: 1.1,
+    contextMemory: 1.0,
+    privacyControl: 1.8,
+    costEfficiency: 1.2,
+    cnAccessibility: 0.8,
+    learningCurve: 0.9,
+  },
+  research: {
+    codingAbility: 0.7,
+    toolUse: 1.3,
+    contextMemory: 1.5,
+    privacyControl: 1.0,
+    costEfficiency: 1.1,
+    cnAccessibility: 0.8,
+    learningCurve: 1.2,
+  },
 };
 
 export function loadWeights(): Record<DimensionId, number> {
@@ -92,4 +135,57 @@ export function setLearnDone(done: boolean): void {
   } catch {
     /* ignore */
   }
+}
+
+export function loadScenarioProgress(): Record<string, boolean> {
+  try {
+    const raw = localStorage.getItem(LEARN_SCENARIO_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Record<string, boolean>;
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+export function setScenarioDone(id: string, done: boolean): void {
+  try {
+    const cur = loadScenarioProgress();
+    cur[id] = done;
+    localStorage.setItem(LEARN_SCENARIO_KEY, JSON.stringify(cur));
+  } catch {
+    /* ignore */
+  }
+}
+
+export function encodeCompareShare(
+  ids: string[],
+  weights: Record<DimensionId, number>,
+): string {
+  const w = DIMENSION_IDS.map((id) => weights[id]).join(",");
+  return `#/compare?ids=${encodeURIComponent(ids.join(","))}&w=${encodeURIComponent(w)}`;
+}
+
+export function parseCompareShare(hash: string): {
+  ids: string[];
+  weights: Record<DimensionId, number> | null;
+} {
+  const q = hash.includes("?") ? hash.slice(hash.indexOf("?") + 1) : "";
+  const params = new URLSearchParams(q);
+  const ids = (params.get("ids") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+    .slice(0, 4);
+  const wRaw = params.get("w");
+  if (!wRaw) return { ids, weights: null };
+  const parts = wRaw.split(",").map(Number);
+  if (parts.length !== DIMENSION_IDS.length || parts.some((n) => !Number.isFinite(n))) {
+    return { ids, weights: null };
+  }
+  const weights = { ...DEFAULT_WEIGHTS };
+  DIMENSION_IDS.forEach((id, i) => {
+    weights[id] = Math.max(0, parts[i]);
+  });
+  return { ids, weights };
 }

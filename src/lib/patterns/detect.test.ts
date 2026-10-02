@@ -68,8 +68,42 @@ describe("pattern detectors", () => {
     assert.ok(hits.includes("doji"));
   });
 
-  it("exports exactly five pattern ids", () => {
-    assert.equal(ALL_PATTERN_IDS.length, 5);
+  it("exports ten pattern ids including legacy five", () => {
+    assert.equal(ALL_PATTERN_IDS.length, 10);
+    for (const id of [
+      "bullish_engulfing",
+      "bearish_engulfing",
+      "hammer",
+      "shooting_star",
+      "doji",
+    ]) {
+      assert.ok(ALL_PATTERN_IDS.includes(id as (typeof ALL_PATTERN_IDS)[number]));
+    }
+  });
+});
+
+describe("additive patterns", () => {
+  it("detects piercing line", () => {
+    const prev = c(12, 12.2, 10, 10.2, 1); // bearish
+    const curr = c(9.8, 11.5, 9.5, 11.2, 2); // bullish closes above mid
+    const hits = detectAt([prev, curr], 1);
+    assert.ok(hits.includes("piercing_line"));
+  });
+
+  it("detects three white soldiers", () => {
+    const a = c(10, 10.8, 9.9, 10.6, 1);
+    const b = c(10.4, 11.2, 10.3, 11.0, 2);
+    const c3 = c(10.8, 11.6, 10.7, 11.4, 3);
+    const hits = detectAt([a, b, c3], 2);
+    assert.ok(hits.includes("three_white_soldiers"));
+  });
+
+  it("3-bar pattern at i ignores future bars", () => {
+    const a = c(12, 12.5, 11.5, 11.6, 1); // bearish start for morning star
+    const b = c(11.5, 11.7, 11.2, 11.4, 2); // small
+    const c3 = c(11.5, 12.8, 11.4, 12.5, 3); // bullish
+    const future = c(1, 2, 0.5, 1.5, 4);
+    assert.deepEqual(detectAt([a, b, c3, future], 2), detectAt([a, b, c3], 2));
   });
 });
 

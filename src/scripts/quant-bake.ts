@@ -1,6 +1,6 @@
 /**
  * Bake public/data/latest.json for the Quant Pages SPA.
- * Gate: symbolsOk + symbolsStale >= 8 else exit 1.
+ * Gate: ok+stale >= max(8, floor(n/2)).
  */
 
 import fs from "node:fs";
@@ -11,14 +11,15 @@ import { fetchWatchlistOhlc } from "../lib/ohlc/runner";
 import type { OHLC } from "../lib/ohlc/types";
 import { detectRecentPatterns } from "../lib/patterns/detect";
 import { buildDailyReview } from "../lib/review/daily-review";
+import { indicatorSeries, summarizeSignals } from "../lib/signals/summary";
 
 const TITLE = {
-  zh: "Agent 能力演示：量化复盘",
-  en: "Agent capability demo: quant review",
+  zh: "量化复盘",
+  en: "Quant review",
 } as const;
 
 const OUT = path.join("public", "data", "latest.json");
-const GATE_MIN = 8;
+const GATE_MIN = Math.max(8, Math.floor(WATCHLIST.length / 2));
 const CANDLE_DAYS = 120;
 const SPARK_DAYS = 30;
 const PATTERN_WINDOW = 60;
@@ -63,6 +64,8 @@ async function main() {
     const sparkCloses = candlesFull.slice(-SPARK_DAYS).map((c) => c.close);
     const recentPatterns = detectRecentPatterns(candlesFull, PATTERN_WINDOW);
     patternHits += recentPatterns.length;
+    const signals = summarizeSignals(candlesFull, recentPatterns);
+    const series = indicatorSeries(candlesFull.slice(-CANDLE_DAYS));
     const lastClose =
       candlesFull.length > 0
         ? candlesFull[candlesFull.length - 1].close
@@ -80,6 +83,9 @@ async function main() {
       sparkCloses,
       candles,
       recentPatterns,
+      signals,
+      ma20: series.sma20,
+      ma60: series.sma60,
     };
   });
 

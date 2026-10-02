@@ -36,6 +36,10 @@ jobs:
       - name: Bake quant data
         run: npm run quant:bake
 
+      - name: Bake AI news
+        run: npm run news:bake
+        continue-on-error: true
+
       - name: Build
         run: npm run build
 
