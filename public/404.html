@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="refresh" content="0; url=./index.html" />
+    <script>
+      // SPA fallback for GitHub Pages project site
+      sessionStorage.setItem("agenter.redirect", location.href);
+      location.replace("./index.html" + location.search + location.hash);
+    </script>
+    <title>Agenter</title>
+  </head>
+  <body>
+    <p><a href="./index.html">Continue to Agenter</a></p>
+  </body>
+</html>
