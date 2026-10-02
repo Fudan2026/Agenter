@@ -9,6 +9,11 @@ import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import { downloadChecklist } from "../lib/paper/export";
 import {
+  buildSchedule,
+  sqrtImpactBps,
+  type ExecAlgo,
+} from "../lib/paper/execution";
+import {
   applyBuy,
   applySell,
   equityMark,
@@ -86,6 +91,10 @@ export function renderPaper(
   destroyEquityChart();
   let state: PaperState = loadPaperState();
   let viewMode: "equity" | "pnlPct" = "pnlPct";
+  let execAlgo: ExecAlgo = "twap";
+  let execSlices = 8;
+  let execQty = 100_000;
+  let execAdv = 1_000_000;
   const hashQ = location.hash.includes("?")
     ? location.hash.slice(location.hash.indexOf("?") + 1)
     : "";
@@ -129,6 +138,9 @@ export function renderPaper(
     const pnlPctNow =
       ((eq - state.startingCash) / state.startingCash) * 100;
 
+    const schedule = buildSchedule(execAlgo, execSlices);
+    const impact = sqrtImpactBps(execQty, execAdv);
+
     const body = `
       <h1>${esc(t(locale, "paperTitle"))}</h1>
       <p class="lead">${esc(t(locale, "paperLead"))}</p>
@@ -153,6 +165,53 @@ export function renderPaper(
         <div class="stat"><span class="stat-n">${pnlPctNow.toFixed(3)}%</span><span class="stat-l">${esc(t(locale, "paperPnlPct"))}</span></div>
         <div class="stat"><span class="stat-n">${state.costModelEnabled === false ? "OFF" : "ON"}</span><span class="stat-l">Costs</span></div>
       </div>
+
+      <section class="exec-desk" id="ws-exec">
+        <h2>${esc(t(locale, "execDesk"))}</h2>
+        <p class="muted tiny">${esc(t(locale, "execDeskLead"))}</p>
+        <div class="cta-row wrap exec-controls">
+          <label>${esc(t(locale, "execAlgo"))}
+            <select id="exec-algo">
+              <option value="twap"${execAlgo === "twap" ? " selected" : ""}>${esc(t(locale, "twap"))}</option>
+              <option value="vwap"${execAlgo === "vwap" ? " selected" : ""}>${esc(t(locale, "vwap"))}</option>
+            </select>
+          </label>
+          <label>${esc(t(locale, "execSlices"))}
+            <input type="number" id="exec-slices" min="1" max="48" step="1" value="${execSlices}" />
+          </label>
+          <label>${esc(t(locale, "execOrderQty"))}
+            <input type="number" id="exec-qty" min="1" step="100" value="${execQty}" />
+          </label>
+          <label>${esc(t(locale, "execAdv"))}
+            <input type="number" id="exec-adv" min="1" step="1000" value="${execAdv}" />
+          </label>
+          <button type="button" class="btn" id="exec-recalc">${esc(t(locale, "execImpact"))}</button>
+        </div>
+        <p class="exec-impact">${esc(t(locale, "execImpact"))}: <strong>${impact.impactBps.toFixed(1)} bps</strong>
+          · participation ${(impact.participation * 100).toFixed(2)}%
+          <span class="muted tiny">· ${esc(impact.note)}</span>
+        </p>
+        <div class="table-wrap"><table class="agent-table">
+          <thead><tr>
+            <th>${esc(t(locale, "execSchedule"))}</th>
+            <th>weight</th>
+            <th>cum</th>
+            <th>qty≈</th>
+          </tr></thead>
+          <tbody>
+            ${schedule
+              .map(
+                (sl) => `<tr>
+                  <td>${esc(sl.label)}</td>
+                  <td>${(sl.weight * 100).toFixed(1)}%</td>
+                  <td>${(sl.cumFrac * 100).toFixed(1)}%</td>
+                  <td>${Math.round(execQty * sl.weight).toLocaleString()}</td>
+                </tr>`,
+              )
+              .join("")}
+          </tbody>
+        </table></div>
+      </section>
 
       <section class="risk-strip ${risk.overweight ? "warn" : ""}" id="ws-risk">
         <h2>${esc(t(locale, "paperRisk"))}</h2>
@@ -426,6 +485,25 @@ export function renderPaper(
     });
     root.querySelector("#v-eq")?.addEventListener("click", () => {
       viewMode = "equity";
+      paint();
+    });
+
+    const syncExecInputs = (): void => {
+      const algoEl = root.querySelector("#exec-algo") as HTMLSelectElement | null;
+      const slicesEl = root.querySelector("#exec-slices") as HTMLInputElement | null;
+      const qtyEl = root.querySelector("#exec-qty") as HTMLInputElement | null;
+      const advEl = root.querySelector("#exec-adv") as HTMLInputElement | null;
+      if (algoEl) execAlgo = algoEl.value === "vwap" ? "vwap" : "twap";
+      if (slicesEl) execSlices = Math.max(1, Math.floor(Number(slicesEl.value) || 1));
+      if (qtyEl) execQty = Math.max(1, Number(qtyEl.value) || 1);
+      if (advEl) execAdv = Math.max(1, Number(advEl.value) || 1);
+    };
+    root.querySelector("#exec-recalc")?.addEventListener("click", () => {
+      syncExecInputs();
+      paint();
+    });
+    root.querySelector("#exec-algo")?.addEventListener("change", () => {
+      syncExecInputs();
       paint();
     });
 

@@ -28,7 +28,9 @@ export type StrategyId =
   | "pattern_follow"
   | "ma_cross"
   | "rsi_mr"
-  | "confluence";
+  | "confluence"
+  | "pattern_confluence"
+  | "ml_lite";
 
 export interface BacktestTrade {
   symbol: string;
@@ -137,6 +139,54 @@ function signalAt(
     if (v < 30) return 1;
     if (v > 70) return 0;
     return 0;
+  }
+
+  if (strategy === "pattern_confluence") {
+    // 15-pattern window score over last ~12 bars (no lookahead)
+    const bull: PatternId[] = [
+      "bullish_engulfing",
+      "hammer",
+      "morning_star",
+      "three_white_soldiers",
+      "piercing_line",
+      "inverted_hammer",
+      "bullish_harami",
+    ];
+    const bear: PatternId[] = [
+      "bearish_engulfing",
+      "shooting_star",
+      "evening_star",
+      "three_black_crows",
+      "dark_cloud_cover",
+      "bearish_harami",
+    ];
+    let score = 0;
+    const start = Math.max(1, i - 11);
+    for (let j = start; j <= i; j++) {
+      const hits = detectAt(ohlcPrefix, j);
+      for (const h of hits) {
+        if (bull.includes(h)) score += 8;
+        if (bear.includes(h)) score -= 8;
+      }
+    }
+    return score >= 16 ? 1 : 0;
+  }
+
+  if (strategy === "ml_lite") {
+    // Lagged-return sign rule (ridge-lite): long when mean of lags 1..5 > 0
+    // Uses only closes ≤ i (no lookahead).
+    if (closes.length < 8) return 0;
+    const rets: number[] = [];
+    for (let k = 1; k <= 5; k++) {
+      const a = closes[closes.length - 1 - k];
+      const b = closes[closes.length - k];
+      if (a > 0 && b > 0) rets.push(b / a - 1);
+    }
+    if (rets.length < 3) return 0;
+    const mean = rets.reduce((s, x) => s + x, 0) / rets.length;
+    // mild ridge shrinkage toward 0
+    const shrunk = mean * (rets.length / (rets.length + 2));
+    return shrunk > 0 ? 1 : 0;
   }
 
   // confluence
@@ -443,4 +493,9 @@ export const STRATEGY_META: Record<
   ma_cross: { en: "MA20/60 cross", zh: "均线金叉" },
   rsi_mr: { en: "RSI mean-reversion", zh: "RSI 均值回归" },
   confluence: { en: "Confluence ≥60", zh: "多因子共振" },
+  pattern_confluence: {
+    en: "Pattern confluence (15)",
+    zh: "形态窗口共振",
+  },
+  ml_lite: { en: "ML-lite lag sign", zh: "ML-lite 滞后符号" },
 };

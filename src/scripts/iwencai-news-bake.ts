@@ -24,6 +24,9 @@ const THROTTLE_MS = 400;
 const QUERIES = [
   "人工智能 Agent 财经 最新消息",
   "A股政策 最新消息",
+  "半导体 财经 最新消息",
+  "新能源 财经 最新消息",
+  "央行货币政策 最新消息",
 ];
 
 function sleepSync(ms: number): void {

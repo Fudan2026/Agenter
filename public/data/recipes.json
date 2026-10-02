@@ -10,9 +10,9 @@
       "skill": "机器学习策略",
       "titleZh": "滚动训练 → Walk-forward 信号",
       "titleEn": "Rolling train → walk-forward signals",
-      "bodyZh": "用 ml-strategy 技能：特征工程 → 滚动 sklearn 训练 → 禁未来函数的样本外信号。站点 Strategy Lab 只演示规则策略；ML 训练留在 Agent CLI。",
-      "bodyEn": "Use the ml-strategy skill: features → rolling sklearn fit → no-lookahead OOS signals. Strategy Lab stays rule-based; ML training stays in the Agent CLI.",
-      "href": "#/learn"
+      "bodyZh": "用 ml-strategy 技能：特征工程 → 滚动 sklearn 训练 → 禁未来函数的样本外信号。站点 Strategy Lab 用 ml_lite 滞后符号作教育 distill；完整 ML 训练留在 Agent CLI。",
+      "bodyEn": "Use the ml-strategy skill: features → rolling sklearn fit → no-lookahead OOS signals. Strategy Lab exposes ml_lite lag-sign as an educational distill; full ML training stays in the Agent CLI.",
+      "href": "#/quant?lab=ml_lite"
     },
     {
       "id": "strategy-generate",
@@ -21,7 +21,7 @@
       "titleEn": "Generate → backtest → tune",
       "bodyZh": "策略生成与优化技能：起草规则、参数网格与评估清单。把候选策略映射到 Lab 的 MA/RSI/形态，再用纸盘练习次日开盘成交。",
       "bodyEn": "Strategy-generate skill: draft rules, grids, and an evaluation checklist. Map candidates onto Lab MA/RSI/pattern strategies, then practice next-open fills on Paper.",
-      "href": "#/quant"
+      "href": "#/quant?lab=ma_cross"
     },
     {
       "id": "factor-research",

@@ -19,8 +19,6 @@ export function buildChecklist(
   state: PaperState,
   locale: "zh" | "en",
 ): ChecklistRow[] {
-  // Prefer open positions as “tomorrow open” working list;
-  // also include most recent unmatched intent notes from journal.
   const rows: ChecklistRow[] = [];
 
   for (const p of state.positions) {
@@ -38,7 +36,6 @@ export function buildChecklist(
     });
   }
 
-  // Latest buy journal entries as optional buy checklist (signal → next open)
   const recentBuys = state.journal
     .filter((j) => j.side === "buy")
     .slice(0, 8);
@@ -48,6 +45,46 @@ export function buildChecklist(
   }
 
   return rows;
+}
+
+/** Sim → Paper checklist handoff (same JSON shape as paper export). */
+export function buildChecklistFromSimPositions(
+  positions: Array<{ symbol: string; qty: number; avgCost: number }>,
+  locale: "zh" | "en",
+): ChecklistRow[] {
+  return positions
+    .filter((p) => p.qty > 0)
+    .map((p) => ({
+      symbol: p.symbol,
+      side: "sell" as const,
+      qty: p.qty,
+      orderType: "market_next_open" as const,
+      limitOrMarket: "market" as const,
+      intendedSession: "next_open",
+      notes:
+        locale === "zh"
+          ? `模拟台持仓均价 ${p.avgCost.toFixed(2)} → 纸盘核对清单；请人工【次日开盘】执行，本站不下单。`
+          : `Sim avg ${p.avgCost.toFixed(2)} → paper checklist; execute NEXT OPEN manually — site never submits.`,
+    }));
+}
+
+export function downloadChecklistRows(
+  rows: ChecklistRow[],
+  format: "csv" | "json",
+  filenamePrefix = "agenter-broker-checklist",
+): void {
+  const stamp = new Date().toISOString().slice(0, 10);
+  if (format === "json") {
+    const blob = new Blob([JSON.stringify(rows, null, 2)], {
+      type: "application/json",
+    });
+    triggerDownload(blob, `${filenamePrefix}-${stamp}.json`);
+  } else {
+    const blob = new Blob([checklistToCsv(rows)], {
+      type: "text/csv;charset=utf-8",
+    });
+    triggerDownload(blob, `${filenamePrefix}-${stamp}.csv`);
+  }
 }
 
 function journalToChecklist(
@@ -105,19 +142,7 @@ export function downloadChecklist(
   locale: "zh" | "en",
   format: "csv" | "json",
 ): void {
-  const rows = buildChecklist(state, locale);
-  const stamp = new Date().toISOString().slice(0, 10);
-  if (format === "json") {
-    const blob = new Blob([JSON.stringify(rows, null, 2)], {
-      type: "application/json",
-    });
-    triggerDownload(blob, `agenter-broker-checklist-${stamp}.json`);
-  } else {
-    const blob = new Blob([checklistToCsv(rows)], {
-      type: "text/csv;charset=utf-8",
-    });
-    triggerDownload(blob, `agenter-broker-checklist-${stamp}.csv`);
-  }
+  downloadChecklistRows(buildChecklist(state, locale), format);
 }
 
 function triggerDownload(blob: Blob, filename: string): void {

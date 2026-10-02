@@ -12,6 +12,8 @@ import { t } from "../i18n/strings";
 import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
 import { rsi } from "../lib/indicators/core";
 import type { AnnouncementsPayload } from "../lib/announcements/map";
+import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
+import { patternConfluenceAbs } from "../lib/patterns/confluence";
 import { PATTERN_META } from "../lib/patterns/types";
 import { loadPaperState } from "../lib/paper/journal";
 import { esc } from "../lib/util/esc";
@@ -174,6 +176,7 @@ export function renderAsset(
   symbol: string,
   locale: Locale,
   announcements: AnnouncementsPayload | null = null,
+  iwencaiNews: IwencaiNewsPayload | null = null,
 ): void {
   destroyChart();
   const row = data.symbols.find((s) => s.symbol === symbol);
@@ -190,6 +193,7 @@ export function renderAsset(
   let showRsi = false;
   const name = locale === "zh" ? row.nameZh : row.nameEn;
   const patterns = [...row.recentPatterns].reverse();
+  const patConf = patternConfluenceAbs(row.recentPatterns);
   const bench = resolveBenchmark(data.symbols);
   const factors = exposuresForRow(row, bench, data.symbols);
   const patternList =
@@ -225,6 +229,28 @@ export function renderAsset(
           })
           .join("")}</ul>`;
 
+  const needles = [row.nameZh, row.nameEn].filter(Boolean);
+  const symbolNews = (iwencaiNews?.items ?? []).filter((n) => {
+    const blob = `${n.titleZh} ${n.titleEn} ${n.summaryZh} ${n.summaryEn}`;
+    return needles.some((k) => k && blob.includes(k));
+  });
+  const newsList =
+    symbolNews.length === 0
+      ? `<p class="muted">${esc(t(locale, "iwencaiNewsEmpty"))}</p>`
+      : `<ul class="news-list">${symbolNews
+          .slice(0, 5)
+          .map((n) => {
+            const title = locale === "zh" ? n.titleZh : n.titleEn;
+            const summary = locale === "zh" ? n.summaryZh : n.summaryEn;
+            return `<li>
+              <time>${esc(n.date)}</time>
+              <strong>${esc(title)}</strong>
+              <p class="muted">${esc(summary)}</p>
+              ${n.url ? `<p><a href="${esc(n.url)}" target="_blank" rel="noopener">source</a></p>` : ""}
+            </li>`;
+          })
+          .join("")}</ul>`;
+
   const paint = (): void => {
     destroyChart();
     const body = `
@@ -232,7 +258,7 @@ export function renderAsset(
       <div class="asset-header">
         <div>
           <h1>${esc(name)}</h1>
-          <p class="asset-meta">${esc(row.symbol)} · ${esc(statusLabel(locale, row.dataStatus))} · ${esc(row.dataNote)}</p>
+          <p class="asset-meta">${esc(row.symbol)} · ${esc(statusLabel(locale, row.dataStatus))} · ${esc(row.dataNote)} · ${esc(t(locale, "patternConf"))} ${patConf}</p>
         </div>
         <div class="cta-row wrap">
           <label class="tiny"><input type="checkbox" id="rsi-toggle" ${showRsi ? "checked" : ""}/> RSI</label>
@@ -257,12 +283,18 @@ export function renderAsset(
       </section>
       <section class="patterns">
         <h2>${esc(t(locale, "recentPatterns"))}</h2>
+        <p class="muted tiny">${esc(t(locale, "patternConf"))}: <strong>${patConf}</strong></p>
         ${patternList}
       </section>
       <section class="asset-announcements">
         <h2>${esc(t(locale, "announcementsTitle"))}</h2>
         <p class="muted tiny">${esc(t(locale, "announcementsSource"))}</p>
         ${annList}
+      </section>
+      <section class="asset-iwencai-news">
+        <h2>${esc(t(locale, "iwencaiNewsTitle"))}</h2>
+        <p class="muted tiny">${esc(t(locale, "iwencaiSource"))}</p>
+        ${newsList}
       </section>
     `;
 

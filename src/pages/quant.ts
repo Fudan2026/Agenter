@@ -14,8 +14,19 @@ import {
   type StrategyId,
 } from "../lib/backtest/engine";
 import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
-import type { FactorsPayload } from "../lib/factors/cross-section";
+import {
+  compositeFromWeights,
+  type FactorsPayload,
+  type FactorScores,
+} from "../lib/factors/cross-section";
+import {
+  FACTOR_TILTS,
+  icWeightVector,
+  type FactorTiltId,
+  type FactorsIcPayload,
+} from "../lib/factors/ic";
 import { PATTERN_META, type PatternId } from "../lib/patterns/types";
+import { patternConfluenceAbs } from "../lib/patterns/confluence";
 import {
   DEFAULT_COST_CONFIG,
   type SlippageModel,
@@ -35,7 +46,9 @@ import {
   isStaleVsReport,
   patternHeatmap,
 } from "../lib/signals/board";
+import type { AnnouncementsPayload } from "../lib/announcements/map";
 import type { IndicesPayload } from "../lib/indices/map";
+import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
 import type { ScreensPayload } from "../lib/screens/map";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
@@ -127,6 +140,183 @@ function fmtLast(n: number | null): string {
   return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 }
 
+function fmtIsoSlice(iso: string | undefined | null): string {
+  if (!iso) return "—";
+  const s = iso.slice(0, 19);
+  return s || "—";
+}
+
+function renderSkillsOpsBar(
+  locale: Locale,
+  stamps: {
+    latest?: string | null;
+    factors?: string | null;
+    factorsIc?: string | null;
+    indices?: string | null;
+    screens?: string | null;
+    announcements?: string | null;
+    iwencaiNews?: string | null;
+  },
+): string {
+  const cells: Array<[Parameters<typeof t>[1], string | null | undefined]> = [
+    ["skillsOpsLatest", stamps.latest],
+    ["skillsOpsFactors", stamps.factors],
+    ["skillsOpsFactorsIc", stamps.factorsIc],
+    ["skillsOpsIndices", stamps.indices],
+    ["skillsOpsScreens", stamps.screens],
+    ["skillsOpsAnnouncements", stamps.announcements],
+    ["skillsOpsIwencaiNews", stamps.iwencaiNews],
+  ];
+  return `<section class="skills-ops-bar">
+    <h2 class="skills-ops-h">${esc(t(locale, "skillsOps"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "skillsOpsLead"))}</p>
+    <div class="skills-ops-row">
+      ${cells
+        .map(
+          ([key, val]) => `<div class="skills-ops-chip">
+            <span class="skills-ops-label">${esc(t(locale, key))}</span>
+            <span class="skills-ops-ts">${esc(fmtIsoSlice(val))}</span>
+          </div>`,
+        )
+        .join("")}
+    </div>
+  </section>`;
+}
+
+function renderFilingsStub(
+  locale: Locale,
+  announcements: AnnouncementsPayload | null,
+): string {
+  const items = (announcements?.items ?? []).slice(0, 8);
+  return `<section class="filings-stub">
+    <h2>${esc(t(locale, "filingsStub"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "filingsStubLead"))} · ${esc(fmtIsoSlice(announcements?.generatedAt))} · ${esc(t(locale, "iwencaiSource"))}</p>
+    ${
+      !items.length
+        ? `<p class="muted">${esc(t(locale, "announcementsEmpty"))}</p>`
+        : `<ul class="news-list filings-list">
+      ${items
+        .map((n) => {
+          const title = locale === "zh" ? n.titleZh : n.titleEn;
+          const name = locale === "zh" ? n.nameZh : n.symbol;
+          return `<li>
+            <time>${esc(n.date)} · ${esc(name)}</time>
+            <strong>${esc(title)}</strong>
+            ${n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener">source</a>` : ""}
+          </li>`;
+        })
+        .join("")}
+    </ul>`
+    }
+  </section>`;
+}
+
+function renderIcPanel(
+  locale: Locale,
+  ic: FactorsIcPayload | null,
+): string {
+  if (!ic?.rows?.length) return "";
+  const attr = locale === "zh" ? ic.attribution.zh : ic.attribution.en;
+  return `<section class="ic-panel">
+    <h2>${esc(t(locale, "icPanel"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "icPanelLead"))}</p>
+    <p class="muted tiny">${esc(attr)} · horizon ${ic.horizonBars}d · ${esc(fmtIsoSlice(ic.generatedAt))}</p>
+    <div class="ic-rows">
+      ${ic.rows
+        .map((r) => {
+          const qBars = (r.quantileReturns ?? [])
+            .map((q, i) => {
+              const pct = (q * 100).toFixed(2);
+              const w = Math.min(100, Math.abs(q) * 800);
+              const cls = q >= 0 ? "up" : "down";
+              return `<div class="ic-qbar ${cls}" title="Q${i + 1}">
+                <span class="ic-q-label">Q${i + 1}</span>
+                <span class="ic-q-track"><span style="width:${w}%"></span></span>
+                <span class="ic-q-val">${pct}%</span>
+              </div>`;
+            })
+            .join("");
+          return `<article class="ic-card">
+            <h3>${esc(r.factor)}</h3>
+            <div class="ic-metrics">
+              <span>${esc(t(locale, "icMean"))}: <strong>${r.icMean == null ? "—" : r.icMean.toFixed(3)}</strong></span>
+              <span>${esc(t(locale, "icIr"))}: <strong>${r.ir == null ? "—" : r.ir.toFixed(3)}</strong></span>
+              <span class="muted tiny">n=${r.nPeriods}</span>
+            </div>
+            <div class="ic-quantiles">
+              <p class="muted tiny">${esc(t(locale, "icQuantiles"))}</p>
+              ${qBars}
+            </div>
+          </article>`;
+        })
+        .join("")}
+    </div>
+  </section>`;
+}
+
+function renderCorrHeatmap(
+  locale: Locale,
+  ic: FactorsIcPayload | null,
+): string {
+  const pairs = ic?.corrHeatmap ?? [];
+  if (!pairs.length) return "";
+  return `<section class="corr-heatmap-panel">
+    <h2>${esc(t(locale, "corrHeatmap"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "corrHeatmapLead"))}</p>
+    <div class="table-wrap"><table class="agent-table corr-table">
+      <thead><tr><th>A</th><th>B</th><th>corr</th></tr></thead>
+      <tbody>
+        ${pairs
+          .slice(0, 24)
+          .map((p) => {
+            const c = p.corr;
+            const cls =
+              c == null ? "" : c >= 0.5 ? "corr-hi" : c <= -0.2 ? "corr-lo" : "";
+            return `<tr class="${cls}">
+              <td class="tiny">${esc(p.a)}</td>
+              <td class="tiny">${esc(p.b)}</td>
+              <td>${c == null ? "—" : c.toFixed(2)}</td>
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table></div>
+  </section>`;
+}
+
+function tiltWeights(
+  tilt: FactorTiltId,
+  ic: FactorsIcPayload | null,
+): {
+  momentum: number;
+  lowVol: number;
+  sizeAdv: number;
+  quality: number;
+  peProxy?: number;
+  pbProxy?: number;
+} {
+  if (tilt === "ic") return icWeightVector(ic);
+  return FACTOR_TILTS[tilt];
+}
+
+function rankedFactors(
+  factors: FactorsPayload | null,
+  tilt: FactorTiltId,
+  ic: FactorsIcPayload | null,
+): FactorScores[] {
+  if (!factors?.factors?.length) return [];
+  const w = tiltWeights(tilt, ic);
+  const rescored = factors.factors.map((f) => {
+    const composite = compositeFromWeights(f, w);
+    return { ...f, composite };
+  });
+  rescored.sort((a, b) => (b.composite ?? -999) - (a.composite ?? -999));
+  return rescored.map((f, i) => ({
+    ...f,
+    rank: f.composite == null ? null : i + 1,
+  }));
+}
+
 function renderIndicesStrip(
   locale: Locale,
   indices: IndicesPayload | null,
@@ -214,16 +404,44 @@ function fmtZ(v: number | null): string {
 function renderFactorBoard(
   locale: Locale,
   factors: FactorsPayload | null,
+  tilt: FactorTiltId,
+  factorsIc: FactorsIcPayload | null,
 ): string {
   if (!factors?.factors?.length) return "";
-  const top = factors.factors
-    .filter((f) => f.composite != null)
-    .slice(0, factors.topN ?? 8);
+  const ranked = rankedFactors(factors, tilt, factorsIc);
+  const top = ranked.filter((f) => f.composite != null).slice(0, factors.topN ?? 8);
   const attr = locale === "zh" ? factors.attribution.zh : factors.attribution.en;
+  const tiltOpts: FactorTiltId[] = [
+    "equal",
+    "ic",
+    "value",
+    "momentum",
+    "quality",
+  ];
+  const tiltLabel = (id: FactorTiltId): string => {
+    if (id === "equal") return t(locale, "factorTiltEqual");
+    if (id === "ic") return t(locale, "factorTiltIc");
+    if (id === "value") return t(locale, "factorTiltValue");
+    if (id === "momentum") return t(locale, "factorTiltMomentum");
+    return t(locale, "factorTiltQuality");
+  };
   return `<section class="factor-board-panel">
     <h2>${esc(t(locale, "factorBoard"))}</h2>
     <p class="muted tiny">${esc(t(locale, "factorBoardLead"))}</p>
     <p class="muted tiny">${esc(attr)}</p>
+    <div class="factor-tilt-bar cta-row wrap">
+      <label>${esc(t(locale, "factorTilt"))}
+        <select id="factor-tilt">
+          ${tiltOpts
+            .map((id) => {
+              const sel = id === tilt ? " selected" : "";
+              return `<option value="${esc(id)}"${sel}>${esc(tiltLabel(id))}</option>`;
+            })
+            .join("")}
+        </select>
+      </label>
+      <label class="tiny"><input type="checkbox" id="factor-ic-toggle" ${tilt === "ic" ? "checked" : ""}/> ${esc(t(locale, "factorTiltIc"))}</label>
+    </div>
     <div class="table-wrap"><table class="agent-table">
       <thead><tr>
         <th>${esc(t(locale, "factorRank"))}</th>
@@ -232,6 +450,8 @@ function renderFactorBoard(
         <th>${esc(t(locale, "factorLowVol"))}</th>
         <th>${esc(t(locale, "factorSizeAdv"))}</th>
         <th>${esc(t(locale, "factorQuality"))}</th>
+        <th>${esc(t(locale, "peProxy"))}</th>
+        <th>${esc(t(locale, "pbProxy"))}</th>
         <th>${esc(t(locale, "factorComposite"))}</th>
       </tr></thead>
       <tbody>
@@ -246,6 +466,8 @@ function renderFactorBoard(
               <td>${esc(fmtZ(f.lowVol))}</td>
               <td>${esc(fmtZ(f.sizeAdv))}</td>
               <td>${esc(fmtZ(f.quality))}</td>
+              <td>${esc(fmtZ(f.peProxy))}</td>
+              <td>${esc(fmtZ(f.pbProxy))}</td>
               <td><strong>${esc(fmtZ(f.composite))}</strong></td>
             </tr>`;
           })
@@ -352,12 +574,13 @@ function cardHtml(locale: Locale, s: SymbolRow): string {
     .join("");
   const bias = s.signals?.bias ?? "neutral";
   const conf = confluenceScore(s);
+  const patConf = patternConfluenceAbs(s.recentPatterns);
 
   return `<a class="asset-card" href="#/asset/${encodeURIComponent(s.symbol)}">
     <div class="asset-card-top">
       <div>
         <div class="asset-name">${esc(name)} <span class="chip chip-${esc(bias === "neutral" ? "neutral" : bias === "bull" ? "bull" : "bear")}">${esc(biasLabel(locale, bias))}</span></div>
-        <div class="asset-meta">${esc(s.symbol)} · ${esc(groupLabel(locale, s.group))} · ${esc(statusLabel(locale, s.dataStatus))} · ${esc(t(locale, "confluence"))} ${conf}${
+        <div class="asset-meta">${esc(s.symbol)} · ${esc(groupLabel(locale, s.group))} · ${esc(statusLabel(locale, s.dataStatus))} · ${esc(t(locale, "confluence"))} ${conf} · ${esc(t(locale, "patternConf"))} ${patConf}${
           s.signals?.rsi14 != null
             ? ` · RSI ${s.signals.rsi14.toFixed(0)}`
             : ""
@@ -423,6 +646,9 @@ export function renderQuant(
   screens: ScreensPayload | null = null,
   factors: FactorsPayload | null = null,
   recipes: RecipesPayload | null = null,
+  announcements: AnnouncementsPayload | null = null,
+  iwencaiNews: IwencaiNewsPayload | null = null,
+  factorsIc: FactorsIcPayload | null = null,
 ): void {
   destroyLabChart();
   const bullets = locale === "zh" ? data.dailyReview.zh : data.dailyReview.en;
@@ -439,11 +665,21 @@ export function renderQuant(
     .map((s) => s.symbol);
   const stale = isStaleVsReport(data);
 
+  const hashQ = location.hash.includes("?")
+    ? location.hash.slice(location.hash.indexOf("?") + 1)
+    : "";
+  const hashParams = new URLSearchParams(hashQ);
+  const labFromHash = hashParams.get("lab");
+
   let biasFilter: "all" | "bull" | "bear" | "neutral" = "all";
   let sortKey: "confluence" | "rsi" | "bias" = "confluence";
-  let labStrategy: StrategyId = strategies[0] ?? "ma_cross";
+  let labStrategy: StrategyId =
+    labFromHash && strategies.includes(labFromHash as StrategyId)
+      ? (labFromHash as StrategyId)
+      : (strategies[0] ?? "ma_cross");
   let labSymbol: string = tradeable[0]?.symbol ?? "";
   let labSlip: SlippageModel = "fixed";
+  let factorTilt: FactorTiltId = "equal";
 
   const boardRows = (): SymbolRow[] => {
     let rows = data.symbols.filter(
@@ -476,6 +712,15 @@ export function renderQuant(
     const body = `
       <h1>${esc(t(locale, "quantTitle"))}</h1>
       <p class="lead">${esc(t(locale, "quantSubtitle"))}</p>
+      ${renderSkillsOpsBar(locale, {
+        latest: data.generatedAt,
+        factors: factors?.generatedAt,
+        factorsIc: factorsIc?.generatedAt,
+        indices: indices?.generatedAt,
+        screens: screens?.generatedAt,
+        announcements: announcements?.generatedAt,
+        iwencaiNews: iwencaiNews?.generatedAt,
+      })}
       ${renderIndicesStrip(locale, indices)}
       ${
         stale
@@ -490,8 +735,11 @@ export function renderQuant(
         <div class="stat"><span class="stat-n">${data.stats.symbolsMissing}</span><span class="stat-l">${esc(t(locale, "statsMissing"))}</span></div>
         <div class="stat"><span class="stat-n">${data.stats.patternHits}</span><span class="stat-l">${esc(t(locale, "statsPatterns"))}</span></div>
       </div>
+      ${renderFilingsStub(locale, announcements)}
       ${renderScreensPanel(locale, screens)}
-      ${renderFactorBoard(locale, factors)}
+      ${renderIcPanel(locale, factorsIc)}
+      ${renderCorrHeatmap(locale, factorsIc)}
+      ${renderFactorBoard(locale, factors, factorTilt, factorsIc)}
       ${renderAdfStrip(locale, factors)}
       ${renderRecipeCards(locale, recipes)}
       <section class="review">
@@ -587,11 +835,12 @@ export function renderQuant(
                 const name = locale === "zh" ? s.nameZh : s.nameEn;
                 const sig = s.signals!;
                 const conf = confluenceScore(s);
+                const patConf = patternConfluenceAbs(s.recentPatterns);
                 const sigDate = signalDateForRow(s);
                 return `<tr>
                   <td><a href="#/asset/${encodeURIComponent(s.symbol)}">${esc(s.symbol)}</a><div class="muted tiny">${esc(name)}</div></td>
                   <td><span class="chip chip-${sig.bias === "neutral" ? "neutral" : sig.bias === "bull" ? "bull" : "bear"}">${esc(biasLabel(locale, sig.bias))}</span></td>
-                  <td>${conf}</td>
+                  <td>${conf} <span class="muted tiny">/${patConf}</span></td>
                   <td>${sig.rsi14 == null ? "—" : sig.rsi14.toFixed(1)}</td>
                   <td>${esc(sig.maAlign)}</td>
                   <td class="tiny">${esc(sig.tags.join(", ") || "—")}</td>
@@ -682,6 +931,15 @@ export function renderQuant(
     });
     root.querySelector("#f-sort")?.addEventListener("change", (e) => {
       sortKey = (e.target as HTMLSelectElement).value as typeof sortKey;
+      paint();
+    });
+    root.querySelector("#factor-tilt")?.addEventListener("change", (e) => {
+      factorTilt = (e.target as HTMLSelectElement).value as FactorTiltId;
+      paint();
+    });
+    root.querySelector("#factor-ic-toggle")?.addEventListener("change", (e) => {
+      const on = (e.target as HTMLInputElement).checked;
+      factorTilt = on ? "ic" : "equal";
       paint();
     });
 

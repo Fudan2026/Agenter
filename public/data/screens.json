@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T12:27:12.693Z",
+  "generatedAt": "2026-10-02T14:00:33.305Z",
   "source": "同花顺问财",
   "skill": "hithink-astock-selector",
   "screens": [
@@ -11,52 +11,52 @@
       "codeCount": 3546,
       "tickers": [
         {
-          "code": "600098.SH",
-          "nameZh": "广州发展",
-          "last": 6.32,
-          "changePct": 1.9354840000000002
+          "code": "600312.SH",
+          "nameZh": "平高电气",
+          "last": 20.29,
+          "changePct": 1.704261
         },
         {
-          "code": "600118.SH",
-          "nameZh": "中国卫星",
-          "last": 55.03,
-          "changePct": -0.434232
+          "code": "600386.SH",
+          "nameZh": "北巴传媒",
+          "last": 3.54,
+          "changePct": -0.28169
         },
         {
-          "code": "600156.SH",
-          "nameZh": "华升股份",
-          "last": 7.35,
-          "changePct": -10.03672
+          "code": "600488.SH",
+          "nameZh": "津药药业",
+          "last": 6.69,
+          "changePct": -3.0434780000000003
         },
         {
-          "code": "600560.SH",
-          "nameZh": "金自天正",
-          "last": 11.46,
-          "changePct": -0.7792209999999999
+          "code": "600540.SH",
+          "nameZh": "新赛股份",
+          "last": 5.52,
+          "changePct": -2.645503
         },
         {
-          "code": "600699.SH",
-          "nameZh": "均胜电子",
-          "last": 23.46,
-          "changePct": 3.120879
+          "code": "600789.SH",
+          "nameZh": "鲁抗医药",
+          "last": 7.85,
+          "changePct": 2.883355
         },
         {
-          "code": "600731.SH",
-          "nameZh": "湖南海利",
-          "last": 5.95,
-          "changePct": 2.058319
+          "code": "600796.SH",
+          "nameZh": "钱江生化",
+          "last": 5.11,
+          "changePct": 0.392927
         },
         {
-          "code": "600941.SH",
-          "nameZh": "中国移动",
-          "last": 95.8,
-          "changePct": 1.001581
+          "code": "600887.SH",
+          "nameZh": "伊利股份",
+          "last": 27.3,
+          "changePct": 0.22026400000000002
         },
         {
-          "code": "600997.SH",
-          "nameZh": "开滦股份",
-          "last": 5.22,
-          "changePct": 0.7722009999999999
+          "code": "600975.SH",
+          "nameZh": "新五丰",
+          "last": 5.19,
+          "changePct": -0.5747129999999999
         }
       ]
     },
@@ -129,6 +129,147 @@
           "nameZh": "瑞芯微",
           "last": 215.57,
           "changePct": 1.23509
+        }
+      ]
+    },
+    {
+      "id": "high-div-low-vol",
+      "nameZh": "高股息低波动",
+      "nameEn": "High dividend · low vol",
+      "query": "高股息低波动",
+      "codeCount": 100,
+      "tickers": [
+        {
+          "code": "000686.SZ",
+          "nameZh": "东北证券",
+          "last": null,
+          "changePct": 0.26631158
+        },
+        {
+          "code": "002033.SZ",
+          "nameZh": "丽江股份",
+          "last": null,
+          "changePct": 0.36674817
+        },
+        {
+          "code": "000795.SZ",
+          "nameZh": "英洛华",
+          "last": null,
+          "changePct": 0.36674817
+        },
+        {
+          "code": "603167.SH",
+          "nameZh": "渤海轮渡",
+          "last": null,
+          "changePct": 0.12531328
+        },
+        {
+          "code": "603551.SH",
+          "nameZh": "奥普科技",
+          "last": null,
+          "changePct": 0.53475936
+        },
+        {
+          "code": "601163.SH",
+          "nameZh": "三角轮胎",
+          "last": null,
+          "changePct": 0.57518488
+        },
+        {
+          "code": "601878.SH",
+          "nameZh": "浙商证券",
+          "last": null,
+          "changePct": 0.56053812
+        },
+        {
+          "code": "601377.SH",
+          "nameZh": "兴业证券",
+          "last": null,
+          "changePct": 0
+        }
+      ]
+    },
+    {
+      "id": "nev-strong",
+      "nameZh": "新能源车强势",
+      "nameEn": "NEV leaders strong",
+      "query": "新能源车概念股涨幅居前",
+      "codeCount": 10,
+      "tickers": [
+        {
+          "code": "300893.SZ",
+          "nameZh": "松原安全",
+          "last": 15.13,
+          "changePct": 19.98414
+        },
+        {
+          "code": "301560.SZ",
+          "nameZh": "众捷股份",
+          "last": 37.86,
+          "changePct": 11.747344
+        },
+        {
+          "code": "301525.SZ",
+          "nameZh": "儒竞科技",
+          "last": 43.25,
+          "changePct": 11.296963
+        },
+        {
+          "code": "920066.BJ",
+          "nameZh": "科拜尔",
+          "last": 19.71,
+          "changePct": 11.293055
+        },
+        {
+          "code": "002388.SZ",
+          "nameZh": "新亚制程",
+          "last": 9.1,
+          "changePct": 10.036275999999999
+        },
+        {
+          "code": "002058.SZ",
+          "nameZh": "紫竹高科",
+          "last": 20.2,
+          "changePct": 10.021786
+        },
+        {
+          "code": "002454.SZ",
+          "nameZh": "松芝股份",
+          "last": 5.61,
+          "changePct": 10
+        },
+        {
+          "code": "605288.SH",
+          "nameZh": "凯迪股份",
+          "last": 71.83,
+          "changePct": 10
+        }
+      ]
+    },
+    {
+      "id": "broker-leaders",
+      "nameZh": "券商龙头",
+      "nameEn": "Brokerage leaders",
+      "query": "券商龙头",
+      "codeCount": 3,
+      "tickers": [
+        {
+          "code": "300059.SZ",
+          "nameZh": "东方财富",
+          "last": 17.79,
+          "changePct": 0.11254900000000001
+        },
+        {
+          "code": "600030.SH",
+          "nameZh": "中信证券",
+          "last": 25.86,
+          "changePct": 0.154919
+        },
+        {
+          "code": "601688.SH",
+          "nameZh": "华泰证券",
+          "last": 17.8,
+          "changePct": 0.451467
         }
       ]
     }

@@ -6,6 +6,7 @@ export type RouteName =
   | "home"
   | "compare"
   | "learn"
+  | "handbook"
   | "tools"
   | "news"
   | "quant"
@@ -25,6 +26,7 @@ export function renderShell(
     { route: "home", href: "#/", label: "navHome" },
     { route: "compare", href: "#/compare", label: "navCompare" },
     { route: "learn", href: "#/learn", label: "navLearn" },
+    { route: "handbook", href: "#/handbook", label: "navHandbook" },
     { route: "tools", href: "#/tools", label: "navTools" },
   ];
 
@@ -61,4 +63,9 @@ export function renderShell(
   `;
 }
 
-type StringKeyNav = "navHome" | "navCompare" | "navLearn" | "navTools";
+type StringKeyNav =
+  | "navHome"
+  | "navCompare"
+  | "navLearn"
+  | "navHandbook"
+  | "navTools";
