@@ -68,14 +68,19 @@ describe("pattern detectors", () => {
     assert.ok(hits.includes("doji"));
   });
 
-  it("exports ten pattern ids including legacy five", () => {
-    assert.equal(ALL_PATTERN_IDS.length, 10);
+  it("exports fifteen pattern ids including legacy five", () => {
+    assert.equal(ALL_PATTERN_IDS.length, 15);
     for (const id of [
       "bullish_engulfing",
       "bearish_engulfing",
       "hammer",
       "shooting_star",
       "doji",
+      "inverted_hammer",
+      "spinning_top",
+      "bullish_harami",
+      "bearish_harami",
+      "dark_cloud_cover",
     ]) {
       assert.ok(ALL_PATTERN_IDS.includes(id as (typeof ALL_PATTERN_IDS)[number]));
     }
@@ -96,6 +101,45 @@ describe("additive patterns", () => {
     const c3 = c(10.8, 11.6, 10.7, 11.4, 3);
     const hits = detectAt([a, b, c3], 2);
     assert.ok(hits.includes("three_white_soldiers"));
+  });
+
+  it("detects inverted hammer after downtrend", () => {
+    const series = [
+      c(12, 12.2, 11.8, 12.0, 1),
+      c(11.8, 11.9, 11.4, 11.5, 2),
+      c(11.4, 11.5, 11.0, 11.1, 3),
+      c(11.0, 11.1, 10.6, 10.7, 4),
+      c(10.6, 10.7, 10.2, 10.3, 5),
+      // long upper wick, small body, short lower
+      c(10.2, 13.2, 10.1, 10.8, 6),
+    ];
+    const hits = detectAt(series, 5);
+    assert.ok(hits.includes("inverted_hammer"));
+    assert.ok(!hits.includes("shooting_star"));
+  });
+
+  it("detects spinning top", () => {
+    // body 1, upper 1.5, lower 1.5, range 4 → body/range 0.25
+    const candle = c(10, 12.5, 8.5, 11, 1);
+    const hits = detectAt([candle], 0);
+    assert.ok(hits.includes("spinning_top"));
+  });
+
+  it("detects bullish and bearish harami", () => {
+    const bearPrev = c(12, 12.3, 10, 10.2, 1);
+    const bullCurr = c(10.5, 11.2, 10.4, 11.0, 2);
+    assert.ok(detectAt([bearPrev, bullCurr], 1).includes("bullish_harami"));
+
+    const bullPrev = c(10, 12.2, 9.8, 12.0, 1);
+    const bearCurr = c(11.5, 11.8, 11.0, 11.2, 2);
+    assert.ok(detectAt([bullPrev, bearCurr], 1).includes("bearish_harami"));
+  });
+
+  it("detects dark cloud cover", () => {
+    const prev = c(10, 12.2, 9.8, 12.0, 1); // bullish
+    const curr = c(12.3, 12.5, 10.5, 10.8, 2); // opens above close, closes below mid
+    const hits = detectAt([prev, curr], 1);
+    assert.ok(hits.includes("dark_cloud_cover"));
   });
 
   it("3-bar pattern at i ignores future bars", () => {

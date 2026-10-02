@@ -9,10 +9,11 @@ import { renderBrandHome } from "./pages/brand-home";
 import { loadAgents, renderCompare } from "./pages/compare";
 import { renderLearn } from "./pages/learn";
 import { cleanupPaperPage, renderPaper } from "./pages/paper";
-import { cleanupQuantPage, renderQuant } from "./pages/quant";
+import { cleanupQuantPage, renderQuant, type RecipesPayload } from "./pages/quant";
 import { cleanupSimPage, renderSim } from "./pages/sim";
 import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
 import type { LatestPayload } from "./pages/types";
+import type { FactorsPayload } from "./lib/factors/cross-section";
 
 let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
@@ -21,6 +22,8 @@ let announcementsData: AnnouncementsPayload | null = null;
 let iwencaiNewsData: IwencaiNewsPayload | null = null;
 let indicesData: IndicesPayload | null = null;
 let screensData: ScreensPayload | null = null;
+let factorsData: FactorsPayload | null = null;
+let recipesData: RecipesPayload | null = null;
 let locale: Locale = detectLocale();
 
 type Route =
@@ -110,6 +113,30 @@ async function loadScreens(): Promise<void> {
   }
 }
 
+async function loadFactors(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/factors.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    factorsData = (await res.json()) as FactorsPayload;
+  } catch {
+    factorsData = null;
+  }
+}
+
+async function loadRecipes(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/recipes.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    recipesData = (await res.json()) as RecipesPayload;
+  } catch {
+    recipesData = null;
+  }
+}
+
 function parseRoute(): Route {
   const hash = location.hash.replace(/^#/, "") || "/";
   const path = (hash.split("?")[0] || "/").replace(/\/$/, "") || "/";
@@ -175,7 +202,15 @@ async function render(): Promise<void> {
         if (quantError || !quantData) {
           root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
         } else {
-          renderQuant(root, quantData, locale, indicesData, screensData);
+          renderQuant(
+            root,
+            quantData,
+            locale,
+            indicesData,
+            screensData,
+            factorsData,
+            recipesData,
+          );
         }
         break;
       case "paper":
@@ -217,6 +252,8 @@ export async function startApp(): Promise<void> {
     loadIwencaiNews(),
     loadIndices(),
     loadScreens(),
+    loadFactors(),
+    loadRecipes(),
   ]);
   await render();
   window.addEventListener("hashchange", () => {

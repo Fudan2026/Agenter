@@ -168,7 +168,13 @@ export function renderPaper(
         </ul>
         <label class="tiny"><input type="checkbox" id="p-hard" ${state.hardRiskGates ? "checked" : ""}/> ${esc(t(locale, "paperHardGates"))}</label>
         <label class="tiny"><input type="checkbox" id="p-cost" ${state.costModelEnabled === false ? "" : "checked"}/> ${esc(t(locale, "paperCostOn"))}</label>
-        <p class="muted tiny">${esc(t(locale, "paperRiskNote"))}</p>
+        <label class="tiny">${esc(t(locale, "slipModel"))}
+          <select id="p-slip">
+            <option value="fixed"${(state.costConfig?.slippageModel ?? "fixed") === "fixed" ? " selected" : ""}>${esc(t(locale, "slipFixed"))}</option>
+            <option value="sqrt"${state.costConfig?.slippageModel === "sqrt" ? " selected" : ""}>${esc(t(locale, "slipSqrt"))}</option>
+          </select>
+        </label>
+        <p class="muted tiny">${esc(t(locale, "paperRiskNote"))} · ${esc(t(locale, "slipNote"))}</p>
       </section>
 
       <section class="paper-ticket" id="ws-ticket">
@@ -433,6 +439,26 @@ export function renderPaper(
     root.querySelector("#p-cost")?.addEventListener("change", (e) => {
       const on = (e.target as HTMLInputElement).checked;
       state = { ...state, costModelEnabled: on };
+      savePaperState(state);
+      paint();
+    });
+    root.querySelector("#p-slip")?.addEventListener("change", (e) => {
+      const model = (e.target as HTMLSelectElement).value as "fixed" | "sqrt";
+      state = {
+        ...state,
+        costConfig: {
+          ...(state.costConfig ?? {
+            enabled: true,
+            commissionBps: 2.5,
+            minCommissionCny: 5,
+            stampDutyBpsSell: 5,
+            transferFeeBps: 0.1,
+            slippageBpsDefault: 5,
+            slippageBpsIlliquid: 10,
+          }),
+          slippageModel: model,
+        },
+      };
       savePaperState(state);
       paint();
     });

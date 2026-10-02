@@ -6,6 +6,7 @@ import {
   computeTradeCosts,
   isLimitLocked,
   priceLimitPct,
+  sqrtImpactFraction,
 } from "./costs";
 
 describe("A-share cost model", () => {
@@ -57,5 +58,38 @@ describe("A-share cost model", () => {
       cfg: { ...DEFAULT_COST_CONFIG, enabled: false },
     });
     assert.equal(c.total, 0);
+  });
+
+  it("sqrt impact rises with participation", () => {
+    const lo = sqrtImpactFraction({
+      participation: 0.01,
+      dailyVol: 0.02,
+      eta: 0.5,
+    });
+    const hi = sqrtImpactFraction({
+      participation: 0.25,
+      dailyVol: 0.02,
+      eta: 0.5,
+    });
+    assert.ok(hi > lo);
+    assert.ok(lo > 0);
+  });
+
+  it("sqrt slippage model exceeds fixed on large participation", () => {
+    const fixed = computeTradeCosts({
+      side: "buy",
+      notional: 1_000_000,
+      symbol: "600519.SS",
+      cfg: { ...DEFAULT_COST_CONFIG, slippageModel: "fixed" },
+    });
+    const sqrt = computeTradeCosts({
+      side: "buy",
+      notional: 1_000_000,
+      symbol: "600519.SS",
+      cfg: { ...DEFAULT_COST_CONFIG, slippageModel: "sqrt", sqrtEta: 0.5 },
+      participation: 0.2,
+      dailyVol: 0.03,
+    });
+    assert.ok(sqrt.slippage > fixed.slippage);
   });
 });

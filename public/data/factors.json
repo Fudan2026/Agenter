@@ -1,0 +1,350 @@
+{
+  "generatedAt": "2026-10-02T12:49:34.022Z",
+  "reportDate": "2026-10-02",
+  "source": "ohlc-proxy",
+  "attribution": {
+    "zh": "分数来自烘焙 OHLC 代理（动量 / 低波 / ADV / 质量），是因子技能的站点 distill，非实时基本面行情。",
+    "en": "Scores are OHLC-proxy distill (momentum / low-vol / ADV / quality) of factor skills — not a live fundamental feed."
+  },
+  "topN": 8,
+  "factors": [
+    {
+      "symbol": "000001.SZ",
+      "nameZh": "平安银行",
+      "nameEn": "Ping An Bank",
+      "momentum": 0.5002061903147397,
+      "lowVol": 1.0133515405402584,
+      "sizeAdv": -0.36305731468686797,
+      "quality": 2.095703933582962,
+      "composite": 0.811551087437773,
+      "rank": 1
+    },
+    {
+      "symbol": "600036.SS",
+      "nameZh": "招商银行",
+      "nameEn": "China Merchants Bank",
+      "momentum": 0.25548269869024787,
+      "lowVol": 0.8044248892206819,
+      "sizeAdv": -0.3521156819079343,
+      "quality": 1.81926808314507,
+      "composite": 0.6317649972870163,
+      "rank": 2
+    },
+    {
+      "symbol": "600900.SS",
+      "nameZh": "长江电力",
+      "nameEn": "China Yangtze Power",
+      "momentum": 0.4169129522530274,
+      "lowVol": 0.8808017524017278,
+      "sizeAdv": -0.35217861845825577,
+      "quality": 1.1855443529678458,
+      "composite": 0.5327701097910862,
+      "rank": 3
+    },
+    {
+      "symbol": "000333.SZ",
+      "nameZh": "美的集团",
+      "nameEn": "Midea Group",
+      "momentum": 1.3412018209222754,
+      "lowVol": 0.6440921974292466,
+      "sizeAdv": -0.355113879500405,
+      "quality": 0.3808983787005538,
+      "composite": 0.5027696293879177,
+      "rank": 4
+    },
+    {
+      "symbol": "510300.SS",
+      "nameZh": "沪深300ETF",
+      "nameEn": "CSI 300 ETF",
+      "momentum": 0.03850351917597753,
+      "lowVol": 0.7363356913876775,
+      "sizeAdv": 1.9492106840070136,
+      "quality": -0.8387944063223756,
+      "composite": 0.47131387206207326,
+      "rank": 5
+    },
+    {
+      "symbol": "159915.SZ",
+      "nameZh": "创业板ETF",
+      "nameEn": "ChiNext ETF",
+      "momentum": 0.448521968111716,
+      "lowVol": -1.2353062259702225,
+      "sizeAdv": 3.631669042987078,
+      "quality": -0.9665755368428381,
+      "composite": 0.46957731207143333,
+      "rank": 6
+    },
+    {
+      "symbol": "601318.SS",
+      "nameZh": "中国平安",
+      "nameEn": "Ping An Insurance",
+      "momentum": 0.39375039474792345,
+      "lowVol": 0.3588187264207376,
+      "sizeAdv": -0.3452456795832376,
+      "quality": 1.248784445419567,
+      "composite": 0.4140269717512476,
+      "rank": 7
+    },
+    {
+      "symbol": "510500.SS",
+      "nameZh": "中证500ETF",
+      "nameEn": "CSI 500 ETF",
+      "momentum": 0.37847286914211165,
+      "lowVol": -0.2928458879858726,
+      "sizeAdv": 1.8392597973975162,
+      "quality": -0.8747993998905843,
+      "composite": 0.26252184466579276,
+      "rank": 8
+    },
+    {
+      "symbol": "601166.SS",
+      "nameZh": "兴业银行",
+      "nameEn": "Industrial Bank",
+      "momentum": -0.3124159340812279,
+      "lowVol": 0.7281537298484453,
+      "sizeAdv": -0.3609637088910961,
+      "quality": 0.9298479196751451,
+      "composite": 0.2461555016378166,
+      "rank": 9
+    },
+    {
+      "symbol": "002415.SZ",
+      "nameZh": "海康威视",
+      "nameEn": "Hikvision",
+      "momentum": 1.165434465888743,
+      "lowVol": -0.12105189761670986,
+      "sizeAdv": -0.3586971466944859,
+      "quality": 0.045049915904693885,
+      "composite": 0.18268383437056027,
+      "rank": 10
+    },
+    {
+      "symbol": "510050.SS",
+      "nameZh": "上证50ETF",
+      "nameEn": "SSE 50 ETF",
+      "momentum": 0.21187123743172753,
+      "lowVol": 1.0194311310055166,
+      "sizeAdv": -0.3591832872565281,
+      "quality": -0.15561035070481805,
+      "composite": 0.17912718261897448,
+      "rank": 11
+    },
+    {
+      "symbol": "600519.SS",
+      "nameZh": "贵州茅台",
+      "nameEn": "Kweichow Moutai",
+      "momentum": -0.2968979450142335,
+      "lowVol": 0.36221589466751647,
+      "sizeAdv": -0.3456366016965579,
+      "quality": 0.8284723855257046,
+      "composite": 0.1370384333706074,
+      "rank": 12
+    },
+    {
+      "symbol": "159919.SZ",
+      "nameZh": "沪深300ETF嘉实",
+      "nameEn": "CSI 300 ETF (Harvest)",
+      "momentum": 0.32982780122612876,
+      "lowVol": 0.7490553075318139,
+      "sizeAdv": -0.36556348978272885,
+      "quality": -0.8206101496374866,
+      "composite": -0.026822632665568197,
+      "rank": 13
+    },
+    {
+      "symbol": "512690.SS",
+      "nameZh": "酒ETF",
+      "nameEn": "Liquor ETF",
+      "momentum": -1.3582873605727392,
+      "lowVol": 0.09884322565674042,
+      "sizeAdv": -0.36765425396263157,
+      "quality": 0.8597505207676197,
+      "composite": -0.19183696702775266,
+      "rank": 14
+    },
+    {
+      "symbol": "512880.SS",
+      "nameZh": "证券ETF",
+      "nameEn": "Securities ETF",
+      "momentum": -0.3961230873747853,
+      "lowVol": 0.7693164750026222,
+      "sizeAdv": -0.35937552207045914,
+      "quality": -0.8904966265252559,
+      "composite": -0.21916969024196953,
+      "rank": 15
+    },
+    {
+      "symbol": "002594.SZ",
+      "nameZh": "比亚迪",
+      "nameEn": "BYD",
+      "momentum": -0.8262674030681534,
+      "lowVol": 0.19554577472548615,
+      "sizeAdv": -0.3552019732627715,
+      "quality": -0.040870280704464496,
+      "composite": -0.2566984705774758,
+      "rank": 16
+    },
+    {
+      "symbol": "601888.SS",
+      "nameZh": "中国中免",
+      "nameEn": "China Tourism Group Duty Free",
+      "momentum": -1.1463649249715184,
+      "lowVol": -0.08506360173031743,
+      "sizeAdv": -0.36336514220198507,
+      "quality": 0.40944376430552054,
+      "composite": -0.29633747614957506,
+      "rank": 17
+    },
+    {
+      "symbol": "000858.SZ",
+      "nameZh": "五粮液",
+      "nameEn": "Wuliangye",
+      "momentum": -1.8099123061378906,
+      "lowVol": 0.3454986529455413,
+      "sizeAdv": -0.36048623512128014,
+      "quality": 0.3775994205601395,
+      "composite": -0.3618251169383725,
+      "rank": 18
+    },
+    {
+      "symbol": "512480.SS",
+      "nameZh": "半导体ETF",
+      "nameEn": "Semiconductor ETF",
+      "momentum": 2.398874205288482,
+      "lowVol": -2.922363969897953,
+      "sizeAdv": -0.3620499556113136,
+      "quality": -0.9598682561545705,
+      "composite": -0.46135199409383876,
+      "rank": 19
+    },
+    {
+      "symbol": "515790.SS",
+      "nameZh": "光伏ETF",
+      "nameEn": "PV ETF",
+      "momentum": -0.23969466469776737,
+      "lowVol": -0.1409878046706531,
+      "sizeAdv": -0.3695997882983309,
+      "quality": -1.1990154580815549,
+      "composite": -0.48732442893707656,
+      "rank": 20
+    },
+    {
+      "symbol": "300750.SZ",
+      "nameZh": "宁德时代",
+      "nameEn": "CATL",
+      "momentum": 0.16075051351438613,
+      "lowVol": -0.8070064412181995,
+      "sizeAdv": -0.28493469638948304,
+      "quality": -1.2945188151267208,
+      "composite": -0.5564273598050042,
+      "rank": 21
+    },
+    {
+      "symbol": "601012.SS",
+      "nameZh": "隆基绿能",
+      "nameEn": "LONGi Green Energy",
+      "momentum": -1.2500072235208959,
+      "lowVol": -0.2103244449372127,
+      "sizeAdv": -0.3649468730916751,
+      "quality": -0.42075555063123704,
+      "composite": -0.5615085230452552,
+      "rank": 22
+    },
+    {
+      "symbol": "588000.SS",
+      "nameZh": "科创50ETF",
+      "nameEn": "STAR 50 ETF",
+      "momentum": 1.168630840553018,
+      "lowVol": -2.2747708678910405,
+      "sizeAdv": -0.32526602812468297,
+      "quality": -0.8916072814385998,
+      "composite": -0.5807533342253264,
+      "rank": 23
+    },
+    {
+      "symbol": "600276.SS",
+      "nameZh": "恒瑞医药",
+      "nameEn": "Hengrui Medicine",
+      "momentum": -1.5724706278212934,
+      "lowVol": -0.6161638468658251,
+      "sizeAdv": -0.3495036477988976,
+      "quality": -0.8268410084943156,
+      "composite": -0.8412447827450829,
+      "rank": 24
+    }
+  ],
+  "adfStrip": [
+    {
+      "symbol": "510300.SS",
+      "nameZh": "沪深300ETF",
+      "nameEn": "CSI 300 ETF",
+      "adfStat": -1.6495461200514152,
+      "adfP": 0.3616315651176584,
+      "stationary": false,
+      "dailyVol": 0.011241087231508056
+    },
+    {
+      "symbol": "510050.SS",
+      "nameZh": "上证50ETF",
+      "nameEn": "SSE 50 ETF",
+      "adfStat": -2.1947906456674673,
+      "adfP": 0.22103527559113956,
+      "stationary": false,
+      "dailyVol": 0.009535138758210712
+    },
+    {
+      "symbol": "600519.SS",
+      "nameZh": "贵州茅台",
+      "nameEn": "Kweichow Moutai",
+      "adfStat": -1.5804205838573182,
+      "adfP": 0.3758111622856783,
+      "stationary": false,
+      "dailyVol": 0.014185283426548205
+    },
+    {
+      "symbol": "601318.SS",
+      "nameZh": "中国平安",
+      "nameEn": "Ping An Insurance",
+      "adfStat": -1.8018936646496186,
+      "adfP": 0.33038078673853977,
+      "stationary": false,
+      "dailyVol": 0.017556162433919487
+    },
+    {
+      "symbol": "000858.SZ",
+      "nameZh": "五粮液",
+      "nameEn": "Wuliangye",
+      "adfStat": -0.2214878948709936,
+      "adfP": 0.6545665856674885,
+      "stationary": false,
+      "dailyVol": 0.014407792670337061
+    },
+    {
+      "symbol": "300750.SZ",
+      "nameZh": "宁德时代",
+      "nameEn": "CATL",
+      "adfStat": -1.088705134539906,
+      "adfP": 0.476675869837968,
+      "stationary": false,
+      "dailyVol": 0.023120162171395474
+    },
+    {
+      "symbol": "510500.SS",
+      "nameZh": "中证500ETF",
+      "nameEn": "CSI 500 ETF",
+      "adfStat": -1.8630220264910027,
+      "adfP": 0.3178416355915892,
+      "stationary": false,
+      "dailyVol": 0.016913038584685423
+    },
+    {
+      "symbol": "159915.SZ",
+      "nameZh": "创业板ETF",
+      "nameEn": "ChiNext ETF",
+      "adfStat": -1.4832647706162037,
+      "adfP": 0.39574055987359924,
+      "stationary": false,
+      "dailyVol": 0.02166428286433933
+    }
+  ]
+}

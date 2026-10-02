@@ -49,6 +49,15 @@ After installing a new SkillHub skill, add or update its section in **this file*
 | `hithink-zhishu-query` | 上证指数、沪深300、创业板指等指数点位/涨跌幅/成交量 | `skills/hithink-zhishu-query/` |
 | `hithink-astock-selector` | A股自然语言选股（行情、财务、形态、概念组合） | `skills/hithink-astock-selector/` |
 | `模拟炒股` | A股模拟开户、买入/卖出、持仓/资金/成交/近30日收益 | `skills/模拟炒股/` |
+| `基本面因子筛选` | PE/PB/ROE 等基本面筛选（方法论） | `skills/基本面因子筛选/fundamental-filter/` |
+| `多因子选股策略` | 横截面多因子打分与 TopN | `skills/多因子选股策略/multi-factor/` |
+| `机器学习策略` | sklearn 滚动训练 / walk-forward 信号 | `skills/机器学习策略/ml-strategy/` |
+| `量化统计方法` | ADF / 协整 / GARCH / 回归诊断 | `skills/量化统计方法/quant-statistics/` |
+| `因子研究框架` | IC/IR、分层回测、因子组合 | `skills/因子研究框架/factor-research/` |
+| `量化因子选股` | 学术因子模型 A 股筛选 | `skills/量化因子选股/` |
+| `策略生成与优化` | 策略起草、回测与调参 | `skills/策略生成与优化/strategy-generate/` |
+| `K线形态识别` | 15 种经典 K 线形态 | `skills/K线形态识别/candlestick/` |
+| `执行模型` | 固定 / 平方根冲击滑点与 VWAP/TWAP | `skills/执行模型/execution-model/` |
 
 ---
 
@@ -274,6 +283,38 @@ The SPA route `#/sim` (Tools → 模拟炒股台) mirrors open-account / order /
 
 ---
 
+## Methodology skills (nine packages)
+
+These SkillHub packages are **agent methodology / signal frameworks** (SKILL.md + examples). They do **not** call Iwencai OpenAPI and need no per-skill API key. Install:
+
+```bash
+iwencai-skillhub-cli --dir ./skills install 基本面因子筛选
+iwencai-skillhub-cli --dir ./skills install 多因子选股策略
+iwencai-skillhub-cli --dir ./skills install 机器学习策略
+iwencai-skillhub-cli --dir ./skills install 量化统计方法
+iwencai-skillhub-cli --dir ./skills install 因子研究框架
+iwencai-skillhub-cli --dir ./skills install 量化因子选股
+iwencai-skillhub-cli --dir ./skills install 策略生成与优化
+iwencai-skillhub-cli --dir ./skills install K线形态识别
+iwencai-skillhub-cli --dir ./skills install 执行模型
+```
+
+| Slug | SKILL.md path | Agent use | Website distill |
+|------|---------------|-----------|-----------------|
+| `基本面因子筛选` | `skills/基本面因子筛选/fundamental-filter/SKILL.md` | PE/PB/ROE screens | Factor Board quality/value proxies |
+| `多因子选股策略` | `skills/多因子选股策略/multi-factor/SKILL.md` | Cross-section TopN | `factors:bake` composite ranks |
+| `机器学习策略` | `skills/机器学习策略/ml-strategy/SKILL.md` | sklearn walk-forward | Learn + recipe cards (no browser ML) |
+| `量化统计方法` | `skills/量化统计方法/quant-statistics/SKILL.md` | ADF / cointegration | Quant ADF diagnostics strip |
+| `因子研究框架` | `skills/因子研究框架/factor-research/SKILL.md` | IC/IR research | Factor Board attribution |
+| `量化因子选股` | `skills/量化因子选股/SKILL.md` | Formal factor models | OHLC-proxy factor board |
+| `策略生成与优化` | `skills/策略生成与优化/strategy-generate/SKILL.md` | Draft + tune strategies | Recipe cards → Strategy Lab |
+| `K线形态识别` | `skills/K线形态识别/candlestick/SKILL.md` | 15 candlestick patterns | Site detectors → **15** IDs |
+| `执行模型` | `skills/执行模型/execution-model/SKILL.md` | Fixed / √-impact slippage | Paper + Lab `slippageModel` |
+
+**Agent vs site:** Agents read the SKILL.md workflows above. The SPA only ships OHLC-proxy bakes (`factors.json`, 15 patterns, ADF strip, recipe cards). Never embed SkillHub API keys in the browser.
+
+---
+
 ## Cursor discovery
 
-Project-local Cursor skills live under `.cursor/skills/<slug>/SKILL.md`. For `announcement-search`, `news-search`, `hithink-zhishu-query`, `hithink-astock-selector`, and `模拟炒股`, this repo symlinks those directories to `skills/<slug>/` so Cursor indexes the same content as SkillHub.
+Project-local Cursor skills live under `.cursor/skills/<slug>/SKILL.md`. OpenAPI skills and the nine methodology packages are symlinked from `skills/` (nested packages point at the inner folder that contains `SKILL.md`) so Cursor indexes the same content as SkillHub.
