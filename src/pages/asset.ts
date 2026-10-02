@@ -11,6 +11,7 @@ import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import { exposuresForRow, resolveBenchmark } from "../lib/factors/ff-proxy";
 import { rsi } from "../lib/indicators/core";
+import type { AnnouncementsPayload } from "../lib/announcements/map";
 import { PATTERN_META } from "../lib/patterns/types";
 import { loadPaperState } from "../lib/paper/journal";
 import { esc } from "../lib/util/esc";
@@ -172,6 +173,7 @@ export function renderAsset(
   data: LatestPayload,
   symbol: string,
   locale: Locale,
+  announcements: AnnouncementsPayload | null = null,
 ): void {
   destroyChart();
   const row = data.symbols.find((s) => s.symbol === symbol);
@@ -200,6 +202,26 @@ export function renderAsset(
                 ? PATTERN_META[p.patternId].zh
                 : PATTERN_META[p.patternId].en;
             return `<li><span class="chip chip-${esc(p.direction)}">${esc(label)}</span> <time>${esc(p.date)}</time></li>`;
+          })
+          .join("")}</ul>`;
+
+  const symbolAnn = (announcements?.items ?? []).filter(
+    (a) => a.symbol === row.symbol,
+  );
+  const annList =
+    symbolAnn.length === 0
+      ? `<p class="muted">${esc(t(locale, "announcementsEmpty"))}</p>`
+      : `<ul class="news-list">${symbolAnn
+          .slice(0, 5)
+          .map((n) => {
+            const title = locale === "zh" ? n.titleZh : n.titleEn;
+            const summary = locale === "zh" ? n.summaryZh : n.summaryEn;
+            return `<li>
+              <time>${esc(n.date)}</time>
+              <strong>${esc(title)}</strong>
+              <p class="muted">${esc(summary)}</p>
+              ${n.url ? `<p><a href="${esc(n.url)}" target="_blank" rel="noopener">source</a></p>` : ""}
+            </li>`;
           })
           .join("")}</ul>`;
 
@@ -236,6 +258,11 @@ export function renderAsset(
       <section class="patterns">
         <h2>${esc(t(locale, "recentPatterns"))}</h2>
         ${patternList}
+      </section>
+      <section class="asset-announcements">
+        <h2>${esc(t(locale, "announcementsTitle"))}</h2>
+        <p class="muted tiny">${esc(t(locale, "announcementsSource"))}</p>
+        ${annList}
       </section>
     `;
 

@@ -1,5 +1,6 @@
 import { detectLocale, setLocale, type Locale } from "./i18n/strings";
 import { t } from "./i18n/strings";
+import type { AnnouncementsPayload } from "./lib/announcements/map";
 import { cleanupAssetPage, renderAsset } from "./pages/asset";
 import { renderBrandHome } from "./pages/brand-home";
 import { loadAgents, renderCompare } from "./pages/compare";
@@ -12,6 +13,7 @@ import type { LatestPayload } from "./pages/types";
 let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
 let newsData: NewsPayload | null = null;
+let announcementsData: AnnouncementsPayload | null = null;
 let locale: Locale = detectLocale();
 
 type Route =
@@ -47,6 +49,19 @@ async function loadNews(): Promise<void> {
     newsData = (await res.json()) as NewsPayload;
   } catch {
     newsData = null;
+  }
+}
+
+async function loadAnnouncements(): Promise<void> {
+  try {
+    const res = await fetch(
+      `${import.meta.env.BASE_URL}data/announcements.json`,
+      { cache: "no-cache" },
+    );
+    if (!res.ok) return;
+    announcementsData = (await res.json()) as AnnouncementsPayload;
+  } catch {
+    announcementsData = null;
   }
 }
 
@@ -104,10 +119,10 @@ async function render(): Promise<void> {
         renderLearn(root, locale);
         break;
       case "tools":
-        renderTools(root, locale, newsData);
+        renderTools(root, locale, newsData, announcementsData);
         break;
       case "news":
-        renderNews(root, locale, newsData);
+        renderNews(root, locale, newsData, announcementsData);
         break;
       case "quant":
         if (quantError || !quantData) {
@@ -127,7 +142,7 @@ async function render(): Promise<void> {
         if (quantError || !quantData) {
           root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")}</p></main>`;
         } else {
-          renderAsset(root, quantData, route.symbol, locale);
+          renderAsset(root, quantData, route.symbol, locale, announcementsData);
         }
         break;
     }
@@ -141,7 +156,7 @@ async function render(): Promise<void> {
 
 export async function startApp(): Promise<void> {
   locale = detectLocale();
-  await Promise.all([loadQuantData(), loadNews()]);
+  await Promise.all([loadQuantData(), loadNews(), loadAnnouncements()]);
   await render();
   window.addEventListener("hashchange", () => {
     void render();

@@ -112,6 +112,13 @@ export const STRINGS = {
     paperDisclaimer:
       "纸盘仅教育用途。导出清单供人工在券商/同花顺按【次日开盘】下单；本站永不提交订单。",
     newsTitle: "AI 动态",
+    announcementsTitle: "公告",
+    announcementsLead: "A 股观察名单最新公告（烘焙）。",
+    announcementsEmpty: "暂无公告",
+    announcementsSource: "数据来源：同花顺问财",
+    toolAnnouncements: "最新公告",
+    toolAnnouncementsDesc: "问财公告烘焙摘要，详见动态页。",
+    newsNavTitleFull: "动态 · AI 与公告",
 
     navNews: "动态",
     howTitle: "怎么用",
@@ -317,6 +324,13 @@ export const STRINGS = {
     paperDisclaimer:
       "Paper is educational. Checklist is for manual next-open orders at your broker/THS — this site never submits.",
     newsTitle: "AI news",
+    announcementsTitle: "Announcements",
+    announcementsLead: "Latest A-share filings from the watchlist bake.",
+    announcementsEmpty: "No announcements yet",
+    announcementsSource: "Source: 同花顺问财 (Iwencai)",
+    toolAnnouncements: "Latest filings",
+    toolAnnouncementsDesc: "Baked Iwencai announcement digest — see News.",
+    newsNavTitleFull: "News · AI & filings",
 
     navNews: "News",
     howTitle: "How it works",
