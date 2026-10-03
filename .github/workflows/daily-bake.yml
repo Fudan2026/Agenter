@@ -1,0 +1,82 @@
+name: Daily bake refresh
+
+on:
+  schedule:
+    - cron: "30 8 * * *" # ~16:30 CST
+  workflow_dispatch:
+
+jobs:
+  bake:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Bake quant
+        run: npm run quant:bake
+        continue-on-error: true
+
+      - name: Bake factors
+        run: npm run factors:bake
+        continue-on-error: true
+
+      - name: Bake IC
+        run: npm run factors:ic-bake
+        continue-on-error: true
+
+      - name: Bake news
+        run: npm run news:bake
+        continue-on-error: true
+
+      - name: Bake announcements
+        run: npm run announcements:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
+      - name: Bake iwencai news
+        run: npm run iwencai-news:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
+      - name: Bake indices
+        run: npm run indices:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
+      - name: Bake screens
+        run: npm run screens:bake
+        continue-on-error: true
+        env:
+          IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
+
+      - name: Bake AI ratings
+        run: npm run ai-ratings:bake
+        continue-on-error: true
+
+      - name: Bake Fin corpus
+        run: npm run fin-corpus:bake
+        continue-on-error: true
+
+      - name: Commit refreshed JSON if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data || true
+          if git diff --cached --quiet; then
+            echo "No bake JSON changes"
+          else
+            git commit -m "chore(bake): daily data refresh"
+            git push
+          fi

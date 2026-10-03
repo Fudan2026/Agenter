@@ -289,6 +289,13 @@ export function renderTools(
 ): void {
   const cards = [
     {
+      href: "#/fin",
+      title: t(locale, "finDeskTitle"),
+      desc: t(locale, "finDeskLead"),
+      chipHref: "#/login",
+      chipLabel: t(locale, "loginTitle"),
+    },
+    {
       href: "#/handbook",
       title: t(locale, "toolHandbook"),
       desc: t(locale, "toolHandbookDesc"),

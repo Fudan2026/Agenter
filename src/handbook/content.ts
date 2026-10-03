@@ -648,6 +648,23 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
     skills: ["sim-trading", "execution-model", "announcement-search"],
   },
   {
+    id: "ecosystem-fin-desk",
+    title: {
+      zh: "Ecosystem · Fin Desk AIaaS 与金币",
+      en: "Ecosystem · Fin Desk AIaaS & gold",
+    },
+    body: {
+      zh: "对标匡时大模型产教融合全景：**基础设施**靠 bake 数据管道与 `fin-corpus`；**中台**是 Cloudflare Functions 上的 Fin Desk（选股/因子/策略/复盘）；**产品**层不训练 Fin-R1 权重，而是 AIaaS 网关 + RAG。\n\n**账户与金币。** 注册/登录后进入 `#/fin`。服务端 `spend_gold_for_usage` 按估算 Token 扣金币（欢迎赠送 100）。兑换码见账户页。公开 Quant/Compare 仍可匿名使用。\n\n**成熟度。** 公开工具 ≈ L1–L2；Fin Desk ≈ L2→L3 建议型助手；浏览器 L4 自治实盘仍禁止。\n\n**域名。** 生产目标 `agenter.si`（Cloudflare Pages）；GitHub Pages 为镜像直至 DNS 切换完成。\n\n**作业：** 注册并查看金币余额；用 Fin Desk「策略草稿」生成一条 Lab 深链；写一句「本站 Fin Desk 与 Fin-R1 训练的区别」。",
+      en: "Mapped to the Kuangshi industry-education panorama: **infra** = bake pipelines + `fin-corpus`; **mid-platform** = Fin Desk on Cloudflare Functions (screen/factor/strategy/review); **product** does not train Fin-R1 weights — it is an AIaaS gateway + RAG.\n\n**Accounts & gold.** After register/login open `#/fin`. Server `spend_gold_for_usage` meters estimated tokens (welcome 100 gold). Redeem codes on Account. Public Quant/Compare stay anonymous.\n\n**Maturity.** Public tools ≈ L1–L2; Fin Desk ≈ L2→L3 advisory; browser L4 live autonomy remains forbidden.\n\n**Domain.** Production target `agenter.si` (Cloudflare Pages); GitHub Pages mirrors until DNS cutover completes.\n\n**Homework:** Register and check gold; use Fin Desk strategy draft for a Lab deep-link; write one sentence on Fin Desk vs Fin-R1 training.",
+    },
+    deepLinks: [
+      { href: "#/fin", label: { zh: "Fin Desk", en: "Fin Desk" } },
+      { href: "#/account", label: { zh: "账户 / 金币", en: "Account / gold" } },
+      { href: "#/login", label: { zh: "登录", en: "Log in" } },
+    ],
+    skills: ["hithink-astock-selector", "factor-research", "strategy-generate"],
+  },
+  {
     id: "academy-markowitz-lite",
     title: {
       zh: "研学学院 · Markowitz 精简版",

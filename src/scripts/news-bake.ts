@@ -26,6 +26,16 @@ const FEEDS: Array<{ id: string; url: string; lang: "en" | "zh" }> = [
     url: "https://www.jiqizhixin.com/rss",
     lang: "zh",
   },
+  {
+    id: "mit-tr",
+    url: "https://www.technologyreview.com/feed/",
+    lang: "en",
+  },
+  {
+    id: "bbc-business",
+    url: "https://feeds.bbci.co.uk/news/business/rss.xml",
+    lang: "en",
+  },
 ];
 
 interface Item {

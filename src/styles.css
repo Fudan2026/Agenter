@@ -1854,3 +1854,35 @@ a.index-chip:hover {
   margin: 0 0 0.25rem;
   font-size: 1rem;
 }
+
+.fin-answer-body {
+  white-space: pre-wrap;
+  font: inherit;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  max-height: 28rem;
+  overflow: auto;
+}
+
+.auth-form label,
+.fin-desk-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.auth-form input,
+.fin-desk-form textarea {
+  font: inherit;
+  padding: 0.5rem 0.65rem;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--bg);
+}
+
+.auth-chip {
+  opacity: 0.9;
+}

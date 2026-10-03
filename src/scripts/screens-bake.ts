@@ -1,5 +1,5 @@
 /**
- * Bake public/data/screens.json from 6 fixed editorial screens via vendored
+ * Bake public/data/screens.json from fixed editorial screens via vendored
  * hithink-astock-selector CLI. Fail-open: keep last-good JSON on missing key / errors.
  */
 
@@ -70,6 +70,24 @@ const SCREENS: Array<{
     nameZh: "券商龙头",
     nameEn: "Brokerage leaders",
     query: "券商龙头",
+  },
+  {
+    id: "bank-high-div",
+    nameZh: "银行高股息",
+    nameEn: "Bank high dividend",
+    query: "银行高股息",
+  },
+  {
+    id: "ai-compute",
+    nameZh: "算力概念强势",
+    nameEn: "AI compute strength",
+    query: "算力概念股涨幅居前",
+  },
+  {
+    id: "consumer-recovery",
+    nameZh: "消费复苏",
+    nameEn: "Consumer recovery names",
+    query: "消费股涨幅居前",
   },
 ];
 

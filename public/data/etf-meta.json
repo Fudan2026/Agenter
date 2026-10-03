@@ -77,6 +77,16 @@
       "sectorTags": ["liquor", "consumer"],
       "proxyConstituents": ["600519.SS", "000858.SZ"]
     },
+    "512010.SS": {
+      "indexSymbol": "000001.SS",
+      "sectorTags": ["healthcare"],
+      "proxyConstituents": ["600276.SS", "300750.SZ", "000858.SZ"]
+    },
+    "159992.SZ": {
+      "indexSymbol": "399006.SZ",
+      "sectorTags": ["biotech", "healthcare"],
+      "proxyConstituents": ["600276.SS", "300750.SZ"]
+    },
     "515790.SS": {
       "indexSymbol": "000001.SS",
       "sectorTags": ["pv", "energy"],

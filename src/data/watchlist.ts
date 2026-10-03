@@ -186,6 +186,30 @@ export const WATCHLIST: TickerDef[] = [
     nameEn: "Industrial Bank",
     group: "china-ashare",
   },
+  {
+    symbol: "512010.SS",
+    nameZh: "医药ETF",
+    nameEn: "Healthcare ETF",
+    group: "china-etf",
+  },
+  {
+    symbol: "159992.SZ",
+    nameZh: "创新药ETF",
+    nameEn: "Innovative Drug ETF",
+    group: "china-etf",
+  },
+  {
+    symbol: "600030.SS",
+    nameZh: "中信证券",
+    nameEn: "CITIC Securities",
+    group: "china-ashare",
+  },
+  {
+    symbol: "000651.SZ",
+    nameZh: "格力电器",
+    nameEn: "Gree Electric",
+    group: "china-ashare",
+  },
 ];
 
 export const LEGACY_WATCHLIST_COUNT = 16;

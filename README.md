@@ -2,9 +2,9 @@
 
 **for better agents**
 
-Live site (GitHub Pages): [https://fudan2026.github.io/Agenter/](https://fudan2026.github.io/Agenter/)
+Live site (GitHub Pages mirror): [https://fudan2026.github.io/Agenter/](https://fudan2026.github.io/Agenter/)
 
-Intended custom domain: [https://agenter.si](https://agenter.si) — Cloudflare DNS bind documented below (**not** cut this round).
+Production domain: [https://agenter.si](https://agenter.si) — Cloudflare Pages + Functions (letusIELTS-style). Apply `public/CNAME` + CF custom domain; set Pages secrets (Supabase / LLM / Iwencai).
 
 Agenter helps people **filter, compare, and pick** AI / Agent products. Quant review, signal boards, and **快速实盘** (checklist export + in-browser paper at **¥100,000,000** start) are **secondary tools**.
 
@@ -20,7 +20,9 @@ This README is the **canonical English build brief**.
 | `/#/compare` | Apple-style sticky shortlist + dimension matrix + harness presets |
 | `/#/learn` | Guided tour + practice scenarios |
 | `/#/handbook` | Bilingual deep manual — modules, 13-skill catalog, workflows |
-| `/#/tools` | **Sole hub** — 5 cards: Handbook · Quant · Paper (export chip) · Sim · News hub |
+| `/#/tools` | Hub — Handbook · Quant · Paper · Sim · News · **Fin Desk** |
+| `/#/fin` | Fin Desk AIaaS (login + gold) — smart screen / factors / strategy / review |
+| `/#/login` · `/#/account` | Auth + gold balance / redeem |
 | `/#/news` | AI · filings · Iwencai on one page (`?section=ai|filings|iwencai`) |
 | `/#/quant` | Factor Studio · Committee · screens→Paper · Strategy Lab (`?panel=…`) |
 | `/#/paper` | Paper Pro — brackets · risk pack · Sim reconcile · TWAP/VWAP (`?panel=…`) |
@@ -46,10 +48,12 @@ This README is the **canonical English build brief**.
 | Sim Desk | `#/sim` distill of SkillHub「模拟炒股」; `agenter.sim.ledger.v1`; ¥100M; lot 100; T+1; quotes from baked `latest.json` |
 | Fill rule | Paper: signal `t` → fill **`t+1` open**. Sim: editable limit @ last close |
 | Locales | **zh** + **en** |
-| Stack | Vite + TS SPA; `quant:bake` + `news:bake` + `announcements:bake` + `iwencai-news:bake` + `indices:bake` + `screens:bake`; GitHub Pages |
-| Quant scope | **15** patterns (5 legacy + 10 additive) · **≥26** symbols floor (indices add-only) · multi-year OHLC bake with honest `sampleYears` |
-| Compare ratings | Editorial 1–5 stay; Arena/AA overlay additive (`ai-ratings:bake`, fail-open) |
-| DNS | Docs only this round — no cutover |
+| Stack | Vite + TS SPA; Cloudflare Pages + Functions (letus mirror); bake scripts; GitHub Pages secondary mirror |
+| Quant scope | **15** patterns · **≥26** symbols floor (add-only) · multi-year OHLC · Fin Desk AIaaS (login+gold) |
+| Compare ratings | Editorial 1–5 stay; Arena/AA overlay additive |
+| Auth / gold | Supabase Auth + `user_economy`; Fin Desk gated; server token→gold spend |
+| Domain | **agenter.si** on Cloudflare Pages (cutover this round); `public/CNAME` |
+| DNS | Execute CF custom domain for apex/www |
 
 ---
 
@@ -67,15 +71,22 @@ npm run indices:bake         # zhishu CLI → public/data/indices.json (Quant st
 npm run screens:bake         # selector CLI → public/data/screens.json (editorial screens)
 npm run factors:ic-bake      # latest.json → factors-ic.json (multi-horizon IC)
 npm run ai-ratings:bake      # Arena/AA fork JSON → ai-ratings.json (fail-open overlay)
-npm run build
+npm run fin-corpus:bake      # announcements/news/review → fin-corpus.json (Fin Desk RAG)
+npm run build                # default base `/` (CF / agenter.si); GH Pages uses VITE_BASE=/Agenter/
 npm run dev
 ```
 
 Bake gate: `ok+stale >= max(8, floor(n/2))`.
 
-Iwencai bake scripts (`announcements` / `iwencai-news` / `indices` / `screens`) need `IWENCAI_API_KEY` in the shell or GitHub Actions secret. Missing key → fail-open and keep the committed JSON. The browser never embeds the key.
+### Deploy
 
-`ai-ratings:bake` pulls published Arena leaderboard JSON (vendored snapshot under `vendor/arena-leaderboards/` or remote raw) and optional AA model JSON; maps via `public/data/ai-rating-aliases.json`. Fail-open keeps last-good `ai-ratings.json`. Editorial `agents.json` / `quant-agents.json` scores are never mutated.
+| Target | Workflow | Notes |
+|--------|----------|-------|
+| Cloudflare Pages `agenter` | `.github/workflows/cloudflare.yml` | Primary for `agenter.si` + Functions |
+| GitHub Pages | `.github/workflows/pages.yml` | Mirror until DNS cut confirmed |
+| Daily bake | `.github/workflows/daily-bake.yml` | Cron refresh `public/data` fail-open |
+
+Apply [`supabase/economy.sql`](supabase/economy.sql) in your Supabase project. Put secrets via `wrangler pages secret put` / Actions (see [`.env.example`](.env.example)).
 
 ---
 
@@ -173,14 +184,15 @@ Multiple testing · lookahead · IS→OOS degradation · cost/liquidity — plus
 
 ---
 
-## Phase 4: Cloudflare DNS (docs only — not this round)
+## Phase 4: Cloudflare DNS + Pages (this round)
 
-Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
-
-1. Cloudflare Pages or GitHub Pages custom domain
-2. DNS CNAME/ALIAS for `agenter.si` / `www`
-3. HTTPS; optional redirect from github.io
-4. For apex on CF Pages, consider Vite `base: '/'` in a follow-up deploy profile
+1. Create Cloudflare Pages project **`agenter`** (matches `wrangler.toml`).
+2. Add custom domains **`agenter.si`** and **`www.agenter.si`** (CNAME/ALIAS to Pages).
+3. Repo ships `public/CNAME` → `agenter.si`.
+4. Put secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `LLM_*`, plus Actions `CF_API_TOKEN` / `CF_ACCOUNT_ID` / `VITE_SUPABASE_*` (see `.env.example`).
+5. Apply [`supabase/economy.sql`](supabase/economy.sql) in Supabase SQL editor.
+6. Deploy via `.github/workflows/cloudflare.yml` on `main`.
+7. Keep GitHub Pages workflow as fail-open mirror until apex cutover verified.
 
 ---
 
@@ -190,15 +202,15 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 - Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings), `quant-backtest-review` (tear-sheet R/Y/G)
 - Interactive agents: see root **`Skills.md`** (Iwencai OpenAPI skills + nine methodology packages under `skills/`: K线形态识别, 执行模型, factor/ML/stats frameworks, etc.).
 - Site distill: 15 patterns · Factor Board · ADF strip · recipe cards · √-impact costs — agents keep full SkillHub workflows.
-- Site: bake-time JSON only (`latest.json`, `pattern-stats.json`, `etf-meta.json`, `ai-ratings.json`, `announcements.json`, `iwencai-news.json`, `indices.json`, `screens.json`, `factors-ic.json`, `cn-calendar.json`). **`#/news`** shows RSS AI news + announcements + Iwencai finance news. **`#/quant`** shows index snapshot + Macro timing + Rotation Lab + enriched Daily Review + six editorial screens (Promote→Paper) + multi-horizon IC. **`#/compare`** shows editorial scores plus Arena/AA live overlay. **`#/sim`** is a local distill of SkillHub 模拟炒股. Agents use vendored CLIs; the browser never embeds broker SDKs or `IWENCAI_API_KEY`. Owner must set Actions `IWENCAI_API_KEY` manually for fresher Iwencai bakes.
+- Site: bake-time JSON (`latest.json`, `pattern-stats.json`, `etf-meta.json`, `ai-ratings.json`, `fin-corpus.json`, …). **`#/fin`** is login+gold Fin Desk AIaaS. **`#/quant`** Macro/Rotation/Review + screens. Agents use vendored CLIs; browser never embeds broker SDKs or `IWENCAI_API_KEY`. Owner sets Actions/CF secrets for fresher bakes and Fin Desk LLM.
 
 ---
 
 ## NOT this round
 
-- Broker / 同花顺 **live browser** API · DNS cutover · Computer Use QA · removing zh or brand home · HK/US/crypto · mandatory Supabase · inventing greenfield leaderboard scrapers (use forked/published JSON only) · replacing editorial Compare scores · putting 日报 on brand-home hero
+- Broker / 同花顺 **live browser** API · Computer Use QA · removing zh or brand home · HK/US/crypto · Soft Soft · inventing greenfield leaderboard scrapers · replacing editorial Compare scores · putting 日报/Fin Desk on brand-home hero · Fin-R1/FinCast **weight training** · L4 autonomous live trading
 
-Bake-time + agent CLI for Iwencai skills is allowed; browser-side Iwencai / THS trade calls remain forbidden.
+Bake-time + agent CLI for Iwencai skills is allowed; browser-side Iwencai / THS trade calls remain forbidden. Supabase is required for Fin Desk (public Quant tools remain anonymous).
 
 ---
 

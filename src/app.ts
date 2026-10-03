@@ -18,10 +18,14 @@ import { cleanupPaperPage, renderPaper } from "./pages/paper";
 import { cleanupQuantPage, renderQuant, type RecipesPayload } from "./pages/quant";
 import { cleanupSimPage, renderSim } from "./pages/sim";
 import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
+import { renderLogin } from "./pages/login";
+import { renderAccount } from "./pages/account";
+import { renderFinDesk } from "./pages/fin";
 import type { LatestPayload } from "./pages/types";
 import type { FactorsPayload } from "./lib/factors/cross-section";
 import type { FactorsIcPayload } from "./lib/factors/ic";
 import type { CnCalendarPayload } from "./lib/paper/calendar";
+import { requiresAuth, isLoggedIn } from "./lib/auth/session";
 
 let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
@@ -48,7 +52,10 @@ type Route =
   | { page: "quant" }
   | { page: "paper" }
   | { page: "sim" }
-  | { page: "asset"; symbol: string };
+  | { page: "asset"; symbol: string }
+  | { page: "login" }
+  | { page: "account" }
+  | { page: "fin" };
 
 async function loadQuantData(): Promise<void> {
   try {
@@ -210,6 +217,9 @@ function parseRoute(): Route {
   if (path === "/quant") return { page: "quant" };
   if (path === "/paper") return { page: "paper" };
   if (path === "/sim") return { page: "sim" };
+  if (path === "/login") return { page: "login" };
+  if (path === "/account") return { page: "account" };
+  if (path === "/fin") return { page: "fin" };
   const asset = path.match(/^\/asset\/(.+)$/);
   if (asset) return { page: "asset", symbol: decodeURIComponent(asset[1]) };
   return { page: "home" };
@@ -240,11 +250,30 @@ async function render(): Promise<void> {
   root.classList.add("route-enter");
 
   const route = parseRoute();
+  if (requiresAuth(route.page) && !isLoggedIn()) {
+    location.hash = `#/login`;
+    return;
+  }
 
   try {
     switch (route.page) {
       case "home":
         renderBrandHome(root, locale);
+        break;
+      case "login":
+        renderLogin(root, locale);
+        break;
+      case "account":
+        renderAccount(root, locale);
+        break;
+      case "fin":
+        renderFinDesk(
+          root,
+          locale,
+          quantData,
+          screensData,
+          factorsIcData,
+        );
         break;
       case "compare": {
         const agents = await loadAgents();

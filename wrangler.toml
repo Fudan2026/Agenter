@@ -1,0 +1,9 @@
+# Cloudflare Pages — production project `agenter` (https://agenter.si)
+# Deploy: .github/workflows/cloudflare.yml → wrangler pages deploy
+#
+# NOTE: Do NOT add Workers-style [assets] while this is a Pages project.
+# SPA fallback: public/_redirects
+
+name = "agenter"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-11-01"

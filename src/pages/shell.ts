@@ -1,5 +1,6 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
+import { isLoggedIn, loadSession } from "../lib/auth/session";
 import { esc } from "../lib/util/esc";
 
 export type RouteName =
@@ -12,9 +13,19 @@ export type RouteName =
   | "quant"
   | "paper"
   | "sim"
-  | "asset";
+  | "asset"
+  | "login"
+  | "account"
+  | "fin";
 
-const TOOLS_SUBROUTES: RouteName[] = ["quant", "paper", "sim", "asset", "news"];
+const TOOLS_SUBROUTES: RouteName[] = [
+  "quant",
+  "paper",
+  "sim",
+  "asset",
+  "news",
+  "fin",
+];
 
 export function renderShell(
   locale: Locale,
@@ -31,6 +42,11 @@ export function renderShell(
   ];
 
   const brandSub = opts?.subtitle;
+  const session = loadSession();
+  const authChip = isLoggedIn()
+    ? `<a class="nav-link auth-chip" href="#/account">${esc(session?.user.email || t(locale, "accountTitle"))}</a>
+       <a class="nav-link" href="#/fin">${esc(t(locale, "finDeskTitle"))}</a>`
+    : `<a class="nav-link auth-chip" href="#/login">${esc(t(locale, "loginTitle"))}</a>`;
 
   return `
     <header class="site-header">
@@ -49,6 +65,7 @@ export function renderShell(
               return `<a class="nav-link ${cls}" href="${n.href}">${esc(t(locale, n.label))}</a>`;
             })
             .join("")}
+          ${authChip}
         </nav>
         <div class="locale-toggle" role="group" aria-label="locale">
           <button type="button" data-locale="zh" class="${locale === "zh" ? "active" : ""}">${esc(t(locale, "localeZh"))}</button>

@@ -1,8 +1,9 @@
 import { defineConfig } from "vite";
 
-// GitHub Pages project site for Fudan2026/Agenter → path /Agenter/
+// Cloudflare Pages / agenter.si uses base "/".
+// GitHub Pages project site can override: VITE_BASE=/Agenter/
 export default defineConfig({
-  base: "/Agenter/",
+  base: process.env.VITE_BASE || "/",
   build: {
     outDir: "dist",
     emptyOutDir: true,
