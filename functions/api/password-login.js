@@ -1,20 +1,18 @@
 /**
- * Same-origin password login → GoTrue password grant (shared Letus project).
+ * Same-origin password login → GoTrue password grant (Supro project).
  * POST { email, password }
- * → { ok, access_token, refresh_token, user, gate: "password-login" }
+ * Does NOT auto-confirm emails — user must click confirm link first.
  */
 
 import { json } from "../_shared/http.js";
 import {
   anonKey,
-  serviceKey,
   supabaseAuthConfigured,
+  supabaseUrl,
 } from "../_shared/supabase.js";
 import { rateLimit } from "../_shared/rateLimit.js";
 
 const GATE = "password-login";
-/** Shared Letus / Supro Auth host — never trust a mangled SUPABASE_URL */
-const GOTRUE_HOST = "https://jrnabzfvdcmcoxyadmax.supabase.co";
 
 function withGate(payload) {
   return { ...payload, gate: GATE };
@@ -22,7 +20,8 @@ function withGate(payload) {
 
 async function passwordGrant(env, email, password) {
   const key = anonKey(env);
-  const res = await fetch(`${GOTRUE_HOST}/auth/v1/token?grant_type=password`, {
+  const host = supabaseUrl(env);
+  const res = await fetch(`${host}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -64,45 +63,6 @@ function grantOk(body, extra = {}) {
     user: body.user,
     ...extra,
   });
-}
-
-async function findUserIdByEmail(env, email) {
-  const key = serviceKey(env);
-  if (!key) return null;
-  const res = await fetch(
-    `${GOTRUE_HOST}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
-    {
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-      },
-    },
-  );
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) return null;
-  const users = Array.isArray(data?.users) ? data.users : [];
-  const match = users.find(
-    (u) => String(u?.email || "").toLowerCase() === email.toLowerCase(),
-  );
-  return match?.id || users[0]?.id || null;
-}
-
-async function autoConfirmEmail(env, userId) {
-  const key = serviceKey(env);
-  if (!key || !userId) return false;
-  const res = await fetch(
-    `${GOTRUE_HOST}/auth/v1/admin/users/${encodeURIComponent(userId)}`,
-    {
-      method: "PUT",
-      headers: {
-        apikey: key,
-        Authorization: `Bearer ${key}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ email_confirm: true }),
-    },
-  );
-  return res.ok;
 }
 
 export async function onRequestPost({ request, env }) {
@@ -162,24 +122,15 @@ export async function onRequestPost({ request, env }) {
 
     const err = grantError(first.body, first.status);
     const code = String(err.code || "").toLowerCase();
-
-    if (code === "email_not_confirmed" && serviceKey(env)) {
-      const userId =
-        first.body?.user?.id || (await findUserIdByEmail(env, email));
-      if (userId) {
-        const confirmed = await autoConfirmEmail(env, userId);
-        if (confirmed) {
-          const second = await passwordGrant(env, email, password);
-          if (
-            second.ok &&
-            second.body?.access_token &&
-            second.body?.refresh_token &&
-            second.body?.user?.id
-          ) {
-            return json(grantOk(second.body, { auto_confirmed: true }));
-          }
-        }
-      }
+    if (code === "email_not_confirmed") {
+      return json(
+        withGate({
+          ok: false,
+          code: "email_not_confirmed",
+          error: "email_not_confirmed",
+        }),
+        403,
+      );
     }
 
     const status =

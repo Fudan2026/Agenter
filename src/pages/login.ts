@@ -1,7 +1,6 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import { passwordLogin, signUp } from "../lib/auth/session";
-import { GOLD_PER_USD, MIN_GOLD_FLOOR } from "../lib/auth/config";
 import { esc } from "../lib/util/esc";
 import { bindShellChrome, renderShell } from "./shell";
 
@@ -13,8 +12,19 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
   let mode: "login" | "signup" = "login";
   let flash = "";
   let flashKind: "error" | "ok" = "error";
+  let pendingEmail = "";
 
   const paint = (): void => {
+    const confirmPanel =
+      flashKind === "ok" && flash
+        ? `<aside class="confirm-panel notice notice-ok" role="status">
+            <p><strong>${esc(t(locale, "signupNeedsConfirm"))}</strong></p>
+            ${pendingEmail ? `<p class="muted tiny">${esc(pendingEmail)}</p>` : ""}
+          </aside>`
+        : flash
+          ? `<p class="notice ${flashKind === "error" ? "notice-error" : "notice-ok"}" role="alert">${esc(flash)}</p>`
+          : "";
+
     const body = `
       <section class="auth-page">
         <h1 class="type-heading-m">${esc(t(locale, "loginTitle"))}</h1>
@@ -24,8 +34,15 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
           <button type="button" class="auth-tab ${mode === "login" ? "active" : ""}" data-mode="login" role="tab" aria-selected="${mode === "login"}">${esc(t(locale, "loginSubmit"))}</button>
           <button type="button" class="auth-tab ${mode === "signup" ? "active" : ""}" data-mode="signup" role="tab" aria-selected="${mode === "signup"}">${esc(t(locale, "signupSubmit"))}</button>
         </div>
-        ${flash ? `<p class="notice ${flashKind === "error" ? "notice-error" : "notice-ok"}" role="alert">${esc(flash)}</p>` : ""}
+        ${confirmPanel}
         <form class="auth-form composer-card" id="auth-form" novalidate>
+          ${
+            mode === "signup"
+              ? `<label>${esc(t(locale, "loginNickname"))}
+            <input type="text" id="auth-nickname" maxlength="64" autocomplete="nickname"/>
+          </label>`
+              : ""
+          }
           <label>${esc(t(locale, "loginEmail"))}
             <input type="email" id="auth-email" required autocomplete="username" inputmode="email"/>
           </label>
@@ -58,6 +75,7 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
       el.addEventListener("click", () => {
         mode = (el as HTMLElement).dataset.mode === "signup" ? "signup" : "login";
         flash = "";
+        flashKind = "error";
         paint();
       });
     });
@@ -86,7 +104,11 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
       if (mode === "login") {
         const r = await passwordLogin(email, password);
         if (!r.ok) {
-          flash = r.error;
+          const code = String(r.code || r.error || "").toLowerCase();
+          flash =
+            code.includes("email_not_confirmed")
+              ? t(locale, "loginEmailNotConfirmed")
+              : r.error;
           paint();
           return;
         }
@@ -102,14 +124,18 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
         paint();
         return;
       }
+      const nickname = (
+        root.querySelector("#auth-nickname") as HTMLInputElement | null
+      )?.value.trim();
 
-      const r = await signUp(email, password);
+      const r = await signUp(email, password, nickname || undefined);
       if (!r.ok) {
         flash = r.error;
         paint();
         return;
       }
       if (r.needsConfirm && !r.session) {
+        pendingEmail = email;
         flash = t(locale, "signupNeedsConfirm");
         flashKind = "ok";
         mode = "login";
@@ -120,7 +146,5 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
     });
   };
 
-  void GOLD_PER_USD;
-  void MIN_GOLD_FLOOR;
   paint();
 }

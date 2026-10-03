@@ -1,4 +1,4 @@
-/** Economy client helpers — shared Letus hard gold (GOLD_PER_USD = 100). */
+/** Economy client helpers — Supro hard gold (GOLD_PER_USD = 100). */
 
 import { accessToken, isLoggedIn } from "./session";
 import { GOLD_PER_USD, MIN_GOLD_FLOOR } from "./config";
@@ -12,7 +12,9 @@ export type FinMode =
   | "review"
   | "multifactor"
   | "e2e"
-  | "transformer";
+  | "transformer"
+  | "report"
+  | "allocate";
 
 export interface EconomyBalance {
   gold: number;
