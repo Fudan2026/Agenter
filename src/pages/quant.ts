@@ -19,6 +19,11 @@ import {
   type StrategyParams,
 } from "../lib/backtest/params";
 import {
+  QUANT_PANEL_IDS,
+  readHashQuery,
+  scrollToId,
+} from "../lib/nav/hash-query";
+import {
   rankCommittee,
   ROLE_LABELS,
   type CommitteeResult,
@@ -212,7 +217,7 @@ function renderFilingsStub(
   announcements: AnnouncementsPayload | null,
 ): string {
   const items = announcements?.items ?? [];
-  return `<section class="filings-stub">
+  return `<section class="filings-stub" id="quant-filings">
     <h2>${esc(t(locale, "filingsStub"))}</h2>
     <p class="muted tiny">${esc(t(locale, "filingsStubLead"))} · ${esc(fmtIsoSlice(announcements?.generatedAt))} · ${esc(t(locale, "iwencaiSource"))}</p>
     ${renderEventBucketCounts(locale, items)}
@@ -226,7 +231,7 @@ function renderIcPanel(
 ): string {
   if (!ic?.rows?.length) return "";
   const attr = locale === "zh" ? ic.attribution.zh : ic.attribution.en;
-  return `<section class="ic-panel">
+  return `<section class="ic-panel" id="quant-ic">
     <h2>${esc(t(locale, "icPanel"))}</h2>
     <p class="muted tiny">${esc(t(locale, "icPanelLead"))}</p>
     <p class="muted tiny">${esc(attr)} · horizon ${ic.horizonBars}d · ${esc(fmtIsoSlice(ic.generatedAt))}</p>
@@ -371,7 +376,7 @@ function renderFactorStudio(
     return t(locale, "pbProxy");
   };
   const topOpts = Array.from({ length: 11 }, (_, i) => i + 5);
-  return `<section class="factor-board-panel factor-studio-panel">
+  return `<section class="factor-board-panel factor-studio-panel" id="quant-studio">
     <h2>${esc(t(locale, "factorStudio"))}</h2>
     <p class="muted tiny">${esc(t(locale, "factorStudioLead"))}</p>
     <p class="muted tiny">${esc(attr)}</p>
@@ -466,13 +471,13 @@ function renderCommitteeDesk(
   results: CommitteeResult[],
 ): string {
   if (!results.length) {
-    return `<section class="committee-desk-panel">
+    return `<section class="committee-desk-panel" id="quant-committee">
       <h2>${esc(t(locale, "committeeDesk"))}</h2>
       <p class="muted tiny">${esc(t(locale, "committeeDeskLead"))}</p>
       <p class="muted">${esc(t(locale, "committeeEmpty"))}</p>
     </section>`;
   }
-  return `<section class="committee-desk-panel">
+  return `<section class="committee-desk-panel" id="quant-committee">
     <h2>${esc(t(locale, "committeeDesk"))}</h2>
     <p class="muted tiny">${esc(t(locale, "committeeDeskLead"))}</p>
     <div class="cta-row wrap">
@@ -651,7 +656,7 @@ function renderScreensPanel(
   screens: ScreensPayload | null,
 ): string {
   const panels = screens?.screens ?? [];
-  return `<section class="screens-panel">
+  return `<section class="screens-panel" id="quant-screens">
     <h2>${esc(t(locale, "screensTitle"))}</h2>
     <p class="muted tiny">${esc(t(locale, "screensLead"))}</p>
     <p class="muted tiny">${esc(screens?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "iwencaiSource"))}</p>
@@ -903,6 +908,9 @@ export function renderQuant(
   const stale = isStaleVsReport(data);
 
   const parsedLab = parseLabParams(location.hash);
+  const panelTarget =
+    QUANT_PANEL_IDS[readHashQuery().get("panel") ?? ""] ?? "";
+  let scrolledPanel = false;
   let biasFilter: "all" | "bull" | "bear" | "neutral" = "all";
   let sortKey: "confluence" | "rsi" | "bias" = "confluence";
   let labStrategy: StrategyId =
@@ -1083,7 +1091,7 @@ export function renderQuant(
         <ul>${bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
       </section>
 
-      <section class="strategy-lab">
+      <section class="strategy-lab" id="quant-lab">
         <h2>${esc(t(locale, "strategyLab"))}</h2>
         <p class="muted tiny">signal t close → fill t+1 open · long-only · 60/40 walk-forward · ${esc(t(locale, "slipNote"))}</p>
         <div class="lab-controls cta-row wrap">
@@ -1141,7 +1149,7 @@ export function renderQuant(
         <div class="chart-shell equity-shell"><div id="lab-chart" class="chart equity-chart"></div></div>
       </section>
 
-      <section class="signal-board">
+      <section class="signal-board" id="quant-signals">
         <h2>${esc(t(locale, "signalBoard"))}</h2>
         <div class="filter-bar cta-row wrap">
           <label>${esc(t(locale, "filterBias"))}
@@ -1609,6 +1617,11 @@ export function renderQuant(
       a.click();
       URL.revokeObjectURL(url);
     });
+
+    if (panelTarget && !scrolledPanel) {
+      scrolledPanel = true;
+      scrollToId(panelTarget);
+    }
   };
 
   paint();

@@ -108,13 +108,19 @@ export const STRINGS = {
     toolQuant: "量化复盘",
     toolQuantDesc: "烘焙 K 线、形态与指标信号。",
     toolPaper: "纸盘交易",
-    toolPaperDesc: "虚拟资金、持仓、日记；本机 localStorage。",
+    toolPaperDesc:
+      "虚拟资金、持仓、日记；本机 localStorage。含券商清单导出（CSV/JSON，次日开盘措辞）。",
     toolSim: "模拟炒股台",
-    toolSimDesc: "SkillHub 模拟炒股 distill：开户、委托、持仓、当日成交（本地 ¥1 亿）。",
+    toolSimDesc:
+      "SkillHub 模拟炒股 distill：开户、委托、持仓、当日成交（本地 ¥1 亿）；可交接纸盘练习。",
     toolExport: "券商清单导出",
     toolExportDesc: "CSV/JSON 人工核对清单（次日开盘措辞）。",
-    toolNews: "AI 动态",
-    toolNewsDesc: "烘焙/静态 AI 资讯摘要。",
+    toolNews: "动态汇总",
+    toolNewsDesc: "AI 动态 · 公告 · 问财资讯合一页；可用分区深链直达。",
+    toolNewsChipAi: "AI 动态",
+    toolNewsChipFilings: "公告",
+    toolNewsChipIwencai: "问财",
+    toolPaperExportChip: "导出清单",
     paperTitle: "纸盘交易台",
     paperLead:
       "信号日 t → 成交价取 t+1 开盘（无则标注收盘回退）。起点 壹亿 CNY；默认信号日=有次日的最近K线，成交 t+1 开盘；权益按持仓盯市。往返约 3 bps，手数 100。",
@@ -536,14 +542,20 @@ export const STRINGS = {
     toolQuant: "Quant review",
     toolQuantDesc: "Baked OHLC, patterns, and indicator signals.",
     toolPaper: "Paper desk",
-    toolPaperDesc: "Virtual cash, positions, journal in localStorage.",
+    toolPaperDesc:
+      "Virtual cash, positions, journal in localStorage. Includes broker checklist export (CSV/JSON, next-open wording).",
     toolSim: "Sim Desk",
     toolSimDesc:
-      "SkillHub 模拟炒股 distill: open account, orders, positions, today’s fills (local ¥100M).",
+      "SkillHub 模拟炒股 distill: open account, orders, positions, today’s fills (local ¥100M); handoff to Paper practice.",
     toolExport: "Broker checklist export",
     toolExportDesc: "CSV/JSON human checklist (next-open wording).",
-    toolNews: "AI news",
-    toolNewsDesc: "Baked / static AI digest.",
+    toolNews: "News hub",
+    toolNewsDesc:
+      "AI digest · filings · Iwencai news on one page; section deep-links available.",
+    toolNewsChipAi: "AI news",
+    toolNewsChipFilings: "Filings",
+    toolNewsChipIwencai: "Iwencai",
+    toolPaperExportChip: "Export checklist",
     paperTitle: "Paper desk",
     paperLead:
       "Signal bar t → fill at t+1 open (else labeled close fallback). Start 100,000,000 CNY; default signal = latest bar with a next session (t+1 open); equity is mark-to-market. ~3 bps RT, lots of 100.",

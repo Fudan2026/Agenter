@@ -332,7 +332,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Quant review: baked OHLC, 15 patterns, signal board, daily review, Factor Board, index strip, Iwencai screens, ADF strip, recipe cards, and Strategy Lab. Patterns/signals use historical OHLC only (no lookahead). Jump from a signal into Paper.",
     },
     deepLinks: [
-      { href: "#/quant", label: { zh: "打开量化", en: "Open Quant" } },
+      { href: "#/quant?panel=signals", label: { zh: "打开量化", en: "Open Quant" } },
     ],
     skills: [
       "candlestick",
@@ -356,7 +356,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Paper: signal bar t → default fill at t+1 open; start ¥100M; lots of 100; ~3 bps RT. Journal in localStorage. Export broker checklists (CSV/JSON) with NEXT OPEN wording. This site never submits orders.",
     },
     deepLinks: [
-      { href: "#/paper", label: { zh: "打开纸盘", en: "Open Paper" } },
+      { href: "#/paper?panel=ticket", label: { zh: "打开纸盘", en: "Open Paper" } },
     ],
     skills: ["execution-model"],
   },
@@ -426,7 +426,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
     },
     deepLinks: [
       { href: "#/compare", label: { zh: "对比", en: "Compare" } },
-      { href: "#/quant", label: { zh: "量化", en: "Quant" } },
+      { href: "#/quant?panel=signals", label: { zh: "量化", en: "Quant" } },
       { href: "#/paper", label: { zh: "纸盘", en: "Paper" } },
       { href: "#/sim", label: { zh: "模拟", en: "Sim" } },
     ],
@@ -459,7 +459,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "1. Open the Factor Board; confirm scores are OHLC proxies — not live fundamentals.\n2. Check the ADF strip; open a top composite name and verify patterns/signals.\n3. In Strategy Lab, pick a rule/recipe; toggle fixed vs √-impact slippage and note costs.\n4. Send gated backtest fills to Paper, then export the checklist.",
     },
     deepLinks: [
-      { href: "#/quant", label: { zh: "量化 / Lab", en: "Quant / Lab" } },
+      { href: "#/quant?panel=lab", label: { zh: "量化 / Lab", en: "Quant / Lab" } },
       { href: "#/paper", label: { zh: "纸盘", en: "Paper" } },
     ],
     skills: [
@@ -496,8 +496,8 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "This lesson turns casual chart browsing into a repeatable quant habit. The goal is not overnight hedge-fund status — it is three auditable loops: pick tools (Agent) → read signals (Quant) → practice fills and export (Paper).\n\n**Step 1: Choose tools on Compare, not myths.** Open `#/compare`, filter by scenario (coding / CN access / privacy / **Quant / AI-finance**). The Quant preset raises research orchestration, factor tooling, memory/reflection, risk controls, and backtest rigor; missing dims are skipped so coding and quant agents can share a matrix without empty-score penalties. Scores are editorial heuristics — not live Sharpe.\n\n**Step 2: On Quant, only trust evidence that already happened.** Signal board, patterns, Factor Board, and filing buckets come from bake JSON. Ask: which bar date is this signal? Did pattern detection peek ahead? Are event buckets keyword rules or LLM? Answers should be: historical bars, no lookahead, keyword rules.\n\n**Step 3: Paper enforces signal bar t → fill at t+1 open.** Start ¥100M; lots of 100; ~3 bps RT. Checklist export must say NEXT OPEN — this site never submits. Using the same-bar close as a fill practices lookahead, not an executable workflow.\n\n**Homework:** Finish Learn scenarios 12–15; apply the Quant preset and copy a shortlist link; open one Asset and check filing buckets; place one Paper buy and export CSV. Keep the trio (link / notes / CSV) as your personal academy packet.",
     },
     deepLinks: [
-      { href: "#/compare", label: { zh: "对比 · 量化预设", en: "Compare · Quant preset" } },
-      { href: "#/quant", label: { zh: "量化复盘", en: "Quant review" } },
+      { href: "#/compare?preset=quant", label: { zh: "对比 · 量化预设", en: "Compare · Quant preset" } },
+      { href: "#/quant?panel=signals", label: { zh: "量化复盘", en: "Quant review" } },
       { href: "#/paper", label: { zh: "纸盘", en: "Paper" } },
       { href: "#/learn", label: { zh: "入门场景 12", en: "Learn scenario 12" } },
     ],
@@ -514,7 +514,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "No-lookahead is the rule retail quants agree with in speech and break in code. Short definition: **at decision time t, the algorithm may use only information ≤ t; if fills or evaluation assume prices after t, that must be labeled explicitly or rewritten as an executable rule.**\n\n**Patterns and indicators.** Agenter candlestick patterns and MAs scan historical candles only; the hit date is when the pattern completes — not a post-hoc label after a rally. Using future 5-day returns to cherry-pick pattern definitions is in-sample mining, not a strategy.\n\n**Fill assumptions.** Paper and Lab default: target position from signal bar t fills at **t+1 open** when a next bar exists; otherwise a labeled close fallback. That is not “more accurate” — it mirrors a human checklist at NEXT OPEN. Turning costs off or filling on the same-bar close is a controlled contrast, not actionable practice.\n\n**Backtest honesty.** Haircut Sharpe, survivor-universe banners, and IS/OOS splits remind you the curve is already selected. No-lookahead fixes information leakage; it does not fix overfitting, ignored costs, or post-publication decay.\n\n**Checklist:** (1) Features only ≤ t? (2) Fill price after t with a fixed rule? (3) Labels/returns leaking into features? (4) Checklist still says NEXT OPEN? Pass all four to clear this lesson.",
     },
     deepLinks: [
-      { href: "#/quant", label: { zh: "量化 · 形态/Lab", en: "Quant · patterns/Lab" } },
+      { href: "#/quant?panel=lab", label: { zh: "量化 · 形态/Lab", en: "Quant · patterns/Lab" } },
       { href: "#/paper", label: { zh: "纸盘成交规则", en: "Paper fill rules" } },
       { href: "#/learn", label: { zh: "入门场景 13", en: "Learn scenario 13" } },
     ],
@@ -531,8 +531,8 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Separate three ideas: **economic story, computable proxy, out-of-sample honesty.** Site momentum / low-vol / ADV / quality scores are OHLC proxies — not live PE/PB or classic book-to-market; HML-proxy is labeled as a 12−1 reversal proxy so demo scores are not mistaken for academic replicas.\n\n**IC / IR panel.** Cross-section IC mean and IR ask how stable the proxy–forward-return link was on this bake. Quantile returns show layers, not a live book. High IC ≠ “profits next week” — fixed universe, survivorship, and incomplete costs make the numbers an educational distill.\n\n**McLean-style caution.** Predictability often decays after publication as crowded trades thin alpha. Haircut Sharpe, OOS splits, and disclosure copy push you to ask about decay and costs before leverage.\n\n**Link to Compare / Paper.** Compare’s factor/alpha tooling dimension rates whether an agent orchestrates factor research — not the site factor scores themselves. Paper batch sizing only practices TopN → checklist export; it is not advice.\n\n**Drill:** Open Factor Board + IC; write one sentence on what the score proxies and which live fundamentals are missing; in Lab compare fixed bps vs √-impact costs.",
     },
     deepLinks: [
-      { href: "#/quant", label: { zh: "因子看板 / IC", en: "Factor Board / IC" } },
-      { href: "#/compare", label: { zh: "对比 · 因子维度", en: "Compare · factor dims" } },
+      { href: "#/quant?panel=ic", label: { zh: "因子看板 / IC", en: "Factor Board / IC" } },
+      { href: "#/compare?preset=quant", label: { zh: "对比 · 因子维度", en: "Compare · factor dims" } },
       { href: "#/paper", label: { zh: "纸盘批量练习", en: "Paper batch practice" } },
       { href: "#/learn", label: { zh: "入门场景 14", en: "Learn scenario 14" } },
     ],
@@ -555,8 +555,8 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "“Multi-agent committee” is a common camp AI-track story: fundamentals, sentiment, technicals, news/filings, risk, and portfolio roles debate toward consensus. Agenter now ships **Committee Desk** on Quant: six-role bake-only votes, no browser LLM calls.\n\n**What they solve.** They split one-shot answers into checkable evidence buckets (filings, pattern bias, factor exposure, risk gates, Iwencai news hits). Stacks like TradingAgents / FinRobot / FinMem stress roles, memory, and tools — Compare scores those editorially.\n\n**What they do not solve.** No live LLM broker orders; bake votes are not real IC minutes. Without no-lookahead and costs, more roles are still a story. FinCast / TSFM / AlphaFormer remain **frontier literacy** — not in-browser weight inference.\n\n**Drill:** Open `#/quant` Committee Desk; read Top8 role scores + consensus; Promote only bullish consensus → Paper checklist/JSON. Pass when you can say: consensus ≠ permission to trade.",
     },
     deepLinks: [
-      { href: "#/compare", label: { zh: "对比量化 Agent", en: "Compare quant agents" } },
-      { href: "#/quant", label: { zh: "委员会桌", en: "Committee Desk" } },
+      { href: "#/compare?preset=quant", label: { zh: "对比量化 Agent", en: "Compare quant agents" } },
+      { href: "#/quant?panel=committee", label: { zh: "委员会桌", en: "Committee Desk" } },
       { href: "#/handbook", label: { zh: "手册目录", en: "Handbook TOC" } },
       { href: "#/learn", label: { zh: "入门场景 15", en: "Learn scenario 15" } },
     ],
@@ -574,7 +574,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
     },
     deepLinks: [
       { href: "#/paper", label: { zh: "纸盘", en: "Paper" } },
-      { href: "#/quant", label: { zh: "量化 · 清单/委员会", en: "Quant · checklist/committee" } },
+      { href: "#/quant?panel=committee", label: { zh: "量化 · 清单/委员会", en: "Quant · checklist/committee" } },
       { href: "#/learn", label: { zh: "入门场景 16", en: "Learn scenario 16" } },
     ],
     skills: ["execution-model", "sim-trading", "strategy-generate"],
@@ -590,7 +590,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Compare’s Quant category and Quant / AI-finance preset are the camp AI-track tool-selection entry. Editorial dims include research orchestration, factor/alpha tooling, memory/reflection, risk controls, backtest rigor, plus shared CN access, cost, and learning curve. **Missing dims are skipped**, so coding and quant agents can share one matrix.\n\n**How to read a catalog row.** TradingAgents / FinRobot stress multi-role collab; FinGPT / FinMem stress finance corpora and memory; QFinZero / R&D-Agent-Quant lean research→backtest loops; Fin-R1 / LightAgent / Fin Manus appear as SUFE-ecosystem reference tags — no fake scores without public evidence.\n\n**Division of labor.** Compare answers “which agent helps you research”; Quant answers “what signals/factors/committee look like on a fixed bake universe”; Paper answers “how to practice exportable fills.” None replaces the others.\n\n**Homework:** Apply the Quant preset; side-by-side ≥3 agents; write one sentence each on who you’d use for factor research vs backtest audit; save the shortlist link.",
     },
     deepLinks: [
-      { href: "#/compare", label: { zh: "对比 · 量化预设", en: "Compare · Quant preset" } },
+      { href: "#/compare?preset=quant", label: { zh: "对比 · 量化预设", en: "Compare · Quant preset" } },
       { href: "#/handbook", label: { zh: "委员会识字", en: "Committee literacy" } },
       { href: "#/learn", label: { zh: "入门场景 15", en: "Learn scenario 15" } },
     ],
@@ -607,7 +607,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Camp themes and papers (Das 2024 TSFM, Zhu 2025 FinCast, Faw 2025 in-context FT, …) discuss **time-series foundation models and finance transfer learning**: pretrain on large sequences, then adapt to downstream forecast/classification. That is not the same as “run full FinCast weights in the browser.”\n\n**Site boundary.** Agenter is a static SPA + bake JSON. Factors, IC, patterns, and committee votes are OHLC / keyword distill. We **do not** load TSFM weights client-side, and we do not pretend site Sharpe comes from foundation-model inference. Compare may tag frontier/research stacks, but scores stay editorial heuristics.\n\n**Three takeaways.** (1) Transfer learning cuts cold-start cost — it does not erase overfitting or trading costs; (2) in-context FT changes the prompt–example protocol, not the physics of no-lookahead; (3) when a paper curve looks great, ask OOS splits, costs, and post-publication decay before leverage.\n\n**Homework:** After this lesson, open Factor Studio and Lab; point to one proxy score and one data need a real foundation model would require that this site lacks (e.g. tick LOB, full filing time series).",
     },
     deepLinks: [
-      { href: "#/quant", label: { zh: "因子工作室 / Lab", en: "Factor Studio / Lab" } },
+      { href: "#/quant?panel=studio", label: { zh: "因子工作室 / Lab", en: "Factor Studio / Lab" } },
       { href: "#/compare", label: { zh: "对比前沿标签", en: "Compare frontier tags" } },
       { href: "#/learn", label: { zh: "入门场景 17", en: "Learn scenario 17" } },
     ],
@@ -624,8 +624,8 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "McLean & Pontiff (2016) and related work warn that **academic predictability often decays after publication and wide awareness** — crowded trades, data mining, and regime shifts thin alpha. Camp basics on “factors” and advanced/AI tracks on “interpretable alpha” should carry this caution by default.\n\n**How to use it on Agenter.** High IC ≠ next-week profits; haircut Sharpe and OOS splits are the minimum honesty kit; Alpha recipe cards write momentum 12−1 / low-vol / quality-proxy as economic story + decay caution — not guaranteed excess return. Kou 2025 / AlphaFormer-style interpretable discovery is **literacy** here — pretty expressions still face decay and costs.\n\n**Misuse.** All-in on TopN composites; treating committee consensus as trade permission; turning costs off to beautify curves. Correct use: write assumptions and decay risk first, then decide whether to export a human broker checklist.\n\n**Homework:** Pick one Alpha recipe card; write two sentences — economic story vs what happens if the factor is common knowledge; compare to Lab haircut Sharpe.",
     },
     deepLinks: [
-      { href: "#/quant", label: { zh: "Alpha 配方 / IC", en: "Alpha recipes / IC" } },
-      { href: "#/quant", label: { zh: "策略 Lab", en: "Strategy Lab" } },
+      { href: "#/quant?panel=ic", label: { zh: "Alpha 配方 / IC", en: "Alpha recipes / IC" } },
+      { href: "#/quant?panel=lab", label: { zh: "策略 Lab", en: "Strategy Lab" } },
       { href: "#/learn", label: { zh: "入门场景 17", en: "Learn scenario 17" } },
     ],
     skills: ["multi-factor", "factor-research", "quant-statistics"],
@@ -658,7 +658,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Camp basics often start from **mean–variance (Markowitz)** and “all-weather” intuition: return, risk, correlation, and why diversification is not “own many tickers.” This site does not ship a full QP solver, but correlation heatmaps, low-vol factors, portfolio-role votes, and Paper position sizing build **checkable portfolio thinking**.\n\n**Three practical moves.** (1) Read the corr heatmap — high-corr names together are not diversification; (2) low-vol / quality tilts change cross-section exposure, not risk-free arb; (3) Paper sizing by equity percent practices a risk budget — it does not optimize a global efficient frontier.\n\n**Boundary vs frontier lessons.** Markowitz lite does not replace foundation-model forecasts or fix post-publication decay. It asks whether, on a fixed universe, you at least notice risk and correlation.\n\n**Homework:** Open corr heatmap + Factor Studio; pick two high-corr names and one low-corr name; write one sentence on where risk would come from if equally weighted; Paper a 1% equity practice fill.",
     },
     deepLinks: [
-      { href: "#/quant", label: { zh: "相关热力 / 工作室", en: "Corr heatmap / Studio" } },
+      { href: "#/quant?panel=studio", label: { zh: "相关热力 / 工作室", en: "Corr heatmap / Studio" } },
       { href: "#/paper", label: { zh: "纸盘仓位练习", en: "Paper sizing drill" } },
       { href: "#/learn", label: { zh: "入门场景 18", en: "Learn scenario 18" } },
     ],

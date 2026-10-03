@@ -34,7 +34,7 @@ const SCENARIOS: Scenario[] = [
       "Pick 2–3 (e.g. Cursor / Claude Code / Tongyi Lingma).",
       "Raise Coding ability and Tool use weights; watch scores.",
     ],
-    href: "#/compare",
+    href: "#/compare?preset=coding",
   },
   {
     id: "cn-access",
@@ -50,7 +50,7 @@ const SCENARIOS: Scenario[] = [
       "Side-by-side Kimi / DeepSeek / Trae.",
       "Leave with a shortlist — no need for overseas-only picks.",
     ],
-    href: "#/compare",
+    href: "#/compare?preset=cn",
   },
   {
     id: "privacy",
@@ -66,7 +66,7 @@ const SCENARIOS: Scenario[] = [
       "Compare Aider / Continue / OpenClaw / Dify vs cloud products.",
       "Check pricing band and BYOK against your constraints.",
     ],
-    href: "#/compare",
+    href: "#/compare?preset=privacy",
   },
   {
     id: "quant-read",
@@ -82,7 +82,7 @@ const SCENARIOS: Scenario[] = [
       "Read the signal board and daily review.",
       "Open one symbol; confirm patterns/MAs use historical OHLC only.",
     ],
-    href: "#/quant",
+    href: "#/quant?panel=signals",
   },
   {
     id: "paper-drill",
@@ -98,7 +98,7 @@ const SCENARIOS: Scenario[] = [
       "After buy, reload — journal/positions should persist.",
       "Export checklist CSV; verify NEXT OPEN wording.",
     ],
-    href: "#/paper",
+    href: "#/paper?panel=ticket",
   },
   {
     id: "share-compare",
@@ -132,7 +132,7 @@ const SCENARIOS: Scenario[] = [
       "Place one paper order under next-open fill rules.",
       "Full path: Handbook chapter Pick agent → Quant → Paper.",
     ],
-    href: "#/quant",
+    href: "#/quant?panel=signals",
   },
   {
     id: "news-skim",
@@ -150,7 +150,7 @@ const SCENARIOS: Scenario[] = [
       "Return to Compare and apply a preset.",
       "Filings triage depth: Handbook News + announcements chapter.",
     ],
-    href: "#/news",
+    href: "#/news?section=ai",
   },
   {
     id: "ml-recipe",
@@ -166,7 +166,7 @@ const SCENARIOS: Scenario[] = [
       "Read Skills.md / skills/机器学习策略 for sklearn (no browser training).",
       "Compare against Strategy Lab rule fills (no lookahead).",
     ],
-    href: "#/quant",
+    href: "#/quant?panel=lab&lab=ml_lite",
   },
   {
     id: "strategy-gen",
@@ -182,7 +182,7 @@ const SCENARIOS: Scenario[] = [
       "In Lab, toggle fixed vs √-impact slippage; note cost differences.",
       "Send a gated backtest to Paper for practice.",
     ],
-    href: "#/quant",
+    href: "#/quant?panel=lab",
   },
   {
     id: "factor-board",
@@ -200,7 +200,7 @@ const SCENARIOS: Scenario[] = [
       "Open a top composite name; verify patterns and signals.",
       "For Factor Board → Lab → Paper depth, open the Handbook chapter.",
     ],
-    href: "#/quant",
+    href: "#/quant?panel=studio",
   },
   {
     id: "academy-retail",
@@ -248,7 +248,7 @@ const SCENARIOS: Scenario[] = [
       "Open Quant Factor Board + IC panel; confirm OHLC-proxy attribution.",
       "Note the McLean-style post-publication decay caution; check haircut Sharpe in Lab.",
     ],
-    href: "#/quant",
+    href: "#/quant?panel=ic",
   },
   {
     id: "academy-committee-compare",
@@ -264,7 +264,7 @@ const SCENARIOS: Scenario[] = [
       "Open Compare; apply Quant / AI-finance preset; filter category Quant.",
       "Pick 2–4 quant agents; watch research orchestration / backtest rigor weights.",
     ],
-    href: "#/compare",
+    href: "#/compare?preset=quant",
   },
   {
     id: "academy-paper-pro",
@@ -296,7 +296,7 @@ const SCENARIOS: Scenario[] = [
       "Open Quant Alpha recipe cards; note one decay caution.",
       "In Lab, check haircut Sharpe; write “high IC ≠ next-week profits.”",
     ],
-    href: "#/quant",
+    href: "#/quant?panel=lab",
   },
   {
     id: "academy-limits-markowitz",
@@ -313,6 +313,22 @@ const SCENARIOS: Scenario[] = [
       "Open the corr heatmap; explain why one high-corr pair is not diversification.",
     ],
     href: "#/handbook",
+  },
+  {
+    id: "sim-desk",
+    titleZh: "场景 19：模拟炒股台 → 纸盘",
+    titleEn: "Scenario 19: Sim Desk → Paper",
+    stepsZh: [
+      "从工具箱打开模拟炒股台（SkillHub distill，本地账本）。",
+      "开户后下一笔限价练习单，确认持仓与资金变化。",
+      "导出清单或导入纸盘，核对次日开盘规则与对账面板。",
+    ],
+    stepsEn: [
+      "Open Sim Desk from Tools (SkillHub distill, local ledger).",
+      "Open an account and place one limit practice order; confirm cash/positions.",
+      "Export checklist or import into Paper; check next-open rules and reconcile panel.",
+    ],
+    href: "#/sim",
   },
 ];
 

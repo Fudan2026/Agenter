@@ -19,6 +19,7 @@ import {
   saveWeights,
   weightedScore,
 } from "../lib/harness/weights";
+import { readHashQuery } from "../lib/nav/hash-query";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 
@@ -106,14 +107,23 @@ export function renderCompare(
   agents: AgentRecord[],
 ): void {
   const shared = parseCompareShare(location.hash);
+  const presetKey = readHashQuery().get("preset") ?? "";
+  const presetWeights =
+    presetKey && HARNESS_PRESETS[presetKey]
+      ? { ...HARNESS_PRESETS[presetKey] }
+      : null;
   let region: AgentRegion | "all" = "all";
-  let category: AgentCategory | "all" = "all";
+  let category: AgentCategory | "all" =
+    presetKey === "quant" ? "quant" : "all";
   let search = "";
   let pricing = "";
   let toolsQ = "";
   let diffsOnly = false;
   let picks = new Set(shared.ids.length ? shared.ids : loadPicks());
-  let weights = shared.weights ?? loadWeights();
+  let weights = shared.weights ?? presetWeights ?? loadWeights();
+  if (presetWeights && !shared.weights) {
+    saveWeights(weights);
+  }
   let flash = "";
 
   const paint = (): void => {

@@ -45,6 +45,11 @@ import {
   topUpToHundredMillion,
 } from "../lib/paper/journal";
 import { type PaperJournalEntry, type PaperState } from "../lib/paper/types";
+import {
+  PAPER_PANEL_IDS,
+  readHashQuery,
+  scrollToId,
+} from "../lib/nav/hash-query";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 import type { LatestPayload, SymbolRow } from "./types";
@@ -208,12 +213,11 @@ export function renderPaper(
   let execSide: "buy" | "sell" = "buy";
   let playbookTag: PlaybookTag = "manual";
   let blotterFilter = { symbol: "", side: "", source: "" };
-  const hashQ = location.hash.includes("?")
-    ? location.hash.slice(location.hash.indexOf("?") + 1)
-    : "";
-  const params = new URLSearchParams(hashQ);
+  const params = readHashQuery();
   const preselect = params.get("symbol") ?? "";
   const preSignal = params.get("signal") ?? "";
+  const panelTarget = PAPER_PANEL_IDS[params.get("panel") ?? ""] ?? "";
+  let scrolledPanel = false;
   const tradeable = data.symbols.filter(
     (s) => s.dataStatus !== "missing" && s.candles.length >= 2,
   );
@@ -539,6 +543,15 @@ export function renderPaper(
         survivorUniverse: true,
       })}
 
+      <section class="reconcile-panel muted tiny" id="ws-reconcile">
+        <h2>${esc(locale === "zh" ? "Sim 对账" : "Sim reconcile")}</h2>
+        <p>${esc(
+          locale === "zh"
+            ? "Sim→纸盘导入与对账将在本区显示（TOP Step Three）。"
+            : "Sim→Paper import and reconcile will appear here (TOP Step Three).",
+        )}</p>
+      </section>
+
       <div class="cta-row wrap" id="ws-ops">
         <button type="button" class="btn" id="p-csv">${esc(t(locale, "paperExportCsv"))}</button>
         <button type="button" class="btn" id="p-json">${esc(t(locale, "paperExportJson"))}</button>
@@ -552,6 +565,10 @@ export function renderPaper(
 
     root.innerHTML = renderShell(locale, "paper", body);
     document.title = `${t(locale, "paperTitle")} · Agenter`;
+    if (panelTarget && !scrolledPanel) {
+      scrolledPanel = true;
+      scrollToId(panelTarget);
+    }
 
     const symEl = root.querySelector("#p-symbol") as HTMLSelectElement | null;
     const sigEl = root.querySelector("#p-signal") as HTMLSelectElement | null;

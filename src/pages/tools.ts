@@ -9,6 +9,12 @@ import {
 } from "../lib/announcements/events";
 import type { IndicesPayload } from "../lib/indices/map";
 import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
+import {
+  NEWS_SECTION_IDS,
+  readHashQuery,
+  scrollToId,
+  withHashQuery,
+} from "../lib/nav/hash-query";
 import { esc } from "../lib/util/esc";
 import { renderShell } from "./shell";
 
@@ -189,11 +195,35 @@ export function renderNews(
   const items = news?.items ?? [];
   const annItems = announcements?.items ?? [];
   const iwItems = iwencaiNews?.items ?? [];
+  const bakeMeta = (payload: {
+    generatedAt?: string;
+    query?: string;
+    channel?: string;
+    status_msg?: string;
+    statusMsg?: string;
+    source?: string;
+  } | null): string => {
+    if (!payload) return "";
+    const bits: string[] = [];
+    if (payload.query) bits.push(`query: ${payload.query}`);
+    if (payload.channel) bits.push(`channel: ${payload.channel}`);
+    const status = payload.status_msg ?? payload.statusMsg;
+    if (status) bits.push(status);
+    return bits.length
+      ? `<p class="muted tiny bake-meta">${esc(bits.join(" · "))}</p>`
+      : "";
+  };
   const body = `
     <h1>${esc(t(locale, "newsNavTitleFull"))}</h1>
-    <section class="news-section">
+    <div class="cta-row wrap news-section-chips" role="navigation" aria-label="News sections">
+      <a class="btn btn-ghost" href="${withHashQuery("/news", { section: "ai" })}">${esc(t(locale, "toolNewsChipAi"))}</a>
+      <a class="btn btn-ghost" href="${withHashQuery("/news", { section: "filings" })}">${esc(t(locale, "toolNewsChipFilings"))}</a>
+      <a class="btn btn-ghost" href="${withHashQuery("/news", { section: "iwencai" })}">${esc(t(locale, "toolNewsChipIwencai"))}</a>
+    </div>
+    <section class="news-section" id="news-ai">
       <h2>${esc(t(locale, "newsTitle"))}</h2>
       <p class="lead muted tiny">${esc(news?.generatedAt?.slice(0, 19) ?? "")} · ${esc(news?.source ?? "fixture")}</p>
+      ${bakeMeta(news)}
       <ul class="news-list">
         ${
           items.length
@@ -213,19 +243,21 @@ export function renderNews(
         }
       </ul>
     </section>
-    <section class="news-section announcements-section">
+    <section class="news-section announcements-section" id="news-filings">
       <h2>${esc(t(locale, "announcementsTitle"))}</h2>
       <p class="lead muted tiny">${esc(announcements?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "announcementsSource"))}</p>
       <p class="muted tiny">${esc(t(locale, "announcementsLead"))}</p>
+      ${bakeMeta(announcements)}
       ${renderEventBucketCounts(locale, annItems)}
       <ul class="news-list">
         ${renderAnnouncementLis(locale, annItems)}
       </ul>
     </section>
-    <section class="news-section iwencai-news-section">
+    <section class="news-section iwencai-news-section" id="news-iwencai">
       <h2>${esc(t(locale, "iwencaiNewsTitle"))}</h2>
       <p class="lead muted tiny">${esc(iwencaiNews?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "iwencaiSource"))}</p>
       <p class="muted tiny">${esc(t(locale, "iwencaiNewsLead"))}</p>
+      ${bakeMeta(iwencaiNews)}
       <ul class="news-list">
         ${renderIwencaiNewsLis(locale, iwItems)}
       </ul>
@@ -233,6 +265,9 @@ export function renderNews(
   `;
   root.innerHTML = renderShell(locale, "news", body);
   document.title = `${t(locale, "newsNavTitleFull")} · Agenter`;
+  const section = readHashQuery().get("section") ?? "";
+  const target = NEWS_SECTION_IDS[section];
+  if (target) scrollToId(target);
 }
 
 export function renderTools(
@@ -258,6 +293,8 @@ export function renderTools(
       href: "#/paper",
       title: t(locale, "toolPaper"),
       desc: t(locale, "toolPaperDesc"),
+      chipHref: withHashQuery("/paper", { panel: "export" }),
+      chipLabel: t(locale, "toolPaperExportChip"),
     },
     {
       href: "#/sim",
@@ -265,26 +302,15 @@ export function renderTools(
       desc: t(locale, "toolSimDesc"),
     },
     {
-      href: "#/paper",
-      title: t(locale, "toolExport"),
-      desc: t(locale, "toolExportDesc"),
-    },
-    {
       href: "#/news",
       title: t(locale, "toolNews"),
       desc: t(locale, "toolNewsDesc"),
     },
-    {
-      href: "#/news",
-      title: t(locale, "toolAnnouncements"),
-      desc: t(locale, "toolAnnouncementsDesc"),
-    },
-    {
-      href: "#/news",
-      title: t(locale, "toolIwencaiNews"),
-      desc: t(locale, "toolIwencaiNewsDesc"),
-    },
   ];
+
+  const newsHref = withHashQuery("/news", { section: "ai" });
+  const filingsHref = withHashQuery("/news", { section: "filings" });
+  const iwencaiHref = withHashQuery("/news", { section: "iwencai" });
 
   const newsBlock =
     news && news.items.length
@@ -300,9 +326,9 @@ export function renderTools(
               })
               .join("")}
           </ul>
-          <p><a href="#/news">${esc(t(locale, "navNews"))} →</a></p>
+          <p><a href="${newsHref}">${esc(t(locale, "toolNewsChipAi"))} →</a></p>
         </section>`
-      : `<section class="news-stub"><h2>${esc(t(locale, "toolNews"))}</h2><p class="muted">${esc(t(locale, "toolNewsDesc"))}</p></section>`;
+      : `<section class="news-stub"><h2>${esc(t(locale, "toolNewsChipAi"))}</h2><p class="muted">${esc(t(locale, "toolNewsDesc"))}</p><p><a href="${newsHref}">→</a></p></section>`;
 
   const annItems = announcements?.items ?? [];
   const annBlock = `<section class="news-stub announcements-stub">
@@ -312,7 +338,7 @@ export function renderTools(
         ${renderAnnouncementLis(locale, annItems, 3)}
       </ul>
       <p class="muted tiny">${esc(t(locale, "announcementsSource"))}</p>
-      <p><a href="#/news">${esc(t(locale, "announcementsTitle"))} →</a></p>
+      <p><a href="${filingsHref}">${esc(t(locale, "announcementsTitle"))} →</a></p>
     </section>`;
 
   const iwItems = iwencaiNews?.items ?? [];
@@ -322,7 +348,7 @@ export function renderTools(
         ${renderIwencaiNewsLis(locale, iwItems, 3)}
       </ul>
       <p class="muted tiny">${esc(t(locale, "iwencaiSource"))}</p>
-      <p><a href="#/news">${esc(t(locale, "iwencaiNewsTitle"))} →</a></p>
+      <p><a href="${iwencaiHref}">${esc(t(locale, "iwencaiNewsTitle"))} →</a></p>
     </section>`;
 
   const body = `
@@ -332,12 +358,19 @@ export function renderTools(
     ${renderIndicesStrip(locale, indices)}
     <div class="tool-grid">
       ${cards
-        .map(
-          (c) => `<a class="tool-card" href="${c.href}">
-            <h2>${esc(c.title)}</h2>
-            <p>${esc(c.desc)}</p>
-          </a>`,
-        )
+        .map((c) => {
+          const chip =
+            "chipHref" in c && c.chipHref
+              ? `<p class="tool-card-chip"><a href="${esc(c.chipHref)}">${esc(c.chipLabel ?? "")}</a></p>`
+              : "";
+          return `<div class="tool-card">
+            <a class="tool-card-main" href="${c.href}">
+              <h2>${esc(c.title)}</h2>
+              <p>${esc(c.desc)}</p>
+            </a>
+            ${chip}
+          </div>`;
+        })
         .join("")}
     </div>
     ${newsBlock}

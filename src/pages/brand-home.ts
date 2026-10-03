@@ -12,7 +12,7 @@ export function renderBrandHome(root: HTMLElement, locale: Locale): void {
       <p class="hero-lead">${esc(t(locale, "homeLead"))}</p>
       <div class="cta-row wrap">
         <a class="btn btn-primary" href="#/compare">${esc(t(locale, "ctaCompare"))}</a>
-        <a class="btn" href="#/compare">${esc(t(locale, "ctaQuantCompare"))}</a>
+        <a class="btn" href="#/compare?preset=quant">${esc(t(locale, "ctaQuantCompare"))}</a>
         <a class="btn" href="#/learn">${esc(t(locale, "ctaLearn"))}</a>
         <a class="btn btn-ghost" href="#/handbook">${esc(t(locale, "ctaHandbook"))}</a>
       </div>
