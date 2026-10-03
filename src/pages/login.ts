@@ -1,44 +1,65 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import { passwordLogin, signUp } from "../lib/auth/session";
+import { GOLD_PER_USD, MIN_GOLD_FLOOR } from "../lib/auth/config";
 import { esc } from "../lib/util/esc";
-import { renderShell } from "./shell";
+import { bindShellChrome, renderShell } from "./shell";
+
+function validEmail(v: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+}
 
 export function renderLogin(root: HTMLElement, locale: Locale): void {
   let mode: "login" | "signup" = "login";
   let flash = "";
+  let flashKind: "error" | "ok" = "error";
 
   const paint = (): void => {
     const body = `
-      <h1>${esc(t(locale, "loginTitle"))}</h1>
-      <p class="lead">${esc(t(locale, "loginLead"))}</p>
-      ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
-      <form class="paper-ticket auth-form" id="auth-form">
-        <label>${esc(t(locale, "loginEmail"))}
-          <input type="email" id="auth-email" required autocomplete="username"/>
-        </label>
-        <label>${esc(t(locale, "loginPassword"))}
-          <input type="password" id="auth-password" required minlength="6" autocomplete="${mode === "login" ? "current-password" : "new-password"}"/>
-        </label>
-        <div class="cta-row wrap">
-          <button type="submit" class="btn btn-primary" id="auth-submit">
-            ${esc(mode === "login" ? t(locale, "loginSubmit") : t(locale, "signupSubmit"))}
-          </button>
-          <button type="button" class="btn" id="auth-toggle">
-            ${esc(mode === "login" ? t(locale, "signupToggle") : t(locale, "loginToggle"))}
-          </button>
+      <section class="auth-page">
+        <h1 class="type-heading-m">${esc(t(locale, "loginTitle"))}</h1>
+        <p class="lead">${esc(t(locale, "loginLead"))}</p>
+        <p class="muted tiny">${esc(t(locale, "loginGoldGuide"))}</p>
+        <div class="auth-tabs" role="tablist">
+          <button type="button" class="auth-tab ${mode === "login" ? "active" : ""}" data-mode="login" role="tab" aria-selected="${mode === "login"}">${esc(t(locale, "loginSubmit"))}</button>
+          <button type="button" class="auth-tab ${mode === "signup" ? "active" : ""}" data-mode="signup" role="tab" aria-selected="${mode === "signup"}">${esc(t(locale, "signupSubmit"))}</button>
         </div>
-      </form>
-      <p class="muted tiny">${esc(t(locale, "loginNote"))}</p>
-      <p><a href="#/tools">${esc(t(locale, "backTools"))}</a></p>
+        ${flash ? `<p class="notice ${flashKind === "error" ? "notice-error" : "notice-ok"}" role="alert">${esc(flash)}</p>` : ""}
+        <form class="auth-form composer-card" id="auth-form" novalidate>
+          <label>${esc(t(locale, "loginEmail"))}
+            <input type="email" id="auth-email" required autocomplete="username" inputmode="email"/>
+          </label>
+          <label>${esc(t(locale, "loginPassword"))}
+            <input type="password" id="auth-password" required minlength="6" autocomplete="${mode === "login" ? "current-password" : "new-password"}"/>
+          </label>
+          ${
+            mode === "signup"
+              ? `<label>${esc(t(locale, "loginPasswordConfirm"))}
+            <input type="password" id="auth-password2" required minlength="6" autocomplete="new-password"/>
+          </label>`
+              : ""
+          }
+          <p class="muted tiny">${esc(t(locale, "loginPasswordHint"))}</p>
+          <div class="cta-row wrap">
+            <button type="submit" class="btn btn-ink" id="auth-submit">
+              ${esc(mode === "login" ? t(locale, "loginSubmit") : t(locale, "signupSubmit"))}
+            </button>
+            <a class="btn btn-ghost" href="#/">${esc(t(locale, "backHome"))}</a>
+          </div>
+        </form>
+        <p class="muted tiny">${esc(t(locale, "loginNote"))}</p>
+      </section>
     `;
     root.innerHTML = renderShell(locale, "login", body);
+    bindShellChrome(root);
     document.title = `${t(locale, "loginTitle")} · Supro`;
 
-    root.querySelector("#auth-toggle")?.addEventListener("click", () => {
-      mode = mode === "login" ? "signup" : "login";
-      flash = "";
-      paint();
+    root.querySelectorAll("[data-mode]").forEach((el) => {
+      el.addEventListener("click", () => {
+        mode = (el as HTMLElement).dataset.mode === "signup" ? "signup" : "login";
+        flash = "";
+        paint();
+      });
     });
 
     root.querySelector("#auth-form")?.addEventListener("submit", async (e) => {
@@ -49,6 +70,19 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
       const password = (
         root.querySelector("#auth-password") as HTMLInputElement
       ).value;
+      flashKind = "error";
+
+      if (!validEmail(email)) {
+        flash = t(locale, "loginEmailInvalid");
+        paint();
+        return;
+      }
+      if (password.length < 6) {
+        flash = t(locale, "loginPasswordShort");
+        paint();
+        return;
+      }
+
       if (mode === "login") {
         const r = await passwordLogin(email, password);
         if (!r.ok) {
@@ -59,6 +93,16 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
         location.hash = "#/fin";
         return;
       }
+
+      const password2 = (
+        root.querySelector("#auth-password2") as HTMLInputElement
+      ).value;
+      if (password !== password2) {
+        flash = t(locale, "loginPasswordMismatch");
+        paint();
+        return;
+      }
+
       const r = await signUp(email, password);
       if (!r.ok) {
         flash = r.error;
@@ -67,6 +111,7 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
       }
       if (r.needsConfirm && !r.session) {
         flash = t(locale, "signupNeedsConfirm");
+        flashKind = "ok";
         mode = "login";
         paint();
         return;
@@ -75,5 +120,7 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
     });
   };
 
+  void GOLD_PER_USD;
+  void MIN_GOLD_FLOOR;
   paint();
 }

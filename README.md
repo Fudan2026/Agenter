@@ -6,7 +6,7 @@ Live site (GitHub Pages mirror): [https://fudan2026.github.io/Agenter/](https://
 
 Production domain: [https://supro.si](https://supro.si) — Cloudflare Pages + Functions (letusIELTS-style). Apply `public/CNAME` + CF custom domain; set Pages secrets (Supabase / LLM / Iwencai).
 
-Supro helps people **filter, compare, and pick** AI / Agent products with a Super Professional AI directory (logo · name · site · weekly ranks), and elevates **quant investing** on the home surface — plus checklist export and in-browser paper at **¥100,000,000** start.
+Supro helps people **filter, compare, and pick** AI / Agent products with a Super Professional home (America.gov-grade chrome + composer), an AI directory (logo · name · site · weekly ranks), and **SuPo Model / 苏坡大模型** — DeepSeek AIaaS metered by shared gold after actual tokens. Chinese name **苏坡** takes Su Dongpo’s first and last characters (calm optimism under Super Intelligence). Quant + paper remain first-class.
 
 This README is the **canonical English build brief**. Default UI language is **English** (Chinese via toggle).
 
@@ -16,21 +16,21 @@ This README is the **canonical English build brief**. Default UI language is **E
 
 | Route | Purpose |
 |-------|---------|
-| `/#/` | Brand home — **Supro** / Super Professional · AI directory · weekly ranks · Quant strip |
+| `/#/` | Brand home — Hello / **Supro** composer → SuPo Model · AI directory · weekly ranks · Quant |
 | `/#/compare` | Sticky shortlist + dimension matrix + harness presets |
 | `/#/learn` | Guided tour + practice scenarios |
 | `/#/handbook` | Bilingual deep manual — modules, skill catalog, workflows |
-| `/#/tools` | Hub — Handbook · Quant · Paper · Sim · News · **Fin Desk** |
-| `/#/fin` | Fin Desk AIaaS (login + shared gold) — smart screen / factors / strategy / review |
-| `/#/login` · `/#/account` | Auth + shared gold balance / redeem |
+| `/#/tools` | Hub — Handbook · Quant · Paper · Sim · News · **SuPo Model** |
+| `/#/fin` | **苏坡大模型 / SuPo Model** (login + gold ≥20) — pick/factor/strategy/review/multifactor/e2e/transformer |
+| `/#/login` · `/#/account` | Letus-parity auth + shared gold / redeem |
+| `/#/admin` | Steward prototype (`seanfudan@163.com`) |
 | `/#/news` | AI · filings · Iwencai on one page (`?section=ai|filings|iwencai`) |
 | `/#/quant` | Factor Studio · Committee · screens→Paper · Strategy Lab (`?panel=…`) |
 | `/#/paper` | Paper Pro — brackets · risk pack · Sim reconcile · TWAP/VWAP (`?panel=…`) |
 | `/#/sim` | Sim Desk — SkillHub「模拟炒股」distill; handoff `#/paper?panel=reconcile` |
 | `/#/asset/:symbol` | Candlestick + MA + factor exposures |
 
-**Primary nav = Home · Compare · Learn · Handbook · Tools.**  
-**Home** is the AI directory + Quant strip (not Tools-only, not Quant-only). Primary H1 is **Supro**.
+**Chrome:** official banner · wordmark + Menu sheet · EN/ZH footer. **Home** = composer + directory + Quant strip.
 
 ---
 
@@ -38,17 +38,20 @@ This README is the **canonical English build brief**. Default UI language is **E
 
 | Topic | Decision |
 |-------|----------|
-| Domain / brand | **supro.si** · **Supro** / **Super Professional** |
-| Homepage | AI link directory + weekly Arena ranks + Quant strip |
+| Domain / brand | **supro.si** · **Supro** / **Super Professional** · ZH **苏坡** / **苏坡大模型** |
+| Homepage | America.gov-grade white/navy/serif composer + AI directory + weekly ranks + Quant |
+| SuPo Model | DeepSeek **only** paid path; debit **after** actual tokens; floor **20** gold; admin unlimited |
+| LLM elsewhere | Weekly ranks + OHLC/RSS/Iwencai bakes = crawl — **zero** LLM tokens |
 | 快速实盘 | **A + C only** — checklist export + paper. **No** broker/THS API in the browser |
 | Paper | `localStorage` journal; start **100,000,000 CNY**; **3 bps** RT; lots of **100** |
 | Sim Desk | `#/sim` distill; ledger key with legacy `agenter.sim.ledger.v1` read-fallback |
 | Fill rule | Paper: signal `t` → fill **`t+1` open**. Sim: editable limit @ last close |
-| Locales | **English default**; zh via toggle (saved choice honored) |
+| Locales | **English default**; zh via toggle (苏坡 Dongpo literacy) |
 | Stack | Vite + TS SPA; Cloudflare Pages project **`supro`** + Functions; bake scripts; GH Pages mirror |
-| Quant scope | **15** patterns · multi-year OHLC · Fin Desk AIaaS (login + shared gold) |
-| Compare ratings | Editorial 1–5 stay; Arena/AA overlay additive (weekly bake) |
-| Auth / gold | **Shared Letus Supabase** Auth + hard gold; `GOLD_PER_USD=100`; Fin Desk gated; server spend |
+| Quant scope | **15** patterns · multi-year OHLC · SuPo Model AIaaS (login + shared gold) |
+| Compare ratings | Editorial 1–5 stay; Arena/AA overlay additive (weekly bake, no LLM) |
+| Auth / gold | **Shared Letus Supabase only** (never a new project); `GOLD_PER_USD=100`; post-usage spend |
+| Admin | `seanfudan@163.com` ≥100000 gold; `#/admin` prototype |
 | Soft Soft | Letus-only — not ported |
 | DNS | CF custom domain for apex/www on project `supro` |
 
@@ -84,13 +87,14 @@ Bake gate: `ok+stale >= max(8, floor(n/2))`.
 | Daily bake | `.github/workflows/daily-bake.yml` | Cron refresh `public/data` fail-open |
 | Weekly ratings | `.github/workflows/weekly-ratings.yml` | Monday Arena/AA refresh |
 
-**Supabase (shared Letus project `jrnabzfvdcmcoxyadmax`):**
+**Supabase (shared Letus project `jrnabzfvdcmcoxyadmax` — do NOT create a new project):**
 
 1. Apply [`supabase/supro_on_letus.sql`](supabase/supro_on_letus.sql) — **do not** apply legacy [`supabase/economy.sql`](supabase/economy.sql).
 2. Auth URL allowlist: `https://supro.si/**`, `https://www.supro.si/**`, Pages preview hosts.
-3. Secrets: see [`.env.example`](.env.example) (`VITE_SUPABASE_*`, Pages `SUPABASE_*`, `LLM_*`, Actions `CF_*`).
+3. Optional: set `app_metadata.role=admin` on `seanfudan@163.com` (SQL also bootstraps ≥100000 gold by email).
+4. Secrets: see [`.env.example`](.env.example) — Pages needs `SUPABASE_*` + `LLM_BACKEND=deepseek` + `LLM_API_KEY` (**never commit the key**).
 
-Hard gold peg: **100 gold = $1** (parity with letusIELTS). Soft Soft stays Letus-local.
+Hard gold peg: **100 gold = $1**. SuPo Model: preflight `gold >= 20` (non-admin) → DeepSeek → debit **after** actual tokens. Soft Soft stays Letus-local.
 
 ---
 

@@ -1,8 +1,7 @@
 /**
- * POST /api/fin-desk — login-gated Fin Desk AIaaS.
- * Body: { mode, prompt, locale?, context? }
- * Modes: pick | factor | strategy | review
- * Spends gold via spend_gold_for_usage based on token estimate.
+ * POST /api/fin-desk — 苏坡大模型 / SuPo Model (DeepSeek).
+ * Preflight gold >= 20 (non-admin) → call LLM → debit AFTER actual tokens.
+ * Admin (seanfudan@163.com / app_metadata.role=admin): no debit.
  */
 
 import { bearerToken, json } from "../_shared/http.js";
@@ -13,55 +12,69 @@ import {
 } from "../_shared/supabase.js";
 import { rateLimit } from "../_shared/rateLimit.js";
 
-const MODES = new Set(["pick", "factor", "strategy", "review"]);
-const GOLD_PER_1K = Number(1); // 1 gold / 1k tokens, floor 1
-
-function estimateTokens(text) {
-  const n = String(text || "").length;
-  // Rough CJK-aware: ~1.5 chars / token average
-  return Math.max(200, Math.ceil(n / 1.5) + 400);
-}
+const MODES = new Set([
+  "pick",
+  "factor",
+  "strategy",
+  "review",
+  "multifactor",
+  "e2e",
+  "transformer",
+]);
+const GOLD_PER_1K = 1;
+const MIN_FLOOR = 20;
+const ADMIN_EMAIL = "seanfudan@163.com";
 
 function goldCost(tokens) {
   return Math.max(1, Math.ceil((tokens / 1000) * GOLD_PER_1K));
 }
 
+function estimateTokens(text) {
+  const n = String(text || "").length;
+  return Math.max(200, Math.ceil(n / 1.5) + 400);
+}
+
 function systemPrompt(mode, locale) {
   const zh = locale === "zh";
   const base = zh
-    ? "你是 Supro Fin Desk（AIaaS · Super Professional）。教育演示，不构成投资建议。不是 Fin-R1 权重，不下真单。回答简洁，给出可执行的下一步（看板/Lab 深链）。"
-    : "You are Supro Fin Desk (AIaaS · Super Professional). Educational only — not investment advice. Not Fin-R1 weights; no live orders. Be concise; suggest next steps (board/Lab deep-links).";
+    ? "你是苏坡大模型（Supro / Super Professional AIaaS）。教育演示，不构成投资建议。不是 Fin-R1 权重，不下真单。语气乐观平和（苏东坡精神）。回答简洁，给出可执行下一步（看板/Lab 深链）。强调次日开盘成交与无未来函数。"
+    : "You are SuPo Model (Supro / Super Professional AIaaS). Educational only — not investment advice. Not Fin-R1 weights; no live orders. Calm, professional tone. Be concise; suggest board/Lab deep-links. Emphasize next-open fills and no-lookahead.";
   const byMode = {
     pick: zh
-      ? "模式=智能选股：根据用户描述提出筛选逻辑，可引用烘焙精选屏，说明代理宇宙局限。"
+      ? "模式=智能选股：提出筛选逻辑，可引用烘焙精选屏，说明代理宇宙局限。"
       : "Mode=smart screen: propose screening logic; reference baked screens; disclose proxy-universe limits.",
     factor: zh
       ? "模式=智能因子：建议因子倾斜与 IC 解读，勿声称预测收益。"
       : "Mode=smart factors: suggest factor tilts and IC literacy; no return prophecy.",
     strategy: zh
-      ? "模式=策略草稿：建议 Lab 策略 id（ma_cross/rsi_reversion/confluence/ml_lite 等）与参数，并给 #/quant?panel=lab 深链。"
-      : "Mode=strategy draft: suggest Lab strategy id + params and a #/quant?panel=lab deep-link.",
+      ? "模式=策略草稿：建议 Lab 策略 id（ma_cross/rsi_reversion/confluence/ml_lite）与参数，并给 #/quant?panel=lab 深链。"
+      : "Mode=strategy draft: suggest Lab strategy id + params and #/quant?panel=lab.",
     review: zh
-      ? "模式=复盘问答：结合提供的语料/日报要点作答，标明不确定处。"
-      : "Mode=review Q&A: answer from provided corpus/review bullets; mark uncertainty.",
+      ? "模式=复盘问答：结合语料/日报要点作答，标明不确定处。"
+      : "Mode=review Q&A: answer from corpus/review; mark uncertainty.",
+    multifactor: zh
+      ? "模式=多因子选股：结合 IC/因子看板上下文，给出可解释的多因子组合与风险披露，勿承诺收益。"
+      : "Mode=multi-factor: combine IC/factor-board context into an interpretable basket; disclose risks; no return promises.",
+    e2e: zh
+      ? "模式=端到端策略：从信号→次日开盘成交→成本→纸盘/Lab 深链，输出可执行草稿（ma_cross/confluence/ml_lite 等）。"
+      : "Mode=e2e strategy: signal→next-open fill→costs→Paper/Lab deep-link; draft ma_cross/confluence/ml_lite etc.",
+    transformer: zh
+      ? "模式=Transformer 识字：解释 TSFM/FinCast 与本站边界（无权重推理）；强调衰减、成本与无未来函数。"
+      : "Mode=transformer literacy: explain TSFM/FinCast vs site limits (no weight inference); stress decay, costs, no-lookahead.",
   };
   return `${base}\n${byMode[mode] || ""}`;
 }
 
 async function callLlm(env, messages) {
-  const backend = String(env.LLM_BACKEND || "openai").toLowerCase();
+  const backend = String(env.LLM_BACKEND || "deepseek").toLowerCase();
   const key =
     env.LLM_API_KEY ||
-    env.OPENAI_API_KEY ||
     env.DEEPSEEK_API_KEY ||
+    env.OPENAI_API_KEY ||
     env.ANTHROPIC_API_KEY ||
     "";
   if (!key) {
-    return {
-      ok: false,
-      code: "llm_not_configured",
-      text: null,
-    };
+    return { ok: false, code: "llm_not_configured", text: null };
   }
 
   if (backend === "anthropic") {
@@ -84,7 +97,11 @@ async function callLlm(env, messages) {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      return { ok: false, code: "llm_error", text: data?.error?.message || "llm_error" };
+      return {
+        ok: false,
+        code: "llm_error",
+        text: data?.error?.message || "llm_error",
+      };
     }
     const text = (data.content || [])
       .filter((c) => c.type === "text")
@@ -100,7 +117,6 @@ async function callLlm(env, messages) {
     };
   }
 
-  // OpenAI-compatible (openai / deepseek)
   const base =
     env.LLM_BASE_URL ||
     (backend === "deepseek"
@@ -142,24 +158,33 @@ async function callLlm(env, messages) {
 
 function offlineStub(mode, prompt, locale) {
   const zh = locale === "zh";
-  if (mode === "pick") {
+  if (mode === "multifactor" || mode === "pick") {
     return zh
-      ? `【离线草稿】针对「${prompt.slice(0, 80)}」：可先看 Quant 精选屏（#/quant?panel=screens）与 Macro 择时。代理宇宙，非全市场。配置 LLM 密钥后启用完整 AIaaS。`
-      : `[Offline draft] For “${prompt.slice(0, 80)}”: open Quant screens (#/quant?panel=screens) and Macro timing. Proxy universe. Configure LLM key for full AIaaS.`;
+      ? `【离线草稿】针对「${prompt.slice(0, 80)}」：先看 Factor Studio / IC（#/quant?panel=studio · #/quant?panel=ic）与精选屏。配置 DeepSeek 密钥后启用完整苏坡大模型。`
+      : `[Offline] For “${prompt.slice(0, 80)}”: open Factor Studio / IC and screens. Configure DeepSeek for full SuPo Model.`;
   }
-  if (mode === "factor") {
+  if (mode === "e2e" || mode === "strategy") {
     return zh
-      ? `【离线草稿】建议结合 Factor Studio / IC 面板（#/quant?panel=studio · #/quant?panel=ic）查看动量与低波倾斜。非收益承诺。`
-      : `[Offline draft] Use Factor Studio / IC (#/quant?panel=studio · #/quant?panel=ic) for momentum/low-vol tilts. Not a return promise.`;
+      ? `【离线草稿】可试 Lab confluence / ma_cross → #/quant?panel=lab。信号 t → 次日开盘。`
+      : `[Offline] Try Lab confluence / ma_cross → #/quant?panel=lab. Signal t → next open.`;
   }
-  if (mode === "strategy") {
+  if (mode === "transformer") {
     return zh
-      ? `【离线草稿】可试 Lab 策略 ma_cross 或 confluence，深链 #/quant?panel=lab。信号 t 收盘 → 次日开盘成交。`
-      : `[Offline draft] Try Lab ma_cross or confluence → #/quant?panel=lab. Signal t close → next-open fill.`;
+      ? `【离线草稿】本站不加载 TSFM/FinCast 权重；只做识字与边界说明。详见手册。`
+      : `[Offline] This site does not load TSFM/FinCast weights — literacy only. See Handbook.`;
   }
   return zh
-    ? `【离线草稿】请打开每日复盘 #/quant?panel=review，并结合语料回答。配置 LLM 后可 RAG 增强。`
-    : `[Offline draft] Open Daily Review #/quant?panel=review. Configure LLM for RAG answers.`;
+    ? `【离线草稿】请打开每日复盘 #/quant?panel=review。配置 DeepSeek 后可 RAG 增强。`
+    : `[Offline] Open Daily Review #/quant?panel=review. Configure DeepSeek for RAG.`;
+}
+
+function isAdminUser(user, preflight) {
+  const email = String(user?.email || "").toLowerCase();
+  return (
+    Boolean(preflight?.is_admin) ||
+    email === ADMIN_EMAIL ||
+    String(user?.app_metadata?.role || "") === "admin"
+  );
 }
 
 export async function onRequestPost({ request, env }) {
@@ -191,27 +216,38 @@ export async function onRequestPost({ request, env }) {
   const locale = body?.locale === "zh" ? "zh" : "en";
   const context = String(body?.context || "").slice(0, 12000);
 
-  const est = estimateTokens(prompt + context);
-  const cost = goldCost(est);
-
-  const spend = await rpcWithServiceRole(env, "spend_gold_for_usage", {
+  const pre = await rpcWithServiceRole(env, "preflight_fin_desk", {
     p_user_id: String(user.id),
-    p_tokens: est,
-    p_feature: `fin_desk_${mode}`,
-    p_gold: cost,
   });
-  if (!spend.ok) {
-    const msg = spend.data?.message || spend.data?.error || spend.data;
-    const insufficient =
-      String(msg).includes("insufficient") || spend.status === 402;
+  if (!pre.ok) {
+    return json(
+      { ok: false, code: "economy_error", error: pre.data },
+      pre.status || 500,
+    );
+  }
+  const preflight = pre.data || {};
+  const admin = isAdminUser(user, preflight);
+  if (!admin && preflight.ok === false) {
     return json(
       {
         ok: false,
-        code: insufficient ? "insufficient_gold" : "spend_failed",
-        error: msg,
-        gold_needed: cost,
+        code: "insufficient_gold_floor",
+        gold: Number(preflight.gold ?? 0),
+        min_gold_floor: MIN_FLOOR,
+        error: "insufficient_gold_floor",
       },
-      insufficient ? 402 : spend.status || 500,
+      402,
+    );
+  }
+  if (!admin && Number(preflight.gold ?? 0) < MIN_FLOOR) {
+    return json(
+      {
+        ok: false,
+        code: "insufficient_gold_floor",
+        gold: Number(preflight.gold ?? 0),
+        min_gold_floor: MIN_FLOOR,
+      },
+      402,
     );
   }
 
@@ -225,7 +261,6 @@ export async function onRequestPost({ request, env }) {
     },
   ];
 
-  // Best-effort same-origin corpus enrichment
   try {
     const origin = new URL(request.url).origin;
     const corpRes = await fetch(`${origin}/data/fin-corpus.json`, {
@@ -242,32 +277,69 @@ export async function onRequestPost({ request, env }) {
       }
     }
   } catch {
-    /* ignore corpus miss */
+    /* ignore */
   }
 
   const llm = await callLlm(env, messages);
   let answer;
-  let llmMeta = { backend: env.LLM_BACKEND || "openai", offline: false };
+  let llmMeta = {
+    backend: env.LLM_BACKEND || "deepseek",
+    offline: false,
+  };
+  let tokensUsed = estimateTokens(prompt + context + (llm.text || ""));
   if (!llm.ok) {
     answer = offlineStub(mode, prompt, locale);
     llmMeta = { ...llmMeta, offline: true, code: llm.code };
   } else {
     answer = llm.text;
+    const inn = Number(llm.usage?.input);
+    const out = Number(llm.usage?.output);
+    if (Number.isFinite(inn) || Number.isFinite(out)) {
+      tokensUsed = Math.max(
+        1,
+        (Number.isFinite(inn) ? inn : 0) + (Number.isFinite(out) ? out : 0),
+      );
+    }
     llmMeta = { ...llmMeta, usage: llm.usage };
   }
 
+  const cost = goldCost(tokensUsed);
+  const spend = await rpcWithServiceRole(env, "spend_gold_for_usage", {
+    p_user_id: String(user.id),
+    p_tokens: tokensUsed,
+    p_feature: `fin_desk_${mode}`,
+    p_gold: admin ? 0 : cost,
+  });
+  if (!spend.ok) {
+    const msg = spend.data?.message || spend.data?.error || spend.data;
+    const insufficient =
+      String(msg).includes("insufficient") || spend.status === 402;
+    return json(
+      {
+        ok: false,
+        code: insufficient ? "insufficient_gold" : "spend_failed",
+        error: msg,
+        gold_needed: cost,
+        answer_preview: answer?.slice?.(0, 200),
+      },
+      insufficient ? 402 : spend.status || 500,
+    );
+  }
+
+  const spent = Number(spend.data?.spent ?? (admin ? 0 : cost));
   const stamp =
     locale === "zh"
-      ? `\n\n— AIaaS · 非投资建议 · 非 Fin-R1 权重 · 已扣 ${cost} 金币`
-      : `\n\n— AIaaS · not advice · not Fin-R1 weights · gold spent ${cost}`;
+      ? `\n\n— 苏坡大模型 · AIaaS · 非投资建议 · Token ${tokensUsed} · 已扣 ${spent} 金币（100 金币=$1）`
+      : `\n\n— SuPo Model · AIaaS · not advice · tokens ${tokensUsed} · gold spent ${spent} (100 gold=$1)`;
 
   return json({
     ok: true,
     mode,
     answer: `${answer}${stamp}`,
-    gold_spent: cost,
-    gold_remaining: Number(spend.data?.gold ?? spend.data?.new_gold ?? null),
-    tokens_estimated: est,
+    gold_spent: spent,
+    gold_remaining: Number(spend.data?.gold ?? null),
+    tokens_used: tokensUsed,
+    admin: Boolean(spend.data?.admin || admin),
     meta: llmMeta,
   });
 }
