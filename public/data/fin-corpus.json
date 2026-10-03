@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-10-03T13:37:30.429Z",
-  "chunkCount": 87,
+  "generatedAt": "2026-10-03T13:59:12.133Z",
+  "chunkCount": 93,
   "chunks": [
     {
       "id": "review-2026-10-03",
@@ -754,10 +754,70 @@
       "id": "hb-gold",
       "source": "handbook",
       "title": "Gold meter",
-      "text": "Fin Desk requires login. Server spend_gold_for_usage deducts gold from estimated tokens. Welcome grant 100 gold. Redeem codes via Account.",
+      "text": "Supro Model requires confirmed login. Server spend_gold_for_usage debits AFTER actual tokens. Floor 20 gold. Admin seanfudan@163.com ≥100000. Redeem codes via Account. Standalone Supro Supabase — no Letus migration.",
       "tags": [
         "economy",
         "fin-desk"
+      ]
+    },
+    {
+      "id": "skill-multifactor",
+      "source": "skillhub",
+      "title": "Multi-factor stock selection",
+      "text": "Methodology distill from 多因子选股策略 / 量化因子选股: neutralize industry/size when possible; combine value/momentum/quality/low-vol; eliminate factors with unstable IC; disclose proxy universe; next-open execution; no lookahead.",
+      "tags": [
+        "skill",
+        "multifactor"
+      ]
+    },
+    {
+      "id": "skill-ml",
+      "source": "skillhub",
+      "title": "ML strategy literacy",
+      "text": "Distill from 机器学习策略: tree/linear baselines over hand-crafted factors; walk-forward; avoid label leakage; Supro does not train Fin-R1 weights — DeepSeek AIaaS explains and drafts only.",
+      "tags": [
+        "skill",
+        "ml"
+      ]
+    },
+    {
+      "id": "skill-factor-research",
+      "source": "skillhub",
+      "title": "Factor research framework",
+      "text": "Distill from 因子研究框架: hypothesis → definition → IC/IR → decay → costs → keep/kill. LLMFactor-style sequential prompting for explainable keep/reject chains.",
+      "tags": [
+        "skill",
+        "factors"
+      ]
+    },
+    {
+      "id": "skill-transformer",
+      "source": "skillhub",
+      "title": "Transformer PV literacy",
+      "text": "StockFormer/FinCast distill: multi-head attention over OHLCV tokens; temporal vs cross-sectional heads; causal masks; no on-site weight inference; educational attention proxy from baked candles only.",
+      "tags": [
+        "skill",
+        "transformer"
+      ]
+    },
+    {
+      "id": "skill-report",
+      "source": "skillhub",
+      "title": "Research report pipeline",
+      "text": "TickerAnalysis-style sections: data → factor findings → strategy/backtest literacy → narrative → rating + quality_score. Sources from fin-corpus + baked IC/screens. Education only.",
+      "tags": [
+        "skill",
+        "report"
+      ]
+    },
+    {
+      "id": "skill-allocate",
+      "source": "skillhub",
+      "title": "Dynamic allocation",
+      "text": "Portfolio stage JSON: capped weights, sector/name caps, rebalance notes, next-open constraint. Inspired by multi-agent market construction stages — deterministic caps in narrative.",
+      "tags": [
+        "skill",
+        "allocate"
       ]
     }
   ],

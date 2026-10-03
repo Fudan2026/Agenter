@@ -1,5 +1,5 @@
 /**
- * GET /api/economy-balance — shared Letus gold + admin / floor metadata.
+ * GET /api/economy-balance — Supro gold + admin / floor metadata.
  */
 
 import { bearerToken, json } from "../_shared/http.js";
@@ -22,7 +22,6 @@ export async function onRequestGet({ request, env }) {
   const user = await getUserFromJwt(env, jwt);
   if (!user?.id) return json({ ok: false, code: "unauthorized" }, 401);
 
-  // Prefer Supro ensure (admin grant); also hydrate Letus ensure_my_economy.
   await rpcWithUserJwt(env, jwt, "ensure_my_economy", {});
   const ensured = await rpcWithServiceRole(env, "ensure_supro_economy", {
     p_user_id: String(user.id),
@@ -61,7 +60,8 @@ export async function onRequestGet({ request, env }) {
     is_admin: isAdmin,
     user_id: user.id,
     email: user.email ?? null,
-    shared_wallet: true,
+    shared_wallet: false,
+    standalone_supro: true,
     usage,
   });
 }

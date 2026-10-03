@@ -7,6 +7,14 @@ import {
 } from "../lib/auth/economy";
 import { MIN_GOLD_FLOOR } from "../lib/auth/config";
 import { isLoggedIn } from "../lib/auth/session";
+import {
+  parseStructuredAnswer,
+  renderStructuredHtml,
+} from "../lib/fin/structured";
+import {
+  attentionProxyFromSeries,
+  renderAttentionBoard,
+} from "../lib/fin/attention-proxy";
 import { esc } from "../lib/util/esc";
 import { bindShellChrome, renderShell } from "./shell";
 import type { LatestPayload } from "./types";
@@ -24,13 +32,18 @@ function readQueryPrompt(): string {
 }
 
 function modeLabel(locale: Locale, mode: FinMode): string {
-  if (mode === "pick") return t(locale, "finModePick");
-  if (mode === "factor") return t(locale, "finModeFactor");
-  if (mode === "strategy") return t(locale, "finModeStrategy");
-  if (mode === "review") return t(locale, "finModeReview");
-  if (mode === "multifactor") return t(locale, "finModeMultifactor");
-  if (mode === "e2e") return t(locale, "finModeE2e");
-  return t(locale, "finModeTransformer");
+  const map: Record<FinMode, string> = {
+    pick: t(locale, "finModePick"),
+    factor: t(locale, "finModeFactor"),
+    strategy: t(locale, "finModeStrategy"),
+    review: t(locale, "finModeReview"),
+    multifactor: t(locale, "finModeMultifactor"),
+    e2e: t(locale, "finModeE2e"),
+    transformer: t(locale, "finModeTransformer"),
+    report: t(locale, "finModeReport"),
+    allocate: t(locale, "finModeAllocate"),
+  };
+  return map[mode];
 }
 
 export function renderFinDesk(
@@ -47,7 +60,8 @@ export function renderFinDesk(
 
   let mode: FinMode = "multifactor";
   let goldLabel = "…";
-  let answer = "";
+  let answerRaw = "";
+  let structuredHtml = "";
   let flash = "";
   let isAdmin = false;
   let promptSeed = readQueryPrompt();
@@ -92,7 +106,30 @@ export function renderFinDesk(
             .join("\n"),
       );
     }
-    return parts.join("\n\n").slice(0, 10000);
+    // SkillHub methodology distill (text only — no live THS)
+    parts.push(
+      locale === "zh"
+        ? "Skills: 多因子选股策略 · 机器学习策略 · 因子研究框架 · 策略生成与优化（方法论蒸馏，非实盘）。"
+        : "Skills: multi-factor · ML strategy · factor research · strategy generate (methodology distill; not live broker).",
+    );
+    return parts.join("\n\n").slice(0, 12000);
+  };
+
+  const attentionHtml = (): string => {
+    if (mode !== "transformer" || !data?.symbols?.length) return "";
+    const rows = data.symbols
+      .filter((s) => s.dataStatus !== "missing")
+      .slice(0, 6)
+      .map((s) =>
+        attentionProxyFromSeries(
+          s.symbol,
+          (s.candles || []).map((c) => ({ c: c.close, v: c.volume })),
+          locale,
+        ),
+      )
+      .filter((r): r is NonNullable<typeof r> => Boolean(r));
+    if (!rows.length) return "";
+    return `<section><h3>${esc(t(locale, "finAttention"))}</h3>${renderAttentionBoard(rows)}</section>`;
   };
 
   const modes: FinMode[] = [
@@ -103,9 +140,21 @@ export function renderFinDesk(
     "multifactor",
     "e2e",
     "transformer",
+    "report",
+    "allocate",
   ];
 
   const paint = (): void => {
+    const parsed = answerRaw
+      ? parseStructuredAnswer(answerRaw)
+      : { structured: null, narrative: "" };
+    structuredHtml = parsed.structured
+      ? renderStructuredHtml(locale, parsed.structured)
+      : "";
+    const narrative =
+      parsed.narrative ||
+      (answerRaw ? answerRaw : t(locale, "finAnswerEmpty"));
+
     const body = `
       <h1 class="type-heading-m">${esc(t(locale, "finDeskTitle"))}</h1>
       <p class="lead">${esc(t(locale, "finDeskLead"))}</p>
@@ -133,7 +182,9 @@ export function renderFinDesk(
       </form>
       <section class="fin-answer">
         <h2>${esc(t(locale, "finAnswer"))}</h2>
-        <pre class="fin-answer-body">${esc(answer || t(locale, "finAnswerEmpty"))}</pre>
+        ${structuredHtml || ""}
+        ${attentionHtml()}
+        <pre class="fin-answer-body">${esc(narrative)}</pre>
       </section>
     `;
     root.innerHTML = renderShell(locale, "fin", body, {
@@ -164,7 +215,8 @@ export function renderFinDesk(
         return;
       }
       flash = "";
-      answer = t(locale, "loading");
+      answerRaw = t(locale, "loading");
+      structuredHtml = "";
       paint();
       const r = await callFinDesk({
         mode,
@@ -176,14 +228,16 @@ export function renderFinDesk(
         flash =
           r.code === "insufficient_gold_floor"
             ? t(locale, "insufficientGoldFloor")
-            : r.error === "insufficient_gold" || r.code === "insufficient_gold"
-              ? t(locale, "insufficientGold")
-              : r.error;
-        answer = "";
+            : r.code === "email_not_confirmed"
+              ? t(locale, "loginEmailNotConfirmed")
+              : r.error === "insufficient_gold" || r.code === "insufficient_gold"
+                ? t(locale, "insufficientGold")
+                : r.error;
+        answerRaw = "";
         paint();
         return;
       }
-      answer = r.answer;
+      answerRaw = r.answer;
       if (r.gold_remaining != null) goldLabel = String(r.gold_remaining);
       paint();
     });
@@ -199,9 +253,7 @@ export function renderFinDesk(
     }
     goldLabel = String(b.gold);
     isAdmin = Boolean(b.is_admin);
-    if (!b.is_admin && b.gold < (b.min_gold_floor ?? MIN_GOLD_FLOOR)) {
-      flash = t(locale, "insufficientGoldFloor");
-    }
+    void MIN_GOLD_FLOOR;
     paint();
   });
 }

@@ -27,7 +27,11 @@ import type { LatestPayload } from "./pages/types";
 import type { FactorsPayload } from "./lib/factors/cross-section";
 import type { FactorsIcPayload } from "./lib/factors/ic";
 import type { CnCalendarPayload } from "./lib/paper/calendar";
-import { requiresAuth, isLoggedIn } from "./lib/auth/session";
+import {
+  requiresAuth,
+  isLoggedIn,
+  consumeAuthCallbackFromUrl,
+} from "./lib/auth/session";
 
 let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
@@ -60,13 +64,30 @@ type Route =
   | { page: "fin" }
   | { page: "admin" };
 
+function dataUrl(file: string): string {
+  const base = String(import.meta.env.BASE_URL || "/");
+  const normalized = base.endsWith("/") ? base : `${base}/`;
+  return `${normalized}data/${file.replace(/^\//, "")}`;
+}
+
+async function fetchJsonWithRetry<T>(file: string): Promise<T> {
+  const url = dataUrl(file);
+  let lastErr: Error | null = null;
+  for (let i = 0; i < 2; i++) {
+    try {
+      const res = await fetch(url, { cache: i === 0 ? "no-cache" : "reload" });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      return (await res.json()) as T;
+    } catch (e) {
+      lastErr = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw lastErr || new Error("fetch_failed");
+}
+
 async function loadQuantData(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/latest.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    quantData = (await res.json()) as LatestPayload;
+    quantData = await fetchJsonWithRetry<LatestPayload>("latest.json");
     quantError = null;
   } catch (e) {
     quantError = e instanceof Error ? e.message : String(e);
@@ -76,11 +97,7 @@ async function loadQuantData(): Promise<void> {
 
 async function loadNews(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/ai-news.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    newsData = (await res.json()) as NewsPayload;
+    newsData = await fetchJsonWithRetry<NewsPayload>("ai-news.json");
   } catch {
     newsData = null;
   }
@@ -88,12 +105,7 @@ async function loadNews(): Promise<void> {
 
 async function loadAnnouncements(): Promise<void> {
   try {
-    const res = await fetch(
-      `${import.meta.env.BASE_URL}data/announcements.json`,
-      { cache: "no-cache" },
-    );
-    if (!res.ok) return;
-    announcementsData = (await res.json()) as AnnouncementsPayload;
+    announcementsData = await fetchJsonWithRetry<AnnouncementsPayload>("announcements.json");
   } catch {
     announcementsData = null;
   }
@@ -101,12 +113,7 @@ async function loadAnnouncements(): Promise<void> {
 
 async function loadIwencaiNews(): Promise<void> {
   try {
-    const res = await fetch(
-      `${import.meta.env.BASE_URL}data/iwencai-news.json`,
-      { cache: "no-cache" },
-    );
-    if (!res.ok) return;
-    iwencaiNewsData = (await res.json()) as IwencaiNewsPayload;
+    iwencaiNewsData = await fetchJsonWithRetry<IwencaiNewsPayload>("iwencai-news.json");
   } catch {
     iwencaiNewsData = null;
   }
@@ -114,11 +121,7 @@ async function loadIwencaiNews(): Promise<void> {
 
 async function loadIndices(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/indices.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    indicesData = (await res.json()) as IndicesPayload;
+    indicesData = await fetchJsonWithRetry<IndicesPayload>("indices.json");
   } catch {
     indicesData = null;
   }
@@ -126,11 +129,7 @@ async function loadIndices(): Promise<void> {
 
 async function loadScreens(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/screens.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    screensData = (await res.json()) as ScreensPayload;
+    screensData = await fetchJsonWithRetry<ScreensPayload>("screens.json");
   } catch {
     screensData = null;
   }
@@ -138,11 +137,7 @@ async function loadScreens(): Promise<void> {
 
 async function loadFactors(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/factors.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    factorsData = (await res.json()) as FactorsPayload;
+    factorsData = await fetchJsonWithRetry<FactorsPayload>("factors.json");
   } catch {
     factorsData = null;
   }
@@ -150,11 +145,7 @@ async function loadFactors(): Promise<void> {
 
 async function loadFactorsIc(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/factors-ic.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    factorsIcData = (await res.json()) as FactorsIcPayload;
+    factorsIcData = await fetchJsonWithRetry<FactorsIcPayload>("factors-ic.json");
   } catch {
     factorsIcData = null;
   }
@@ -162,11 +153,7 @@ async function loadFactorsIc(): Promise<void> {
 
 async function loadRecipes(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/recipes.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    recipesData = (await res.json()) as RecipesPayload;
+    recipesData = await fetchJsonWithRetry<RecipesPayload>("recipes.json");
   } catch {
     recipesData = null;
   }
@@ -174,11 +161,7 @@ async function loadRecipes(): Promise<void> {
 
 async function loadCalendar(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/cn-calendar.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    calendarData = (await res.json()) as CnCalendarPayload;
+    calendarData = await fetchJsonWithRetry<CnCalendarPayload>("cn-calendar.json");
   } catch {
     calendarData = null;
   }
@@ -186,11 +169,7 @@ async function loadCalendar(): Promise<void> {
 
 async function loadEtfMeta(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/etf-meta.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    etfMetaData = (await res.json()) as EtfMetaPayload;
+    etfMetaData = await fetchJsonWithRetry<EtfMetaPayload>("etf-meta.json");
   } catch {
     etfMetaData = null;
   }
@@ -198,14 +177,27 @@ async function loadEtfMeta(): Promise<void> {
 
 async function loadAiRatings(): Promise<void> {
   try {
-    const res = await fetch(`${import.meta.env.BASE_URL}data/ai-ratings.json`, {
-      cache: "no-cache",
-    });
-    if (!res.ok) return;
-    aiRatingsData = (await res.json()) as AiRatingsPayload;
+    aiRatingsData = await fetchJsonWithRetry<AiRatingsPayload>("ai-ratings.json");
   } catch {
     aiRatingsData = null;
   }
+}
+
+function renderLoadFail(root: HTMLElement, detail: string): void {
+  root.innerHTML = `<main class="page load-fail">
+    <p class="error">${t(locale, "loadErrorShort")} <span class="muted tiny">(${detail})</span></p>
+    <p class="muted">${t(locale, "loadError")}</p>
+    <div class="cta-row wrap">
+      <button type="button" class="btn btn-ink" id="retry-quant">${t(locale, "loadRetry")}</button>
+      <a class="btn btn-ghost" href="#/">${t(locale, "backHome")}</a>
+    </div>
+  </main>`;
+  root.querySelector("#retry-quant")?.addEventListener("click", () => {
+    void (async () => {
+      await loadQuantData();
+      await render();
+    })();
+  });
 }
 
 function parseRoute(): Route {
@@ -308,7 +300,7 @@ async function render(): Promise<void> {
         break;
       case "quant":
         if (quantError || !quantData) {
-          root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
+          renderLoadFail(root, quantError ?? "empty");
         } else {
           renderQuant(
             root,
@@ -326,21 +318,21 @@ async function render(): Promise<void> {
         break;
       case "paper":
         if (quantError || !quantData) {
-          root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
+          renderLoadFail(root, quantError ?? "empty");
         } else {
           renderPaper(root, quantData, locale, announcementsData, calendarData);
         }
         break;
       case "sim":
         if (quantError || !quantData) {
-          root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
+          renderLoadFail(root, quantError ?? "empty");
         } else {
           renderSim(root, quantData, locale);
         }
         break;
       case "asset":
         if (quantError || !quantData) {
-          root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")}</p></main>`;
+          renderLoadFail(root, quantError ?? "empty");
         } else {
           renderAsset(
             root,
@@ -365,6 +357,7 @@ async function render(): Promise<void> {
 
 export async function startApp(): Promise<void> {
   locale = detectLocale();
+  const fromConfirm = consumeAuthCallbackFromUrl();
   await Promise.all([
     loadQuantData(),
     loadNews(),
@@ -379,6 +372,9 @@ export async function startApp(): Promise<void> {
     loadEtfMeta(),
     loadAiRatings(),
   ]);
+  if (fromConfirm && !location.hash.includes("/account")) {
+    location.hash = "#/account";
+  }
   await render();
   window.addEventListener("hashchange", () => {
     void render();

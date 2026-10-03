@@ -64,9 +64,11 @@ a:hover {
 }
 
 #app {
-  max-width: 1040px;
+  max-width: min(1440px, 100%);
   margin: 0 auto;
-  padding: 1.25rem 1rem 3rem;
+  padding: 1.25rem clamp(1rem, 3vw, 2.5rem) 3rem;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 .site-header {
@@ -2452,7 +2454,81 @@ a.index-chip:hover {
 }
 
 #app {
-  max-width: 1120px;
+  max-width: min(1440px, 100%);
+}
+
+@media (min-width: 960px) {
+  #app {
+    max-width: min(1440px, 100%);
+    padding-left: clamp(1.5rem, 4vw, 3rem);
+    padding-right: clamp(1.5rem, 4vw, 3rem);
+  }
+  .america-banner,
+  .america-header,
+  .america-footer {
+    width: 100%;
+  }
+  .home-directory-list,
+  .board,
+  .fin-structured {
+    max-width: none;
+  }
+  .brand-hero .type-display {
+    max-width: 20ch;
+  }
+}
+
+@media (max-width: 720px) {
+  #app {
+    max-width: 100%;
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+
+.confirm-panel {
+  margin: 1rem 0;
+  padding: 1rem 1.25rem;
+}
+.avatar-preview img {
+  border-radius: 8px;
+  object-fit: cover;
+  border: 1px solid #e5e7eb;
+}
+.fin-structured {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+.fin-structured h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+.fin-structured ol,
+.fin-structured ul {
+  margin: 0;
+  padding-left: 1.25rem;
+}
+.fin-structured .fin-md {
+  white-space: pre-wrap;
+  line-height: 1.55;
+}
+.attention-board {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 0.35rem;
+  font-size: 0.75rem;
+}
+.attention-cell {
+  background: #f3f4f6;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+}
+.load-fail {
+  padding: 2rem 1rem;
+}
+.load-fail .cta-row {
+  margin-top: 1rem;
 }
 
 @media (min-width: 768px) {

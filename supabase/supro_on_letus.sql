@@ -1,19 +1,8 @@
 -- =============================================================================
--- Supro / SuPo on Letus — shared wallet + 苏坡大模型 metering
--- Apply in the SHARED Letus Supabase project ONLY:
---   Project ref: jrnabzfvdcmcoxyadmax
---   URL: https://jrnabzfvdcmcoxyadmax.supabase.co
---
--- DO NOT create a new Supabase project (that would isolate Auth/gold).
--- DO NOT apply supabase/economy.sql here (uuid PK clash with Letus text user_id).
---
--- Owner after apply:
---   Auth → Redirect URLs: https://supro.si/** , https://www.supro.si/** , Pages preview
---   Optional: set app_metadata.role = "admin" on seanfudan@163.com
---
--- Shared hard gold: GOLD_PER_USD = 100 (100 gold = $1). Soft Soft stays Letus-only.
--- MIN_GOLD_FLOOR = 20 for non-admin Fin Desk / 苏坡大模型 calls.
--- Admin email: seanfudan@163.com → grant ≥100000 gold; spend no-ops cost.
+-- ARCHIVE — Supro-on-Letus (text user_id). DO NOT use for new deploys.
+-- Current canonical SQL for Supro is: supabase/supro.sql
+-- (new Supabase Organization + Project; no Letus user migration).
+-- Kept only for historical reference on jrnabzfvdcmcoxyadmax.
 -- =============================================================================
 
 -- Fin Desk / 苏坡大模型 usage ledger (text user_id — matches Letus)

@@ -6,7 +6,7 @@ Live site (GitHub Pages mirror): [https://fudan2026.github.io/Agenter/](https://
 
 Production domain: [https://supro.si](https://supro.si) — Cloudflare Pages + Functions (letusIELTS-style). Apply `public/CNAME` + CF custom domain; set Pages secrets (Supabase / LLM / Iwencai).
 
-Supro helps people **filter, compare, and pick** AI / Agent products with a Super Professional home (America.gov-grade chrome + composer), an AI directory (logo · name · site · weekly ranks), and **SuPo Model / 苏坡大模型** — DeepSeek AIaaS metered by shared gold after actual tokens. Chinese name **苏坡** takes Su Dongpo’s first and last characters (calm optimism under Super Intelligence). Quant + paper remain first-class.
+Supro helps people **filter, compare, and pick** AI / Agent products with a Super Professional home (America.gov-grade chrome + composer), an AI directory (logo · name · site · weekly ranks), and **Supro Model / 苏坡大模型** — DeepSeek AIaaS metered by gold after actual tokens. Chinese name **苏坡** takes Su Dongpo’s first and last characters (calm optimism under Super Intelligence). Quant + paper remain first-class. Auth uses a **new Supabase org/project** (email confirm → supro.si); Letus users are **not** migrated.
 
 This README is the **canonical English build brief**. Default UI language is **English** (Chinese via toggle).
 
@@ -16,13 +16,13 @@ This README is the **canonical English build brief**. Default UI language is **E
 
 | Route | Purpose |
 |-------|---------|
-| `/#/` | Brand home — Hello / **Supro** composer → SuPo Model · AI directory · weekly ranks · Quant |
+| `/#/` | Brand home — Hello / **Supro** composer → Supro Model · AI directory · weekly ranks · Quant |
 | `/#/compare` | Sticky shortlist + dimension matrix + harness presets |
 | `/#/learn` | Guided tour + practice scenarios |
 | `/#/handbook` | Bilingual deep manual — modules, skill catalog, workflows |
-| `/#/tools` | Hub — Handbook · Quant · Paper · Sim · News · **SuPo Model** |
-| `/#/fin` | **苏坡大模型 / SuPo Model** (login + gold ≥20) — pick/factor/strategy/review/multifactor/e2e/transformer |
-| `/#/login` · `/#/account` | Letus-parity auth + shared gold / redeem |
+| `/#/tools` | Hub — Handbook · Quant · Paper · Sim · News · **Supro Model** |
+| `/#/fin` | **苏坡大模型 / Supro Model** (confirmed login + gold ≥20) — multifactor/e2e/transformer/report/allocate + classic modes |
+| `/#/login` · `/#/account` | Email-confirm auth + profile (nickname/avatar) + gold / redeem |
 | `/#/admin` | Steward prototype (`seanfudan@163.com`) |
 | `/#/news` | AI · filings · Iwencai on one page (`?section=ai|filings|iwencai`) |
 | `/#/quant` | Factor Studio · Committee · screens→Paper · Strategy Lab (`?panel=…`) |
@@ -40,7 +40,7 @@ This README is the **canonical English build brief**. Default UI language is **E
 |-------|----------|
 | Domain / brand | **supro.si** · **Supro** / **Super Professional** · ZH **苏坡** / **苏坡大模型** |
 | Homepage | America.gov-grade white/navy/serif composer + AI directory + weekly ranks + Quant |
-| SuPo Model | DeepSeek **only** paid path; debit **after** actual tokens; floor **20** gold; admin unlimited |
+| Supro Model | DeepSeek **only** paid path; debit **after** actual tokens; floor **20** gold; admin unlimited |
 | LLM elsewhere | Weekly ranks + OHLC/RSS/Iwencai bakes = crawl — **zero** LLM tokens |
 | 快速实盘 | **A + C only** — checklist export + paper. **No** broker/THS API in the browser |
 | Paper | `localStorage` journal; start **100,000,000 CNY**; **3 bps** RT; lots of **100** |
@@ -48,11 +48,11 @@ This README is the **canonical English build brief**. Default UI language is **E
 | Fill rule | Paper: signal `t` → fill **`t+1` open**. Sim: editable limit @ last close |
 | Locales | **English default**; zh via toggle (苏坡 Dongpo literacy) |
 | Stack | Vite + TS SPA; Cloudflare Pages project **`supro`** + Functions; bake scripts; GH Pages mirror |
-| Quant scope | **15** patterns · multi-year OHLC · SuPo Model AIaaS (login + shared gold) |
+| Quant scope | **15** patterns · multi-year OHLC · Supro Model AIaaS (confirmed login + gold) |
 | Compare ratings | Editorial 1–5 stay; Arena/AA overlay additive (weekly bake, no LLM) |
-| Auth / gold | **Shared Letus Supabase only** (never a new project); `GOLD_PER_USD=100`; post-usage spend |
-| Admin | `seanfudan@163.com` ≥100000 gold; `#/admin` prototype |
-| Soft Soft | Letus-only — not ported |
+| Auth / gold | **New Supro Supabase org/project**; email confirm required; no Letus migration; `GOLD_PER_USD=100`; post-usage spend |
+| Admin | `seanfudan@163.com` ≥100000 gold via `supabase/supro.sql`; `#/admin` prototype |
+| Soft Soft | Not ported |
 | DNS | CF custom domain for apex/www on project `supro` |
 
 ---
@@ -87,14 +87,16 @@ Bake gate: `ok+stale >= max(8, floor(n/2))`.
 | Daily bake | `.github/workflows/daily-bake.yml` | Cron refresh `public/data` fail-open |
 | Weekly ratings | `.github/workflows/weekly-ratings.yml` | Monday Arena/AA refresh |
 
-**Supabase (shared Letus project `jrnabzfvdcmcoxyadmax` — do NOT create a new project):**
+**Supabase (NEW Organization + Project for Supro — not Letus IELTS):**
 
-1. Apply [`supabase/supro_on_letus.sql`](supabase/supro_on_letus.sql) — **do not** apply legacy [`supabase/economy.sql`](supabase/economy.sql).
-2. Auth URL allowlist: `https://supro.si/**`, `https://www.supro.si/**`, Pages preview hosts.
-3. Optional: set `app_metadata.role=admin` on `seanfudan@163.com` (SQL also bootstraps ≥100000 gold by email).
-4. Secrets: see [`.env.example`](.env.example) — Pages needs `SUPABASE_*` + `LLM_BACKEND=deepseek` + `LLM_API_KEY` (**never commit the key**).
+1. Create a new Supabase org/project (confirm emails must return to `supro.si`, not IELTS).
+2. Apply [`supabase/supro.sql`](supabase/supro.sql). Archive only: [`supabase/supro_on_letus.sql`](supabase/supro_on_letus.sql).
+3. Auth: enable email confirmations; Site URL `https://supro.si`; Redirect URLs `https://supro.si/**`, www, Pages preview.
+4. Register `seanfudan@163.com` → confirm → SQL `ensure_supro_economy` grants ≥100000 gold. Optional `app_metadata.role=admin`.
+5. Secrets: see [`.env.example`](.env.example) — Pages needs new `SUPABASE_*` + `LLM_BACKEND=deepseek` + `LLM_API_KEY` (**never commit the key**).
+6. **No user migration** from Letus — fresh signup only.
 
-Hard gold peg: **100 gold = $1**. SuPo Model: preflight `gold >= 20` (non-admin) → DeepSeek → debit **after** actual tokens. Soft Soft stays Letus-local.
+Hard gold peg: **100 gold = $1**. Supro Model: preflight `gold >= 20` (non-admin) → DeepSeek → debit **after** actual tokens. Pillars: explainable multifactor JSON · Transformer PV · research report · dynamic allocate.
 
 ---
 
@@ -113,8 +115,8 @@ Harness presets: Coding IDE · CN-reachable · Privacy/BYOK · Research. Share v
 1. Create Cloudflare Pages project **`supro`** (matches `wrangler.toml`).
 2. Add custom domains **`supro.si`** and **`www.supro.si`**. Retire any `agenter.si` attachment.
 3. Repo ships `public/CNAME` → `supro.si`.
-4. Put secrets (shared Letus Supabase + LLM + Iwencai) — see `.env.example`.
-5. Apply `supabase/supro_on_letus.sql` in the Letus Supabase SQL editor.
+4. Put secrets (new Supro Supabase + LLM + Iwencai) — see `.env.example`.
+5. Apply `supabase/supro.sql` in the **new** Supro Supabase SQL editor.
 6. Deploy via `.github/workflows/cloudflare.yml` on `main`.
 7. Keep GitHub Pages as fail-open mirror.
 
@@ -124,7 +126,7 @@ Harness presets: Coding IDE · CN-reachable · Privacy/BYOK · Research. Share v
 
 - OpenCool OHLC + indicators/signals spirit → `src/lib/ohlc`, `src/lib/indicators`, `src/lib/signals`
 - Skills: see root **`Skills.md`** and `skills/` packages
-- Site: bake-time JSON (`latest.json`, `ai-ratings.json`, `fin-corpus.json`, …). **`#/fin`** is login + shared-gold Fin Desk AIaaS. Browser never embeds broker SDKs or `IWENCAI_API_KEY`.
+- Site: bake-time JSON (`latest.json`, `ai-ratings.json`, `fin-corpus.json`, …). **`#/fin`** is confirmed-login Fin Desk AIaaS. Browser never embeds broker SDKs or `IWENCAI_API_KEY`.
 
 ---
 

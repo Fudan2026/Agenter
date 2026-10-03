@@ -128,7 +128,7 @@ export function renderShell(
         <a href="#/fin">${esc(t(locale, "finDeskTitle"))}</a>
         <a href="#/login">${esc(t(locale, "loginTitle"))}</a>
       </div>
-      <p class="footer-credit">${esc(t(locale, "tagline"))} · ${esc(locale === "zh" ? "苏坡大模型 · 教育演示，不构成投资建议" : "SuPo Model · educational, not advice")}</p>
+      <p class="footer-credit">${esc(t(locale, "tagline"))} · ${esc(locale === "zh" ? "苏坡大模型 · 教育演示，不构成投资建议" : "Supro Model · educational, not advice")}</p>
       <p class="footer-langs">
         <button type="button" data-locale="en" class="footer-lang ${locale === "en" ? "active" : ""}">English</button>
         <button type="button" data-locale="zh" class="footer-lang ${locale === "zh" ? "active" : ""}">中文</button>
