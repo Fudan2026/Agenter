@@ -27,7 +27,7 @@ const CLI = path.join(
 const THROTTLE_MS = 400;
 const TOP_N = 8;
 
-/** Six fixed Chinese editorial screens (not interactive NL in browser). */
+/** Editorial Chinese screens (not interactive NL in browser). */
 const SCREENS: Array<{
   id: string;
   nameZh: string;
