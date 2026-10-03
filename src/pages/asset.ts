@@ -564,7 +564,7 @@ export function renderAsset(
     root.innerHTML = renderShell(locale, "asset", body, {
       subtitle: t(locale, "quantSubtitle"),
     });
-    document.title = `${name} · Agenter`;
+    document.title = `${name} · Supro`;
 
     const chartEl = root.querySelector("#chart") as HTMLElement | null;
     const rsiEl = root.querySelector("#rsi-chart") as HTMLElement | null;

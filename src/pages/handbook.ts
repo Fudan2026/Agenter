@@ -108,7 +108,7 @@ export function renderHandbook(root: HTMLElement, locale: Locale): void {
   `;
 
   root.innerHTML = renderShell(locale, "handbook", body);
-  document.title = `${t(locale, "handbookTitle")} · Agenter`;
+  document.title = `${t(locale, "handbookTitle")} · Supro`;
 
   const search = root.querySelector<HTMLInputElement>("#handbook-search");
   const empty = root.querySelector<HTMLElement>("#handbook-empty");

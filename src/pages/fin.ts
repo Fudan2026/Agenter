@@ -116,7 +116,7 @@ export function renderFinDesk(
     root.innerHTML = renderShell(locale, "fin", body, {
       subtitle: t(locale, "finDeskTitle"),
     });
-    document.title = `${t(locale, "finDeskTitle")} · Agenter`;
+    document.title = `${t(locale, "finDeskTitle")} · Supro`;
 
     root.querySelectorAll("[data-mode]").forEach((btn) => {
       btn.addEventListener("click", () => {

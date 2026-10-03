@@ -393,7 +393,7 @@ export function renderLearn(root: HTMLElement, locale: Locale): void {
     </div>
   `;
   root.innerHTML = renderShell(locale, "learn", body);
-  document.title = `${t(locale, "learnTitle")} · Agenter`;
+  document.title = `${t(locale, "learnTitle")} · Supro`;
 
   root.querySelector("#learn-done")?.addEventListener("click", () => {
     setLearnDone(true);

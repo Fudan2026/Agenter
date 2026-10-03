@@ -622,7 +622,7 @@ export function renderPaper(
     `;
 
     root.innerHTML = renderShell(locale, "paper", body);
-    document.title = `${t(locale, "paperTitle")} · Agenter`;
+    document.title = `${t(locale, "paperTitle")} · Supro`;
     if (panelTarget && !scrolledPanel) {
       scrolledPanel = true;
       scrollToId(panelTarget);

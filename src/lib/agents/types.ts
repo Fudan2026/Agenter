@@ -71,6 +71,8 @@ export interface AgentRecord {
   toolsMcp: string;
   privacy: string;
   links: { homepage?: string; docs?: string };
+  /** Optional logo path under site root (e.g. logos/claude.svg). */
+  logo?: string;
   /** Scores 1–5; missing dims ignored in weightedScore. */
   scores: Partial<Record<DimensionId, number>>;
   notesZh?: string;

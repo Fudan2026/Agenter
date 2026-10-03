@@ -2,7 +2,8 @@
 
 import { AUTH_CONFIG, authCloudConfigured } from "./config";
 
-const SESSION_KEY = "agenter.auth.session.v1";
+const SESSION_KEY = "supro.auth.session.v1";
+const LEGACY_SESSION_KEY = "agenter.auth.session.v1";
 
 export interface AuthSession {
   access_token: string;
@@ -16,7 +17,14 @@ let memory: AuthSession | null = null;
 export function loadSession(): AuthSession | null {
   if (memory) return memory;
   try {
-    const raw = localStorage.getItem(SESSION_KEY);
+    let raw = localStorage.getItem(SESSION_KEY);
+    if (!raw) {
+      raw = localStorage.getItem(LEGACY_SESSION_KEY);
+      if (raw) {
+        localStorage.setItem(SESSION_KEY, raw);
+        localStorage.removeItem(LEGACY_SESSION_KEY);
+      }
+    }
     if (!raw) return null;
     memory = JSON.parse(raw) as AuthSession;
     return memory;

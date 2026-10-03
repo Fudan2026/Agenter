@@ -262,7 +262,7 @@ export function renderSim(
     `;
 
     root.innerHTML = renderShell(locale, "sim", body);
-    document.title = `${t(locale, "simTitle")} · Agenter`;
+    document.title = `${t(locale, "simTitle")} · Supro`;
 
     const symEl = root.querySelector("#sim-symbol") as HTMLSelectElement | null;
     const pxEl = root.querySelector("#sim-price") as HTMLInputElement | null;

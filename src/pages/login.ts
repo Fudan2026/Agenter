@@ -33,7 +33,7 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
       <p><a href="#/tools">${esc(t(locale, "backTools"))}</a></p>
     `;
     root.innerHTML = renderShell(locale, "login", body);
-    document.title = `${t(locale, "loginTitle")} · Agenter`;
+    document.title = `${t(locale, "loginTitle")} · Supro`;
 
     root.querySelector("#auth-toggle")?.addEventListener("click", () => {
       mode = mode === "login" ? "signup" : "login";
