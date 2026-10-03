@@ -195,7 +195,7 @@ export async function onRequestPost({ request, env }) {
   const cost = goldCost(est);
 
   const spend = await rpcWithServiceRole(env, "spend_gold_for_usage", {
-    p_user_id: user.id,
+    p_user_id: String(user.id),
     p_tokens: est,
     p_feature: `fin_desk_${mode}`,
     p_gold: cost,

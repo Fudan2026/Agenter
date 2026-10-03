@@ -1,5 +1,6 @@
 /**
- * POST /api/signup — email/password register via GoTrue + welcome economy.
+ * POST /api/signup — email/password register via shared Letus GoTrue.
+ * Ensures shared user_economy row (no isolated Agenter wallet).
  * Body: { email, password }
  */
 
@@ -8,9 +9,10 @@ import {
   anonKey,
   rpcWithServiceRole,
   supabaseAuthConfigured,
-  supabaseUrl,
 } from "../_shared/supabase.js";
 import { rateLimit } from "../_shared/rateLimit.js";
+
+const GOTRUE_HOST = "https://jrnabzfvdcmcoxyadmax.supabase.co";
 
 export async function onRequestPost({ request, env }) {
   if (!supabaseAuthConfigured(env)) {
@@ -32,9 +34,8 @@ export async function onRequestPost({ request, env }) {
     return json({ ok: false, code: "invalid_credentials" }, 400);
   }
 
-  const base = supabaseUrl(env);
   const key = anonKey(env);
-  const res = await fetch(`${base}/auth/v1/signup`, {
+  const res = await fetch(`${GOTRUE_HOST}/auth/v1/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -49,7 +50,11 @@ export async function onRequestPost({ request, env }) {
       {
         ok: false,
         code: data?.error_code || data?.code || "signup_failed",
-        error: data?.msg || data?.error_description || data?.message || "signup_failed",
+        error:
+          data?.msg ||
+          data?.error_description ||
+          data?.message ||
+          "signup_failed",
       },
       res.status >= 400 ? res.status : 400,
     );
@@ -57,19 +62,18 @@ export async function onRequestPost({ request, env }) {
 
   const userId = data?.user?.id || data?.id;
   if (userId) {
-    await rpcWithServiceRole(env, "ensure_user_economy", {
-      p_user_id: userId,
+    await rpcWithServiceRole(env, "ensure_supro_economy", {
+      p_user_id: String(userId),
     });
   }
 
-  // If signup returned session tokens (autoconfirm), pass through
   if (data?.access_token && data?.refresh_token) {
     return json({
       ok: true,
       access_token: data.access_token,
       refresh_token: data.refresh_token,
       user: data.user,
-      welcome: true,
+      shared_wallet: true,
     });
   }
 
@@ -77,6 +81,6 @@ export async function onRequestPost({ request, env }) {
     ok: true,
     user: data.user || { email },
     needs_confirm: true,
-    welcome: true,
+    shared_wallet: true,
   });
 }

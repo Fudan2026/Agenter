@@ -1,5 +1,5 @@
 /**
- * Same-origin password login → GoTrue password grant.
+ * Same-origin password login → GoTrue password grant (shared Letus project).
  * POST { email, password }
  * → { ok, access_token, refresh_token, user, gate: "password-login" }
  */
@@ -9,20 +9,20 @@ import {
   anonKey,
   serviceKey,
   supabaseAuthConfigured,
-  supabaseUrl,
 } from "../_shared/supabase.js";
 import { rateLimit } from "../_shared/rateLimit.js";
 
 const GATE = "password-login";
+/** Shared Letus / Supro Auth host — never trust a mangled SUPABASE_URL */
+const GOTRUE_HOST = "https://jrnabzfvdcmcoxyadmax.supabase.co";
 
 function withGate(payload) {
   return { ...payload, gate: GATE };
 }
 
 async function passwordGrant(env, email, password) {
-  const base = supabaseUrl(env);
   const key = anonKey(env);
-  const res = await fetch(`${base}/auth/v1/token?grant_type=password`, {
+  const res = await fetch(`${GOTRUE_HOST}/auth/v1/token?grant_type=password`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -68,10 +68,9 @@ function grantOk(body, extra = {}) {
 
 async function findUserIdByEmail(env, email) {
   const key = serviceKey(env);
-  const base = supabaseUrl(env);
-  if (!key || !base) return null;
+  if (!key) return null;
   const res = await fetch(
-    `${base}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
+    `${GOTRUE_HOST}/auth/v1/admin/users?email=${encodeURIComponent(email)}`,
     {
       headers: {
         apikey: key,
@@ -90,10 +89,9 @@ async function findUserIdByEmail(env, email) {
 
 async function autoConfirmEmail(env, userId) {
   const key = serviceKey(env);
-  const base = supabaseUrl(env);
-  if (!key || !userId || !base) return false;
+  if (!key || !userId) return false;
   const res = await fetch(
-    `${base}/auth/v1/admin/users/${encodeURIComponent(userId)}`,
+    `${GOTRUE_HOST}/auth/v1/admin/users/${encodeURIComponent(userId)}`,
     {
       method: "PUT",
       headers: {
