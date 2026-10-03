@@ -1,18 +1,18 @@
 :root {
-  --bg: #eef3f1;
-  --bg-accent: #d9e6e1;
-  --ink: #12231f;
-  --muted: #4a5c57;
-  --line: rgba(18, 35, 31, 0.12);
-  --card: #fbfefc;
+  --bg: #e8eef2;
+  --bg-accent: #d4e0ea;
+  --ink: #0f1c24;
+  --muted: #4a5d6a;
+  --line: rgba(15, 28, 36, 0.12);
+  --card: #f7fafc;
   --bull: #15803d;
   --bear: #b91c1c;
-  --neutral: #4a5c57;
-  --accent: #0b6e4f;
-  --accent-2: #1b4332;
-  --radius: 12px;
-  --font: "Fraunces", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
-  --sans: "Source Sans 3", "Segoe UI", "PingFang SC", "Noto Sans SC",
+  --neutral: #4a5d6a;
+  --accent: #0a4d68;
+  --accent-2: #083344;
+  --radius: 10px;
+  --font: "Instrument Serif", "Iowan Old Style", Georgia, serif;
+  --sans: "DM Sans", "Segoe UI", "PingFang SC", "Noto Sans SC",
     "Hiragino Sans GB", sans-serif;
 }
 
@@ -26,9 +26,9 @@ body {
   padding: 0;
   min-height: 100%;
   background:
-    radial-gradient(1100px 520px at 8% -8%, #cfe8df 0%, transparent 55%),
-    radial-gradient(900px 480px at 100% 0%, #d7e3f0 0%, transparent 48%),
-    linear-gradient(180deg, #eef3f1 0%, #e4ebe7 100%);
+    radial-gradient(1100px 520px at 8% -8%, #c5d9e8 0%, transparent 55%),
+    radial-gradient(900px 480px at 100% 0%, #d8e4ef 0%, transparent 48%),
+    linear-gradient(180deg, #e8eef2 0%, #dfe7ee 100%);
   color: var(--ink);
   font-family: var(--sans);
   line-height: 1.5;
@@ -154,21 +154,22 @@ a:hover {
   max-width: 46rem;
 }
 
-/* Brand-first hero — one composition */
+/* Brand-first hero — one composition (directory follows) */
 .brand-hero {
-  min-height: min(72vh, 560px);
+  min-height: min(42vh, 360px);
   display: flex;
   flex-direction: column;
   justify-content: center;
-  padding: 2rem 0 1rem;
+  padding: 1.5rem 0 0.75rem;
   animation: hero-in 0.7s ease-out both;
 }
 
 .hero-kicker {
-  text-transform: lowercase;
-  letter-spacing: 0.08em;
+  text-transform: none;
+  letter-spacing: 0.06em;
   color: var(--accent);
   font-size: 0.95rem;
+  font-weight: 600;
   margin: 0 0 0.5rem;
 }
 
@@ -1885,4 +1886,162 @@ a.index-chip:hover {
 
 .auth-chip {
   opacity: 0.9;
+}
+
+/* Home — AI directory + quant strip */
+.home-directory,
+.home-quant-strip {
+  margin-top: 1.75rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid var(--line);
+  animation: hero-in 0.85s ease-out both;
+  animation-delay: 0.12s;
+}
+
+.home-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.home-section-head h2 {
+  margin: 0 0 0.35rem;
+}
+
+.home-ai-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 0.75rem;
+}
+
+.home-ai-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.65rem;
+  align-items: center;
+  padding: 0.65rem 0.75rem;
+  background: color-mix(in srgb, var(--card) 88%, transparent);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.home-ai-card:hover {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
+}
+
+.home-ai-logo-wrap {
+  width: 40px;
+  height: 40px;
+  position: relative;
+}
+
+.home-ai-logo {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: cover;
+  display: block;
+}
+
+.home-ai-initials {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  place-items: center;
+  background: var(--accent-2);
+  color: #f8fafc;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.home-ai-name {
+  font-weight: 650;
+  color: var(--ink);
+  display: block;
+  line-height: 1.25;
+}
+
+.home-ai-name:hover {
+  color: var(--accent);
+}
+
+.home-ai-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+}
+
+.home-rank-chip {
+  border: 1px solid var(--line);
+  background: var(--card);
+  border-radius: 6px;
+  padding: 0.15rem 0.45rem;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 650;
+  cursor: pointer;
+  color: var(--accent-2);
+}
+
+.home-rank-chip:hover {
+  border-color: var(--accent);
+}
+
+.home-ai-link {
+  font-size: 0.78rem;
+}
+
+.home-ranks-panel {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card);
+  animation: hero-in 0.35s ease-out both;
+}
+
+.home-ranks-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.home-ranks-head h3 {
+  margin: 0;
+  font-family: var(--font);
+}
+
+.home-ranks-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.home-ranks-table th,
+.home-ranks-table td {
+  text-align: left;
+  padding: 0.4rem 0.35rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.home-quant-strip h2 {
+  margin-top: 0;
+}
+
+@media (max-width: 560px) {
+  .home-ai-card {
+    grid-template-columns: auto 1fr;
+  }
+  .home-ai-actions {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: flex-start;
+  }
 }

@@ -258,7 +258,7 @@ async function render(): Promise<void> {
   try {
     switch (route.page) {
       case "home":
-        renderBrandHome(root, locale);
+        renderBrandHome(root, locale, aiRatingsData);
         break;
       case "login":
         renderLogin(root, locale);

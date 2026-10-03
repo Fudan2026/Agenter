@@ -29,8 +29,8 @@ function goldCost(tokens) {
 function systemPrompt(mode, locale) {
   const zh = locale === "zh";
   const base = zh
-    ? "你是 Agenter Fin Desk（AIaaS）。教育演示，不构成投资建议。不是 Fin-R1 权重，不下真单。回答简洁，给出可执行的下一步（看板/Lab 深链）。"
-    : "You are Agenter Fin Desk (AIaaS). Educational only — not investment advice. Not Fin-R1 weights; no live orders. Be concise; suggest next steps (board/Lab deep-links).";
+    ? "你是 Supro Fin Desk（AIaaS · Super Professional）。教育演示，不构成投资建议。不是 Fin-R1 权重，不下真单。回答简洁，给出可执行的下一步（看板/Lab 深链）。"
+    : "You are Supro Fin Desk (AIaaS · Super Professional). Educational only — not investment advice. Not Fin-R1 weights; no live orders. Be concise; suggest next steps (board/Lab deep-links).";
   const byMode = {
     pick: zh
       ? "模式=智能选股：根据用户描述提出筛选逻辑，可引用烘焙精选屏，说明代理宇宙局限。"
@@ -188,14 +188,14 @@ export async function onRequestPost({ request, env }) {
   if (!prompt || prompt.length > 4000) {
     return json({ ok: false, code: "invalid_prompt" }, 400);
   }
-  const locale = body?.locale === "en" ? "en" : "zh";
+  const locale = body?.locale === "zh" ? "zh" : "en";
   const context = String(body?.context || "").slice(0, 12000);
 
   const est = estimateTokens(prompt + context);
   const cost = goldCost(est);
 
   const spend = await rpcWithServiceRole(env, "spend_gold_for_usage", {
-    p_user_id: user.id,
+    p_user_id: String(user.id),
     p_tokens: est,
     p_feature: `fin_desk_${mode}`,
     p_gold: cost,

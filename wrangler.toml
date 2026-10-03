@@ -1,9 +1,12 @@
-# Cloudflare Pages — production project `agenter` (https://agenter.si)
+# Cloudflare Pages — production project `supro` (https://supro.si)
 # Deploy: .github/workflows/cloudflare.yml → wrangler pages deploy
 #
 # NOTE: Do NOT add Workers-style [assets] while this is a Pages project.
 # SPA fallback: public/_redirects
+#
+# Owner ops: bind custom domains supro.si + www.supro.si on this Pages project;
+# retire any agenter.si custom-domain attachment.
 
-name = "agenter"
+name = "supro"
 pages_build_output_dir = "dist"
 compatibility_date = "2024-11-01"

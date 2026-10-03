@@ -2,14 +2,15 @@
 
 export type Locale = "zh" | "en";
 
-export const LOCALE_KEY = "agenter.locale";
+export const LOCALE_KEY = "supro.locale";
+const LEGACY_LOCALE_KEY = "agenter.locale";
 
 export const STRINGS = {
   zh: {
-    brand: "Agenter",
-    homeH1: "Agenter",
-    homeSub: "挑选更合适的 Agent",
-    tagline: "for better agents",
+    brand: "Supro",
+    homeH1: "Supro",
+    homeSub: "超级专业 · Super Professional",
+    tagline: "Super Professional",
     localeZh: "中文",
     localeEn: "EN",
     navHome: "首页",
@@ -23,16 +24,29 @@ export const STRINGS = {
     ctaLearn: "新手引导",
     ctaHandbook: "阅读手册",
     ctaTools: "工具箱",
-    handbookTitle: "Agenter 手册",
+    ctaQuantHome: "量化工作台",
+    ctaFinHome: "Fin Desk",
+    handbookTitle: "Supro 手册",
     handbookLead:
-      "双语深手册：模块说明、13 项技能目录、端到端工作流与披露。入门页负责短练习；手册负责深度。",
+      "双语深手册：模块说明、技能目录、端到端工作流与披露。入门页负责短练习；手册负责深度。",
     handbookSearch: "搜索章节…",
     handbookToc: "目录",
     handbookSkillsChip: "相关技能",
     toolHandbook: "手册",
     toolHandbookDesc: "模块、技能目录与工作流（深手册）。",
     homeLead:
-      "用场景过滤 → Harness 加权对比 → 留下清晰短名单。量化复盘与纸盘在工具区，不抢品牌首页。",
+      "超级专业的 AI 目录与周更排名，加上量化投资工作台。对比、筛选、复盘——以极度专业服务为先。",
+    homeDirectoryTitle: "AI 目录",
+    homeDirectoryLead: "名称 · Logo · 官网链接。点击排名查看每周 Arena / AA 榜。",
+    homeWeeklyRanks: "周排名",
+    homeCloseRanks: "关闭排名",
+    homeVisitSite: "官网",
+    homeRankCol: "排名",
+    homeQuantStripTitle: "量化投资",
+    homeQuantStripLead:
+      "形态 · 因子 · 纸盘 · Fin Desk（登录+金币）。公开工具 ≈ L1–L2；Fin Desk ≈ L2→L3；浏览器 L4 实盘禁止。",
+    goldUsdPeg: "100 金币 = $1（与 letusIELTS 共用硬金币）",
+    sharedWalletNote: "账户与金币与 letusIELTS 互通（同一 Supabase 钱包）。",
     quantTitle: "量化复盘",
     quantSubtitle: "A 股 / CN ETF 形态演示（工具）",
     dailyReview: "每日复盘日报",
@@ -94,10 +108,10 @@ export const STRINGS = {
     loginNote: "密码登录走同源 /api/password-login（Cloudflare Pages Functions）。",
     signupNeedsConfirm: "请查收确认邮件后再登录（若项目开启邮箱验证）。",
     accountTitle: "账户",
-    accountLead: "金币余额与兑换码。Fin Desk 按 Token 估算扣币。",
+    accountLead: "共用硬金币余额与兑换码。Fin Desk 按 Token 估算扣币。100 金币 = $1。",
     goldBalance: "金币余额",
     goldUnit: "金币",
-    welcomeGoldNote: "新用户欢迎赠送 100 金币（ensure_user_economy）。",
+    welcomeGoldNote: "钱包与 letusIELTS 共用；兑换码可充值金币（ensure_supro_economy / gold_codes）。",
     redeemCode: "兑换码",
     redeemSubmit: "兑换",
     logout: "退出登录",
@@ -105,7 +119,7 @@ export const STRINGS = {
     economyUnavailable: "经济接口暂不可用（检查 Supabase / Functions 密钥）。",
     insufficientGold: "金币不足，请兑换码或稍后再试。",
     finDeskTitle: "Fin Desk",
-    finDeskLead: "AIaaS 金融助手：智能选股 / 因子 / 策略草稿 / 复盘问答。需登录并消耗金币。",
+    finDeskLead: "AIaaS 金融助手：智能选股 / 因子 / 策略草稿 / 复盘问答。需登录并消耗共用金币。",
     finDeskStamp: "AIaaS · 非投资建议 · 非 Fin-R1 权重",
     finModePick: "智能选股",
     finModeFactor: "智能因子",
@@ -529,10 +543,10 @@ export const STRINGS = {
     execMatSide: "物化方向",
   },
   en: {
-    brand: "Agenter",
-    homeH1: "Agenter",
-    homeSub: "for better agents — compare and choose",
-    tagline: "for better agents",
+    brand: "Supro",
+    homeH1: "Supro",
+    homeSub: "Super Professional — AI directory & quant desk",
+    tagline: "Super Professional",
     localeZh: "中文",
     localeEn: "EN",
     navHome: "Home",
@@ -546,16 +560,30 @@ export const STRINGS = {
     ctaLearn: "Guided tour",
     ctaHandbook: "Read handbook",
     ctaTools: "Tools",
-    handbookTitle: "Agenter Handbook",
+    ctaQuantHome: "Quant desk",
+    ctaFinHome: "Fin Desk",
+    handbookTitle: "Supro Handbook",
     handbookLead:
-      "Bilingual deep manual: modules, 13-skill catalog, end-to-end workflows, and disclosures. Learn stays short practice; Handbook owns depth.",
+      "Bilingual deep manual: modules, skill catalog, end-to-end workflows, and disclosures. Learn stays short practice; Handbook owns depth.",
     handbookSearch: "Search chapters…",
     handbookToc: "Contents",
     handbookSkillsChip: "Skills used here",
     toolHandbook: "Handbook",
     toolHandbookDesc: "Modules, skill catalog, and workflows (deep manual).",
     homeLead:
-      "Filter by scenario → Harness-weighted compare → leave with a shortlist. Quant review and paper trading live under Tools — not the brand face.",
+      "A Super Professional AI directory with weekly ranks, plus a serious quant investing desk. Compare, screen, review — extreme professional service first.",
+    homeDirectoryTitle: "AI directory",
+    homeDirectoryLead:
+      "Name · logo · official site. Open weekly Arena / AA ranks with one click.",
+    homeWeeklyRanks: "Weekly ranks",
+    homeCloseRanks: "Close ranks",
+    homeVisitSite: "Site",
+    homeRankCol: "Rank",
+    homeQuantStripTitle: "Quant investing",
+    homeQuantStripLead:
+      "Patterns · factors · paper · Fin Desk (login + gold). Public tools ≈ L1–L2; Fin Desk ≈ L2→L3; browser L4 live trading is out.",
+    goldUsdPeg: "100 gold = $1 (hard gold shared with letusIELTS)",
+    sharedWalletNote: "Accounts and gold interop with letusIELTS (same Supabase wallet).",
     quantTitle: "Quant review",
     quantSubtitle: "A-share / CN ETF pattern demo (tool)",
     dailyReview: "Daily review",
@@ -613,7 +641,7 @@ export const STRINGS = {
     aaIq: "AA IQ",
     loginTitle: "Log in",
     loginLead:
-      "Register to use Fin Desk (gold-metered). Quant tools stay available anonymously.",
+      "Same account as letusIELTS. Register to use Fin Desk (shared gold). Quant tools stay anonymous.",
     loginEmail: "Email",
     loginPassword: "Password",
     loginSubmit: "Log in",
@@ -625,10 +653,12 @@ export const STRINGS = {
     signupNeedsConfirm:
       "Confirm your email before logging in (if the project requires it).",
     accountTitle: "Account",
-    accountLead: "Gold balance and redeem codes. Fin Desk spends gold by token estimate.",
+    accountLead:
+      "Shared hard-gold balance and redeem codes. Fin Desk spends by token estimate. 100 gold = $1.",
     goldBalance: "Gold balance",
     goldUnit: "gold",
-    welcomeGoldNote: "New users receive 100 welcome gold (ensure_user_economy).",
+    welcomeGoldNote:
+      "Wallet shared with letusIELTS; redeem codes credit gold (ensure_supro_economy / gold_codes).",
     redeemCode: "Redeem code",
     redeemSubmit: "Redeem",
     logout: "Log out",
@@ -638,7 +668,7 @@ export const STRINGS = {
     insufficientGold: "Insufficient gold — redeem a code or try later.",
     finDeskTitle: "Fin Desk",
     finDeskLead:
-      "AIaaS finance desk: smart screen / factors / strategy draft / review Q&A. Login + gold required.",
+      "AIaaS finance desk: smart screen / factors / strategy draft / review Q&A. Login + shared gold required.",
     finDeskStamp: "AIaaS · not advice · not Fin-R1 weights",
     finModePick: "Smart screen",
     finModeFactor: "Smart factors",
@@ -1076,18 +1106,26 @@ export function t(locale: Locale, key: StringKey): string {
 
 export function detectLocale(): Locale {
   try {
-    const saved = localStorage.getItem(LOCALE_KEY);
+    let saved = localStorage.getItem(LOCALE_KEY);
+    if (!saved) {
+      saved = localStorage.getItem(LEGACY_LOCALE_KEY);
+      if (saved === "zh" || saved === "en") {
+        localStorage.setItem(LOCALE_KEY, saved);
+        localStorage.removeItem(LEGACY_LOCALE_KEY);
+      }
+    }
+    // English default; only honor an explicit saved choice (zh or en).
     if (saved === "zh" || saved === "en") return saved;
   } catch {
     /* ignore */
   }
-  const nav = typeof navigator !== "undefined" ? navigator.language : "en";
-  return nav.toLowerCase().startsWith("zh") ? "zh" : "en";
+  return "en";
 }
 
 export function setLocale(locale: Locale): void {
   try {
     localStorage.setItem(LOCALE_KEY, locale);
+    localStorage.removeItem(LEGACY_LOCALE_KEY);
   } catch {
     /* ignore */
   }

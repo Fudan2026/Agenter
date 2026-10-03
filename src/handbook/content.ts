@@ -269,12 +269,12 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
   {
     id: "what",
     title: {
-      zh: "Agenter 是什么 · JTBD",
-      en: "What Agenter is · JTBD",
+      zh: "Supro 是什么 · JTBD",
+      en: "What Supro is · JTBD",
     },
     body: {
-      zh: "Agenter（agenter.si）帮你**过滤、对比、挑选**更合适的 AI / Agent 产品。品牌首页只讲「挑选更合适的 Agent」；量化复盘、纸盘、模拟炒股与资讯都在工具区，不抢首页。\n\n核心 JTBD：场景过滤 → Harness 加权对比 → 留下清晰短名单。次要 JTBD：用烘焙信号练习纸盘/模拟，导出人工券商清单（本站永不下真单）。\n\n站点是 Vite + TypeScript SPA；浏览器不嵌入问财 / 券商 API Key。Agent CLI 通过仓库根目录 Skills.md 与 skills/ 包调用 SkillHub。",
-      en: "Agenter (agenter.si) helps you **filter, compare, and pick** better AI / Agent products. The brand home is only “for better agents”; Quant, Paper, Sim, and News live under Tools — not the brand face.\n\nPrimary JTBD: scenario filter → Harness-weighted compare → leave with a shortlist. Secondary JTBD: practice paper/sim on baked signals and export a human broker checklist (this site never places live orders).\n\nThe site is a Vite + TypeScript SPA; the browser never embeds Iwencai / broker API keys. Agents use SkillHub via repo-root Skills.md and the skills/ packages.",
+      zh: "Supro（supro.si · Super Professional）帮你**过滤、对比、挑选**更合适的 AI / Agent 产品，并以极度专业服务承载量化投资工作台。品牌首页是 AI 目录（Logo · 名称 · 官网）与周更排名，同时展示量化入口。\n\n核心 JTBD：场景过滤 → Harness 加权对比 → 留下清晰短名单。次要 JTBD：用烘焙信号练习纸盘/模拟，导出人工券商清单（本站永不下真单）。\n\n站点是 Vite + TypeScript SPA；默认英文；浏览器不嵌入问财 / 券商 API Key。账户与硬金币与 letusIELTS 共用（100 金币 = $1）。",
+      en: "Supro (supro.si · Super Professional) helps you **filter, compare, and pick** AI / Agent products, and hosts a serious quant investing desk. The brand home is an AI directory (logo · name · site) with weekly ranks, plus Quant entry points.\n\nPrimary JTBD: scenario filter → Harness-weighted compare → leave with a shortlist. Secondary JTBD: practice paper/sim on baked signals and export a human broker checklist (this site never places live orders).\n\nThe site is a Vite + TypeScript SPA; English by default. Accounts and hard gold are shared with letusIELTS (100 gold = $1).",
     },
     deepLinks: [
       { href: "#/", label: { zh: "首页", en: "Home" } },
@@ -286,8 +286,8 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
     id: "mod-home",
     title: { zh: "模块 · 首页", en: "Module · Home" },
     body: {
-      zh: "品牌首页：主标题是 Agenter，副文案强调挑选 Agent。主 CTA 进对比；次 CTA 进入门。工具箱入口在次级区，避免把首页做成量化看板。",
-      en: "Brand home: H1 is Agenter; copy stresses picking agents. Primary CTA → Compare; secondary → Learn. Tools sit in a secondary block so Home is never Quant-only.",
+      zh: "品牌首页：主标题是 Supro（Super Professional）。主区是 AI 目录与周排名；量化投资条带在首页可见，不只藏在工具箱。",
+      en: "Brand home: H1 is Supro (Super Professional). Primary block is the AI directory + weekly ranks; Quant investing is visible on Home — not Tools-only.",
     },
     deepLinks: [{ href: "#/", label: { zh: "打开首页", en: "Open Home" } }],
   },
@@ -654,8 +654,8 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Ecosystem · Fin Desk AIaaS & gold",
     },
     body: {
-      zh: "对标匡时大模型产教融合全景：**基础设施**靠 bake 数据管道与 `fin-corpus`；**中台**是 Cloudflare Functions 上的 Fin Desk（选股/因子/策略/复盘）；**产品**层不训练 Fin-R1 权重，而是 AIaaS 网关 + RAG。\n\n**账户与金币。** 注册/登录后进入 `#/fin`。服务端 `spend_gold_for_usage` 按估算 Token 扣金币（欢迎赠送 100）。兑换码见账户页。公开 Quant/Compare 仍可匿名使用。\n\n**成熟度。** 公开工具 ≈ L1–L2；Fin Desk ≈ L2→L3 建议型助手；浏览器 L4 自治实盘仍禁止。\n\n**域名。** 生产目标 `agenter.si`（Cloudflare Pages）；GitHub Pages 为镜像直至 DNS 切换完成。\n\n**作业：** 注册并查看金币余额；用 Fin Desk「策略草稿」生成一条 Lab 深链；写一句「本站 Fin Desk 与 Fin-R1 训练的区别」。",
-      en: "Mapped to the Kuangshi industry-education panorama: **infra** = bake pipelines + `fin-corpus`; **mid-platform** = Fin Desk on Cloudflare Functions (screen/factor/strategy/review); **product** does not train Fin-R1 weights — it is an AIaaS gateway + RAG.\n\n**Accounts & gold.** After register/login open `#/fin`. Server `spend_gold_for_usage` meters estimated tokens (welcome 100 gold). Redeem codes on Account. Public Quant/Compare stay anonymous.\n\n**Maturity.** Public tools ≈ L1–L2; Fin Desk ≈ L2→L3 advisory; browser L4 live autonomy remains forbidden.\n\n**Domain.** Production target `agenter.si` (Cloudflare Pages); GitHub Pages mirrors until DNS cutover completes.\n\n**Homework:** Register and check gold; use Fin Desk strategy draft for a Lab deep-link; write one sentence on Fin Desk vs Fin-R1 training.",
+      zh: "对标匡时大模型产教融合全景：**基础设施**靠 bake 数据管道与 `fin-corpus`；**中台**是 Cloudflare Functions 上的 Fin Desk（选股/因子/策略/复盘）；**产品**层不训练 Fin-R1 权重，而是 AIaaS 网关 + RAG。\n\n**账户与金币。** 与 letusIELTS **共用** Supabase Auth 与硬金币（`GOLD_PER_USD=100`）。登录后进入 `#/fin`；服务端 `spend_gold_for_usage` 扣共用钱包。兑换码见账户页（`SUPRO*` / Letus VIP gold）。公开 Quant/Compare 仍可匿名使用。\n\n**成熟度。** 公开工具 ≈ L1–L2；Fin Desk ≈ L2→L3 建议型助手；浏览器 L4 自治实盘仍禁止。\n\n**域名。** 生产域 `supro.si`（Cloudflare Pages 项目 `supro`）；GitHub Pages 为镜像。\n\n**作业：** 用 Letus 账号登录并查看金币；用 Fin Desk「策略草稿」生成 Lab 深链；写一句「Supro 与 Fin-R1 训练的区别」。",
+      en: "Mapped to the Kuangshi industry-education panorama: **infra** = bake pipelines + `fin-corpus`; **mid-platform** = Fin Desk on Cloudflare Functions (screen/factor/strategy/review); **product** does not train Fin-R1 weights — it is an AIaaS gateway + RAG.\n\n**Accounts & gold.** **Shared** with letusIELTS Supabase Auth and hard gold (`GOLD_PER_USD=100`). After login open `#/fin`; server `spend_gold_for_usage` debits the shared wallet. Redeem on Account (`SUPRO*` / Letus VIP gold). Public Quant/Compare stay anonymous.\n\n**Maturity.** Public tools ≈ L1–L2; Fin Desk ≈ L2→L3 advisory; browser L4 live autonomy remains forbidden.\n\n**Domain.** Production `supro.si` (Cloudflare Pages project `supro`); GitHub Pages is a mirror.\n\n**Homework:** Log in with a Letus account and check gold; use Fin Desk strategy draft for a Lab deep-link; write one sentence on Supro vs Fin-R1 training.",
     },
     deepLinks: [
       { href: "#/fin", label: { zh: "Fin Desk", en: "Fin Desk" } },

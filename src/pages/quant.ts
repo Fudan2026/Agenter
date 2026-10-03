@@ -1468,7 +1468,7 @@ export function renderQuant(
     root.innerHTML = renderShell(locale, "quant", body, {
       subtitle: t(locale, "quantSubtitle"),
     });
-    document.title = `${t(locale, "quantTitle")} · Agenter`;
+    document.title = `${t(locale, "quantTitle")} · Supro`;
 
     root.querySelector("#f-bias")?.addEventListener("change", (e) => {
       biasFilter = (e.target as HTMLSelectElement).value as typeof biasFilter;

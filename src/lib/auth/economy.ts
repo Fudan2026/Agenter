@@ -1,11 +1,16 @@
-/** Economy client helpers. */
+/** Economy client helpers — shared Letus hard gold (GOLD_PER_USD = 100). */
 
 import { accessToken, isLoggedIn } from "./session";
+import { GOLD_PER_USD } from "./config";
+
+export { GOLD_PER_USD };
 
 export interface EconomyBalance {
   gold: number;
   total_earned: number;
   email?: string | null;
+  gold_per_usd?: number;
+  shared_wallet?: boolean;
 }
 
 export async function fetchBalance(): Promise<EconomyBalance | null> {
@@ -21,12 +26,16 @@ export async function fetchBalance(): Promise<EconomyBalance | null> {
       gold?: number;
       total_earned?: number;
       email?: string | null;
+      gold_per_usd?: number;
+      shared_wallet?: boolean;
     };
     if (!data.ok) return null;
     return {
       gold: Number(data.gold ?? 0),
       total_earned: Number(data.total_earned ?? 0),
       email: data.email,
+      gold_per_usd: Number(data.gold_per_usd ?? GOLD_PER_USD),
+      shared_wallet: Boolean(data.shared_wallet),
     };
   } catch {
     return null;

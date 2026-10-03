@@ -273,7 +273,7 @@ export function renderNews(
     </section>
   `;
   root.innerHTML = renderShell(locale, "news", body);
-  document.title = `${t(locale, "newsNavTitleFull")} · Agenter`;
+  document.title = `${t(locale, "newsNavTitleFull")} · Supro`;
   const section = readHashQuery().get("section") ?? "";
   const target = NEWS_SECTION_IDS[section];
   if (target) scrollToId(target);
@@ -396,5 +396,5 @@ export function renderTools(
     ${iwBlock}
   `;
   root.innerHTML = renderShell(locale, "tools", body);
-  document.title = `${t(locale, "toolsTitle")} · Agenter`;
+  document.title = `${t(locale, "toolsTitle")} · Supro`;
 }

@@ -426,7 +426,7 @@ export function renderCompare(
     `;
 
     root.innerHTML = renderShell(locale, "compare", body);
-    document.title = `${t(locale, "compareTitle")} · Agenter`;
+    document.title = `${t(locale, "compareTitle")} · Supro`;
 
     const bindInput = (sel: string, fn: (v: string) => void) => {
       root.querySelector(sel)?.addEventListener("input", (e) => {
