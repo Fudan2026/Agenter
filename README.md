@@ -4,7 +4,7 @@
 
 Live site (GitHub Pages mirror): [https://fudan2026.github.io/Agenter/](https://fudan2026.github.io/Agenter/)
 
-Production domain: [https://agenter.si](https://agenter.si) — Cloudflare Pages + Functions (letusIELTS-style). Apply `public/CNAME` + CF custom domain; set Pages secrets (Supabase / LLM / Iwencai).
+Production domain: [https://supro.si](https://supro.si) — Cloudflare Pages + Functions (letusIELTS-style). Apply `public/CNAME` + CF custom domain; set Pages secrets (Supabase / LLM / Iwencai).
 
 Agenter helps people **filter, compare, and pick** AI / Agent products. Quant review, signal boards, and **快速实盘** (checklist export + in-browser paper at **¥100,000,000** start) are **secondary tools**.
 
@@ -186,11 +186,11 @@ Multiple testing · lookahead · IS→OOS degradation · cost/liquidity — plus
 
 ## Phase 4: Cloudflare DNS + Pages (this round)
 
-1. Create Cloudflare Pages project **`agenter`** (matches `wrangler.toml`).
-2. Add custom domains **`agenter.si`** and **`www.agenter.si`** (CNAME/ALIAS to Pages).
-3. Repo ships `public/CNAME` → `agenter.si`.
-4. Put secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `LLM_*`, plus Actions `CF_API_TOKEN` / `CF_ACCOUNT_ID` / `VITE_SUPABASE_*` (see `.env.example`).
-5. Apply [`supabase/economy.sql`](supabase/economy.sql) in Supabase SQL editor.
+1. Create Cloudflare Pages project **`supro`** (matches `wrangler.toml`).
+2. Add custom domains **`supro.si`** and **`www.supro.si`** (CNAME/ALIAS to Pages). Retire any `agenter.si` custom-domain attachment.
+3. Repo ships `public/CNAME` → `supro.si`.
+4. Put secrets: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`, `LLM_*`, plus Actions `CF_API_TOKEN` / `CF_ACCOUNT_ID` / `VITE_SUPABASE_*` (see `.env.example`). Point Supabase at the **shared Letus project**.
+5. Apply [`supabase/supro_on_letus.sql`](supabase/supro_on_letus.sql) in that Supabase SQL editor (**do not** apply legacy `economy.sql` onto Letus).
 6. Deploy via `.github/workflows/cloudflare.yml` on `main`.
 7. Keep GitHub Pages workflow as fail-open mirror until apex cutover verified.
 
@@ -226,5 +226,5 @@ Bake-time + agent CLI for Iwencai skills is allowed; browser-side Iwencai / THS 
 | Resource | URL |
 |----------|-----|
 | Live Pages | https://fudan2026.github.io/Agenter/ |
-| Intended domain | https://agenter.si |
+| Intended domain | https://supro.si |
 | Repo | https://github.com/Fudan2026/Agenter |
