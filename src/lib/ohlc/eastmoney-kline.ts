@@ -36,13 +36,16 @@ interface EmKlineResp {
   rc?: number;
 }
 
+/** Target ~10y trading days; EM may return fewer — callers disclose sampleYears. */
+export const EM_MAX_DAILY_BARS = 2600;
+
 /**
- * Fetch ~1y daily OHLCV from East Money and map into TickerRawData.
+ * Fetch long-history daily OHLCV from East Money and map into TickerRawData.
  * Failures return null — never throw.
  */
 export async function fetchEmKline(
   symbol: string,
-  limit = 280,
+  limit = EM_MAX_DAILY_BARS,
 ): Promise<TickerRawData | null> {
   const secid = yahooToEmSecid(symbol);
   if (!secid) return null;

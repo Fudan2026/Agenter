@@ -8,6 +8,7 @@ import type {
   DimensionId,
 } from "../lib/agents/types";
 import { DIMENSION_IDS } from "../lib/agents/types";
+import type { AiRatingsPayload } from "../lib/ai-ratings/map";
 import {
   DEFAULT_WEIGHTS,
   encodeCompareShare,
@@ -105,6 +106,7 @@ export function renderCompare(
   root: HTMLElement,
   locale: Locale,
   agents: AgentRecord[],
+  aiRatings: AiRatingsPayload | null = null,
 ): void {
   const shared = parseCompareShare(location.hash);
   const presetKey = readHashQuery().get("preset") ?? "";
@@ -252,10 +254,16 @@ export function renderCompare(
           </div>`;
         }
         const name = locale === "zh" ? col.nameZh : col.nameEn;
+        const live = ratingsById.get(col.id);
+        const liveLine =
+          live && (live.arenaElo != null || live.aaIq != null)
+            ? `<div class="muted tiny">${live.arenaElo != null ? `Elo ${live.arenaElo}` : ""}${live.arenaElo != null && live.aaIq != null ? " · " : ""}${live.aaIq != null ? `IQ ${live.aaIq}` : ""}</div>`
+            : "";
         return `<div class="compare-slot">
           <button type="button" class="slot-x" data-remove="${esc(col.id)}" aria-label="remove">×</button>
           <div class="slot-name">${esc(name)}</div>
           <div class="score-big">${scoreById[col.id].toFixed(2)}</div>
+          ${liveLine}
           <label class="tiny">${esc(t(locale, "compareAddAgent"))}
             <select data-swap="${esc(col.id)}">
               ${agents
@@ -273,11 +281,43 @@ export function renderCompare(
       })
       .join("");
 
+    const ratingsById = new Map(
+      (aiRatings?.rows ?? []).map((r) => [r.agentId, r]),
+    );
+    const liveStrip =
+      !aiRatings || !aiRatings.rows.length
+        ? ""
+        : `<section class="live-ratings-strip">
+      <h2>${esc(t(locale, "liveRatings"))}</h2>
+      <p class="muted tiny">${esc(locale === "zh" ? aiRatings.note.zh : aiRatings.note.en)}
+        · ${esc(aiRatings.generatedAt.slice(0, 19))}
+        · ${esc(aiRatings.sources.join(" · "))}</p>
+      <div class="ratings-row">
+        ${aiRatings.rows
+          .slice(0, 12)
+          .map((r) => {
+            const agent = agents.find((a) => a.id === r.agentId);
+            const name = agent
+              ? locale === "zh"
+                ? agent.nameZh
+                : agent.nameEn
+              : r.agentId;
+            const elo =
+              r.arenaElo != null ? `${t(locale, "arenaElo")} ${r.arenaElo}` : "";
+            const iq =
+              r.aaIq != null ? `${t(locale, "aaIq")} ${r.aaIq}` : "";
+            return `<span class="rating-pill"><strong>${esc(name)}</strong> ${esc([elo, iq].filter(Boolean).join(" · "))}</span>`;
+          })
+          .join("")}
+      </div>
+    </section>`;
+
     const body = `
       <h1>${esc(t(locale, "compareTitle"))}</h1>
       <p class="lead">${esc(t(locale, "compareLead"))}</p>
       <p class="muted tiny">${esc(t(locale, "editorialNote"))}</p>
       <p class="muted tiny">${esc(t(locale, "compareQuantNote"))}</p>
+      ${liveStrip}
       ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
 
       <section class="harness presets-first">
@@ -363,16 +403,19 @@ export function renderCompare(
         </div>
         <div class="table-wrap sticky-first">
           <table class="agent-table">
-            <thead><tr><th></th><th>Name</th><th>${esc(t(locale, "weightedScore"))}</th></tr></thead>
+            <thead><tr><th></th><th>Name</th><th>${esc(t(locale, "weightedScore"))}</th><th>${esc(t(locale, "arenaElo"))}</th><th>${esc(t(locale, "aaIq"))}</th></tr></thead>
             <tbody>
               ${filtered
                 .map((a) => {
                   const name = locale === "zh" ? a.nameZh : a.nameEn;
                   const score = weightedScore(a.scores, weights);
+                  const live = ratingsById.get(a.id);
                   return `<tr>
                     <td><input type="checkbox" data-pick="${esc(a.id)}" ${picks.has(a.id) ? "checked" : ""} /></td>
                     <td><strong>${esc(name)}</strong><div class="muted tiny">${esc(a.region)} · ${esc(a.pricingBand)}</div></td>
                     <td>${score.toFixed(2)}</td>
+                    <td>${live?.arenaElo ?? "—"}</td>
+                    <td>${live?.aaIq ?? "—"}</td>
                   </tr>`;
                 })
                 .join("")}

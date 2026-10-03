@@ -70,6 +70,10 @@ jobs:
         env:
           IWENCAI_API_KEY: ${{ secrets.IWENCAI_API_KEY }}
 
+      - name: Bake AI ratings overlay
+        run: npm run ai-ratings:bake
+        continue-on-error: true
+
       - name: Build
         run: npm run build
 

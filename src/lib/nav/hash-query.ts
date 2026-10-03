@@ -67,4 +67,7 @@ export const QUANT_PANEL_IDS: Record<string, string> = {
   screens: "quant-screens",
   signals: "quant-signals",
   filings: "quant-filings",
+  macro: "quant-macro",
+  rotation: "quant-rotation",
+  review: "quant-review",
 };

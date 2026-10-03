@@ -1,0 +1,79 @@
+{
+  "aliases": [
+    {
+      "agentId": "claude-code",
+      "arenaNames": ["Claude 3.5 Sonnet", "Claude Sonnet 4", "Claude 4 Sonnet", "claude-sonnet-4"],
+      "aaNames": ["Claude 3.5 Sonnet", "Claude Sonnet 4", "Claude 4 Sonnet"]
+    },
+    {
+      "agentId": "claude-chat",
+      "arenaNames": ["Claude 3 Opus", "Claude Opus 4", "claude-opus-4"],
+      "aaNames": ["Claude 3 Opus", "Claude Opus 4"]
+    },
+    {
+      "agentId": "chatgpt",
+      "arenaNames": ["GPT-4o", "ChatGPT-4o", "GPT-4.1"],
+      "aaNames": ["GPT-4o", "GPT-4.1"]
+    },
+    {
+      "agentId": "chatgpt-team",
+      "arenaNames": ["GPT-4o", "o1", "o3"],
+      "aaNames": ["o1", "o3", "GPT-4o"]
+    },
+    {
+      "agentId": "gemini",
+      "arenaNames": ["Gemini 2.0 Flash", "Gemini 1.5 Pro", "Gemini 2.5 Pro"],
+      "aaNames": ["Gemini 2.0 Flash", "Gemini 1.5 Pro", "Gemini 2.5 Pro"]
+    },
+    {
+      "agentId": "deepseek-chat",
+      "arenaNames": ["DeepSeek-V3", "DeepSeek-R1", "DeepSeek V3"],
+      "aaNames": ["DeepSeek-V3", "DeepSeek-R1"]
+    },
+    {
+      "agentId": "kimi",
+      "arenaNames": ["Kimi", "Moonshot-v1", "Kimi-k1.5"],
+      "aaNames": ["Kimi", "Moonshot"]
+    },
+    {
+      "agentId": "qwen-code",
+      "arenaNames": ["Qwen2.5-72B", "Qwen2.5-Coder", "Qwen3"],
+      "aaNames": ["Qwen2.5-72B", "Qwen2.5-Coder", "Qwen3"]
+    },
+    {
+      "agentId": "grok",
+      "arenaNames": ["Grok-2", "Grok-3", "grok-2"],
+      "aaNames": ["Grok-2", "Grok-3"]
+    },
+    {
+      "agentId": "cursor",
+      "arenaNames": ["Cursor Agent", "claude-sonnet-4"],
+      "aaNames": []
+    },
+    {
+      "agentId": "github-copilot",
+      "arenaNames": ["GitHub Copilot", "GPT-4o"],
+      "aaNames": ["GPT-4o"]
+    },
+    {
+      "agentId": "codex-cli",
+      "arenaNames": ["o3", "o4-mini", "codex"],
+      "aaNames": ["o3", "o4-mini"]
+    },
+    {
+      "agentId": "perplexity",
+      "arenaNames": ["Perplexity", "Sonar"],
+      "aaNames": ["Perplexity"]
+    },
+    {
+      "agentId": "doubao",
+      "arenaNames": ["Doubao", "豆包"],
+      "aaNames": ["Doubao"]
+    },
+    {
+      "agentId": "tongyi-lingma",
+      "arenaNames": ["Qwen2.5-Coder", "Tongyi"],
+      "aaNames": ["Qwen2.5-Coder"]
+    }
+  ]
+}

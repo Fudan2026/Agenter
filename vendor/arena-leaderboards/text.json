@@ -1,0 +1,13 @@
+[
+  { "name": "Claude 3.5 Sonnet", "elo": 1285, "rank": 2, "url": "https://lmarena.ai" },
+  { "name": "Claude Sonnet 4", "elo": 1310, "rank": 1, "url": "https://lmarena.ai" },
+  { "name": "GPT-4o", "elo": 1265, "rank": 5, "url": "https://lmarena.ai" },
+  { "name": "GPT-4.1", "elo": 1275, "rank": 4, "url": "https://lmarena.ai" },
+  { "name": "Gemini 2.5 Pro", "elo": 1290, "rank": 3, "url": "https://lmarena.ai" },
+  { "name": "DeepSeek-R1", "elo": 1250, "rank": 8, "url": "https://lmarena.ai" },
+  { "name": "DeepSeek-V3", "elo": 1235, "rank": 12, "url": "https://lmarena.ai" },
+  { "name": "Qwen2.5-72B", "elo": 1210, "rank": 18, "url": "https://lmarena.ai" },
+  { "name": "Grok-3", "elo": 1240, "rank": 10, "url": "https://lmarena.ai" },
+  { "name": "o3", "elo": 1300, "rank": 2, "url": "https://lmarena.ai" },
+  { "name": "Kimi-k1.5", "elo": 1180, "rank": 25, "url": "https://lmarena.ai" }
+]

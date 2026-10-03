@@ -47,7 +47,8 @@ This README is the **canonical English build brief**.
 | Fill rule | Paper: signal `t` → fill **`t+1` open**. Sim: editable limit @ last close |
 | Locales | **zh** + **en** |
 | Stack | Vite + TS SPA; `quant:bake` + `news:bake` + `announcements:bake` + `iwencai-news:bake` + `indices:bake` + `screens:bake`; GitHub Pages |
-| Quant scope | **15** patterns (5 legacy + 10 additive) · **26** symbols (16 legacy + 10 additive) |
+| Quant scope | **15** patterns (5 legacy + 10 additive) · **≥26** symbols floor (indices add-only) · multi-year OHLC bake with honest `sampleYears` |
+| Compare ratings | Editorial 1–5 stay; Arena/AA overlay additive (`ai-ratings:bake`, fail-open) |
 | DNS | Docs only this round — no cutover |
 
 ---
@@ -65,6 +66,7 @@ npm run iwencai-news:bake    # news-search CLI → public/data/iwencai-news.json
 npm run indices:bake         # zhishu CLI → public/data/indices.json (Quant strip)
 npm run screens:bake         # selector CLI → public/data/screens.json (editorial screens)
 npm run factors:ic-bake      # latest.json → factors-ic.json (multi-horizon IC)
+npm run ai-ratings:bake      # Arena/AA fork JSON → ai-ratings.json (fail-open overlay)
 npm run build
 npm run dev
 ```
@@ -72,6 +74,8 @@ npm run dev
 Bake gate: `ok+stale >= max(8, floor(n/2))`.
 
 Iwencai bake scripts (`announcements` / `iwencai-news` / `indices` / `screens`) need `IWENCAI_API_KEY` in the shell or GitHub Actions secret. Missing key → fail-open and keep the committed JSON. The browser never embeds the key.
+
+`ai-ratings:bake` pulls published Arena leaderboard JSON (vendored snapshot under `vendor/arena-leaderboards/` or remote raw) and optional AA model JSON; maps via `public/data/ai-rating-aliases.json`. Fail-open keeps last-good `ai-ratings.json`. Editorial `agents.json` / `quant-agents.json` scores are never mutated.
 
 ---
 
@@ -91,11 +95,16 @@ Claude / Cursor / Copilot / Windsurf / Aider / Continue / 通义灵码 / Trae / 
 
 | Item | Value |
 |------|-------|
-| Markets | CN A-share + CN ETF — **26** symbols |
+| Markets | CN A-share + CN ETF — **29** symbols (26 floor + 3 index add-ons) |
 | Patterns | **15** IDs (legacy five unchanged) |
-| Indicators | SMA20/60, RSI14, MA align, volume spike (OpenCool distill) |
-| Bake window | **250** trading days |
-| Board | Confluence 0–100, filters, pattern heatmap, stale banner |
+| Indicators | SMA20/60, RSI14, MACD, BOLL, MA align, volume spike |
+| Bake window | up to **~10y** daily bars (`lmt≈2600` / Yahoo `max`→`10y`); disclose `sampleYears` / `nBars` if shorter |
+| Pattern efficacy | Per-symbol `patternStats` (horizons 1/5/10/20) + Asset win-rate filter + Effective list |
+| Pro chart | Asset fullscreen / TF tabs **D/W/M** (daily resample) + MA/RSI/MACD/BOLL |
+| Macro timing | Proxy-constituent confluence → ETF timing score (`#/quant?panel=macro`) |
+| ETF Rotation Lab | daily vs `fixed_5d` (+ optional timing overlay); checklist → Paper |
+| Daily Review | Enriched sector / eval / outlook literacy (`#/quant?panel=review`) |
+| Board | Confluence 0–100, filters, pattern heatmap, stale banner, pattern monitor |
 | Factor Board | OHLC-proxy momentum / low-vol / ADV / quality · TopN ranks (`factors:bake`) |
 | Factor Studio | Weight sliders, recipes, IC override, TopN→Paper batch |
 | Committee Desk | Six-role bake-only votes → checklist / Paper batch (no browser LLM) |
@@ -103,6 +112,7 @@ Claude / Cursor / Copilot / Windsurf / Aider / Continue / 通义灵码 / Trae / 
 | ADF strip | Log-price stationarity diagnostics (量化统计方法 distill) |
 | Strategy Lab | In-browser no-lookahead backtests + Research Audit strip + fixed/√-impact slip |
 | Data | East Money → Yahoo → cache; browser reads baked JSON only |
+| AI ratings | Forked Arena JSON (+ AA when reachable) → `ai-ratings.json` Compare overlay; fail-open; never replaces editorial scores |
 
 ### Camp themes (cite briefly)
 
@@ -180,13 +190,13 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 - Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings), `quant-backtest-review` (tear-sheet R/Y/G)
 - Interactive agents: see root **`Skills.md`** (Iwencai OpenAPI skills + nine methodology packages under `skills/`: K线形态识别, 执行模型, factor/ML/stats frameworks, etc.).
 - Site distill: 15 patterns · Factor Board · ADF strip · recipe cards · √-impact costs — agents keep full SkillHub workflows.
-- Site: bake-time JSON only (`latest.json`, `announcements.json`, `iwencai-news.json`, `indices.json`, `screens.json`, `factors-ic.json`, `cn-calendar.json`). **`#/news`** shows RSS AI news + announcements + Iwencai finance news. **`#/quant`** shows index snapshot + six editorial screens (Promote→Paper) + multi-horizon IC. **`#/sim`** is a local distill of SkillHub 模拟炒股. Agents use vendored CLIs; the browser never embeds broker SDKs or `IWENCAI_API_KEY`. Owner must set Actions `IWENCAI_API_KEY` manually for fresher Iwencai bakes.
+- Site: bake-time JSON only (`latest.json`, `pattern-stats.json`, `etf-meta.json`, `ai-ratings.json`, `announcements.json`, `iwencai-news.json`, `indices.json`, `screens.json`, `factors-ic.json`, `cn-calendar.json`). **`#/news`** shows RSS AI news + announcements + Iwencai finance news. **`#/quant`** shows index snapshot + Macro timing + Rotation Lab + enriched Daily Review + six editorial screens (Promote→Paper) + multi-horizon IC. **`#/compare`** shows editorial scores plus Arena/AA live overlay. **`#/sim`** is a local distill of SkillHub 模拟炒股. Agents use vendored CLIs; the browser never embeds broker SDKs or `IWENCAI_API_KEY`. Owner must set Actions `IWENCAI_API_KEY` manually for fresher Iwencai bakes.
 
 ---
 
 ## NOT this round
 
-- Broker / 同花顺 **live browser** API · DNS cutover · Computer Use QA · removing zh or brand home · HK/US/crypto · mandatory Supabase
+- Broker / 同花顺 **live browser** API · DNS cutover · Computer Use QA · removing zh or brand home · HK/US/crypto · mandatory Supabase · inventing greenfield leaderboard scrapers (use forked/published JSON only) · replacing editorial Compare scores · putting 日报 on brand-home hero
 
 Bake-time + agent CLI for Iwencai skills is allowed; browser-side Iwencai / THS trade calls remain forbidden.
 

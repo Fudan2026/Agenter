@@ -36,5 +36,8 @@ describe("hash-query", () => {
     assert.equal(NEWS_SECTION_IDS.filings, "news-filings");
     assert.equal(PAPER_PANEL_IDS.export, "ws-ops");
     assert.equal(QUANT_PANEL_IDS.studio, "quant-studio");
+    assert.equal(QUANT_PANEL_IDS.macro, "quant-macro");
+    assert.equal(QUANT_PANEL_IDS.rotation, "quant-rotation");
+    assert.equal(QUANT_PANEL_IDS.review, "quant-review");
   });
 });

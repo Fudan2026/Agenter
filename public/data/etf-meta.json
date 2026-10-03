@@ -1,0 +1,86 @@
+{
+  "generatedAt": "2026-04-03T00:00:00.000Z",
+  "literacy": {
+    "zh": "代理成分聚合（观察池子集，非全指数成分）",
+    "en": "Proxy-universe aggregation (watchlist subset — not full index membership)"
+  },
+  "etfs": {
+    "510300.SS": {
+      "indexSymbol": "000300.SS",
+      "sectorTags": ["broad", "large-cap"],
+      "proxyConstituents": [
+        "600519.SS",
+        "600036.SS",
+        "601318.SS",
+        "600900.SS",
+        "000858.SZ",
+        "000333.SZ",
+        "601166.SS"
+      ]
+    },
+    "159919.SZ": {
+      "indexSymbol": "000300.SS",
+      "sectorTags": ["broad", "large-cap"],
+      "proxyConstituents": [
+        "600519.SS",
+        "600036.SS",
+        "601318.SS",
+        "000858.SZ",
+        "000333.SZ",
+        "300750.SZ"
+      ]
+    },
+    "510500.SS": {
+      "indexSymbol": "000001.SS",
+      "sectorTags": ["mid-cap"],
+      "proxyConstituents": [
+        "002415.SZ",
+        "601012.SS",
+        "600276.SS",
+        "601888.SS",
+        "000001.SZ"
+      ]
+    },
+    "159915.SZ": {
+      "indexSymbol": "399006.SZ",
+      "sectorTags": ["growth", "chinext"],
+      "proxyConstituents": ["300750.SZ", "002594.SZ", "002415.SZ"]
+    },
+    "588000.SS": {
+      "indexSymbol": "000001.SS",
+      "sectorTags": ["star", "tech"],
+      "proxyConstituents": ["601012.SS", "002415.SZ", "300750.SZ"]
+    },
+    "510050.SS": {
+      "indexSymbol": "000016.SS",
+      "sectorTags": ["blue-chip"],
+      "proxyConstituents": [
+        "600519.SS",
+        "600036.SS",
+        "601318.SS",
+        "600900.SS",
+        "601166.SS"
+      ]
+    },
+    "512880.SS": {
+      "indexSymbol": "000001.SS",
+      "sectorTags": ["financials", "broker"],
+      "proxyConstituents": ["601318.SS", "600036.SS", "601166.SS", "000001.SZ"]
+    },
+    "512480.SS": {
+      "indexSymbol": "000001.SS",
+      "sectorTags": ["semiconductor", "tech"],
+      "proxyConstituents": ["002415.SZ", "300750.SZ", "601012.SS"]
+    },
+    "512690.SS": {
+      "indexSymbol": "000001.SS",
+      "sectorTags": ["liquor", "consumer"],
+      "proxyConstituents": ["600519.SS", "000858.SZ"]
+    },
+    "515790.SS": {
+      "indexSymbol": "000001.SS",
+      "sectorTags": ["pv", "energy"],
+      "proxyConstituents": ["601012.SS", "300750.SZ", "002594.SZ"]
+    }
+  }
+}

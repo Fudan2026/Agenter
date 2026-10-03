@@ -1,10 +1,15 @@
 import { detectLocale, setLocale, type Locale } from "./i18n/strings";
 import { t } from "./i18n/strings";
+import type { AiRatingsPayload } from "./lib/ai-ratings/map";
 import type { AnnouncementsPayload } from "./lib/announcements/map";
 import type { IndicesPayload } from "./lib/indices/map";
 import type { IwencaiNewsPayload } from "./lib/iwencai-news/map";
 import type { ScreensPayload } from "./lib/screens/map";
-import { cleanupAssetPage, renderAsset } from "./pages/asset";
+import {
+  cleanupAssetPage,
+  renderAsset,
+  type EtfMetaPayload,
+} from "./pages/asset";
 import { renderBrandHome } from "./pages/brand-home";
 import { loadAgents, renderCompare } from "./pages/compare";
 import { renderHandbook } from "./pages/handbook";
@@ -29,6 +34,8 @@ let factorsData: FactorsPayload | null = null;
 let factorsIcData: FactorsIcPayload | null = null;
 let recipesData: RecipesPayload | null = null;
 let calendarData: CnCalendarPayload | null = null;
+let etfMetaData: EtfMetaPayload | null = null;
+let aiRatingsData: AiRatingsPayload | null = null;
 let locale: Locale = detectLocale();
 
 type Route =
@@ -167,6 +174,30 @@ async function loadCalendar(): Promise<void> {
   }
 }
 
+async function loadEtfMeta(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/etf-meta.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    etfMetaData = (await res.json()) as EtfMetaPayload;
+  } catch {
+    etfMetaData = null;
+  }
+}
+
+async function loadAiRatings(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/ai-ratings.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    aiRatingsData = (await res.json()) as AiRatingsPayload;
+  } catch {
+    aiRatingsData = null;
+  }
+}
+
 function parseRoute(): Route {
   const hash = location.hash.replace(/^#/, "") || "/";
   const path = (hash.split("?")[0] || "/").replace(/\/$/, "") || "/";
@@ -217,7 +248,7 @@ async function render(): Promise<void> {
         break;
       case "compare": {
         const agents = await loadAgents();
-        renderCompare(root, locale, agents);
+        renderCompare(root, locale, agents, aiRatingsData);
         break;
       }
       case "learn":
@@ -282,6 +313,7 @@ async function render(): Promise<void> {
             locale,
             announcementsData,
             iwencaiNewsData,
+            etfMetaData,
           );
         }
         break;
@@ -307,6 +339,8 @@ export async function startApp(): Promise<void> {
     loadFactorsIc(),
     loadRecipes(),
     loadCalendar(),
+    loadEtfMeta(),
+    loadAiRatings(),
   ]);
   await render();
   window.addEventListener("hashchange", () => {

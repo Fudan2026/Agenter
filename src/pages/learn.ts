@@ -330,6 +330,22 @@ const SCENARIOS: Scenario[] = [
     ],
     href: "#/sim",
   },
+  {
+    id: "ecosystem-review",
+    titleZh: "场景 20：每日复盘 + ETF 轮动 + 评分叠加",
+    titleEn: "Scenario 20: Daily review + ETF rotation + ratings overlay",
+    stepsZh: [
+      "从工具箱量化卡片的「每日复盘日报」芯片进入 `#/quant?panel=review`。",
+      "打开 Macro / Rotation 面板，对比 daily 与 fixed_5d；点一只 ETF 看指数跳转。",
+      "到对比页确认 Arena/AA 实时评分叠加在编辑分旁，未改写 1–5 分。",
+    ],
+    stepsEn: [
+      "From Tools Quant card, open the Daily review chip → `#/quant?panel=review`.",
+      "Open Macro / Rotation; compare daily vs fixed_5d; jump an ETF → its index.",
+      "On Compare, confirm Arena/AA live overlay sits beside editorial 1–5 scores.",
+    ],
+    href: "#/quant?panel=review",
+  },
 ];
 
 export function renderLearn(root: HTMLElement, locale: Locale): void {

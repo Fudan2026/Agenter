@@ -1,0 +1,100 @@
+{
+  "generatedAt": "2026-10-03T02:13:37.157Z",
+  "sources": [
+    "vendor:arena-leaderboards/text.json"
+  ],
+  "rows": [
+    {
+      "agentId": "claude-code",
+      "arenaElo": 1285,
+      "aaIq": null,
+      "rank": 2,
+      "url": "https://lmarena.ai",
+      "matchedArena": "Claude 3.5 Sonnet"
+    },
+    {
+      "agentId": "chatgpt",
+      "arenaElo": 1265,
+      "aaIq": null,
+      "rank": 5,
+      "url": "https://lmarena.ai",
+      "matchedArena": "GPT-4o"
+    },
+    {
+      "agentId": "chatgpt-team",
+      "arenaElo": 1265,
+      "aaIq": null,
+      "rank": 5,
+      "url": "https://lmarena.ai",
+      "matchedArena": "GPT-4o"
+    },
+    {
+      "agentId": "gemini",
+      "arenaElo": 1290,
+      "aaIq": null,
+      "rank": 3,
+      "url": "https://lmarena.ai",
+      "matchedArena": "Gemini 2.5 Pro"
+    },
+    {
+      "agentId": "deepseek-chat",
+      "arenaElo": 1235,
+      "aaIq": null,
+      "rank": 12,
+      "url": "https://lmarena.ai",
+      "matchedArena": "DeepSeek-V3"
+    },
+    {
+      "agentId": "kimi",
+      "arenaElo": 1180,
+      "aaIq": null,
+      "rank": 25,
+      "url": "https://lmarena.ai",
+      "matchedArena": "Kimi-k1.5"
+    },
+    {
+      "agentId": "qwen-code",
+      "arenaElo": 1210,
+      "aaIq": null,
+      "rank": 18,
+      "url": "https://lmarena.ai",
+      "matchedArena": "Qwen2.5-72B"
+    },
+    {
+      "agentId": "grok",
+      "arenaElo": 1240,
+      "aaIq": null,
+      "rank": 10,
+      "url": "https://lmarena.ai",
+      "matchedArena": "Grok-3"
+    },
+    {
+      "agentId": "cursor",
+      "arenaElo": 1310,
+      "aaIq": null,
+      "rank": 1,
+      "url": "https://lmarena.ai",
+      "matchedArena": "claude-sonnet-4"
+    },
+    {
+      "agentId": "github-copilot",
+      "arenaElo": 1265,
+      "aaIq": null,
+      "rank": 5,
+      "url": "https://lmarena.ai",
+      "matchedArena": "GPT-4o"
+    },
+    {
+      "agentId": "codex-cli",
+      "arenaElo": 1300,
+      "aaIq": null,
+      "rank": 2,
+      "url": "https://lmarena.ai",
+      "matchedArena": "o3"
+    }
+  ],
+  "note": {
+    "zh": "自动更新 · 来源 Arena/AA 快照 · 不构成建议；不改写编辑分。",
+    "en": "Auto-updated · Arena/AA snapshots · not advice; never replaces editorial scores."
+  }
+}

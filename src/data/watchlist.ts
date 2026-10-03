@@ -25,6 +25,24 @@ export const WATCHLIST: TickerDef[] = [
     group: "macro",
   },
   {
+    symbol: "000300.SS",
+    nameZh: "沪深300",
+    nameEn: "CSI 300 Index",
+    group: "macro",
+  },
+  {
+    symbol: "399006.SZ",
+    nameZh: "创业板指",
+    nameEn: "ChiNext Index",
+    group: "macro",
+  },
+  {
+    symbol: "000016.SS",
+    nameZh: "上证50",
+    nameEn: "SSE 50 Index",
+    group: "macro",
+  },
+  {
     symbol: "510300.SS",
     nameZh: "沪深300ETF",
     nameEn: "CSI 300 ETF",

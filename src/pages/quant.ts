@@ -678,15 +678,22 @@ function renderIndicesStrip(
           const up = (ix.changePct ?? 0) > 0;
           const down = (ix.changePct ?? 0) < 0;
           const cls = up ? "up" : down ? "down" : "flat";
-          return `<div class="index-chip ${cls}">
+          return `<a class="index-chip ${cls}" href="#/asset/${encodeURIComponent(ix.code.includes(".") ? ix.code : guessYahoo(ix.code))}">
             <span class="index-name">${esc(name)}</span>
             <span class="index-last">${esc(fmtLast(ix.last))}</span>
             <span class="index-chg">${esc(fmtPct(ix.changePct))}</span>
-          </div>`;
+          </a>`;
         })
         .join("")}
     </div>
   </section>`;
+}
+
+/** Best-effort map bare CN index codes → Yahoo-style symbols on the watchlist. */
+function guessYahoo(code: string): string {
+  const c = code.replace(/\D/g, "").padStart(6, "0");
+  if (c.startsWith("399") || c.startsWith("159")) return `${c}.SZ`;
+  return `${c}.SS`;
 }
 
 function renderScreensPanel(
@@ -921,6 +928,131 @@ function metricsHtml(locale: Locale, res: BacktestResult): string {
   })()}`;
 }
 
+function fmtRet(v: number | null | undefined): string {
+  if (v == null || !Number.isFinite(v)) return "—";
+  const pct = v * 100;
+  return `${pct >= 0 ? "+" : ""}${pct.toFixed(2)}%`;
+}
+
+function renderMacroTimingPanel(
+  locale: Locale,
+  data: LatestPayload,
+): string {
+  const rows = data.timing ?? [];
+  const bySym = new Map(data.symbols.map((s) => [s.symbol, s]));
+  return `<section class="macro-timing-panel" id="quant-macro">
+    <h2>${esc(t(locale, "macroTimingTitle"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "macroTimingLead"))}</p>
+    ${
+      !rows.length
+        ? `<p class="muted">—</p>`
+        : `<div class="table-wrap"><table class="agent-table">
+      <thead><tr>
+        <th>ETF</th>
+        <th>Index</th>
+        <th>Score</th>
+        <th>Bull</th>
+        <th>Bear</th>
+        <th>n</th>
+      </tr></thead>
+      <tbody>
+        ${rows
+          .map((r) => {
+            const name =
+              locale === "zh"
+                ? bySym.get(r.symbol)?.nameZh ?? r.symbol
+                : bySym.get(r.symbol)?.nameEn ?? r.symbol;
+            return `<tr>
+              <td><a href="#/asset/${encodeURIComponent(r.symbol)}">${esc(name)}</a></td>
+              <td><a href="#/asset/${encodeURIComponent(r.indexSymbol)}">${esc(r.indexSymbol)}</a></td>
+              <td><strong>${r.score}</strong></td>
+              <td>${r.bullHits}</td>
+              <td>${r.bearHits}</td>
+              <td>${r.constituentsWithHits}/${r.constituentCount}</td>
+            </tr>`;
+          })
+          .join("")}
+      </tbody>
+    </table></div>
+    <p class="muted tiny">${esc(rows[0]?.literacy[locale] ?? t(locale, "etfProxyNote"))}</p>`
+    }
+  </section>`;
+}
+
+function renderRotationPanel(locale: Locale, data: LatestPayload): string {
+  const rot = data.rotation;
+  if (!rot) {
+    return `<section class="rotation-panel" id="quant-rotation">
+      <h2>${esc(t(locale, "rotationTitle"))}</h2>
+      <p class="muted">${esc(t(locale, "rotationLead"))}</p>
+    </section>`;
+  }
+  const cards: Array<{
+    key: keyof NonNullable<LatestPayload["rotation"]>;
+    title: string;
+  }> = [
+    { key: "daily", title: t(locale, "rotationDaily") },
+    { key: "fixed_5d", title: t(locale, "rotationFixed5d") },
+    {
+      key: "dailyTimed",
+      title: `${t(locale, "rotationDaily")} + ${t(locale, "rotationWithTiming")}`,
+    },
+    {
+      key: "fixed_5dTimed",
+      title: `${t(locale, "rotationFixed5d")} + ${t(locale, "rotationWithTiming")}`,
+    },
+  ];
+  return `<section class="rotation-panel" id="quant-rotation">
+    <h2>${esc(t(locale, "rotationTitle"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "rotationLead"))}</p>
+    <div class="screens-grid rotation-grid">
+      ${cards
+        .map(({ key, title }) => {
+          const m = rot[key];
+          const weights = Object.entries(m.lastWeights)
+            .map(([sym, w]) => `${sym} ${(w * 100).toFixed(0)}%`)
+            .join(" · ");
+          return `<article class="screen-card">
+            <h3>${esc(title)}</h3>
+            <p class="muted tiny">ret ${esc(fmtRet(m.totalReturn))} · DD ${esc(fmtRet(m.maxDrawdown))} · turns ${m.turns}</p>
+            <p class="tiny">${esc(weights || "—")}</p>
+          </article>`;
+        })
+        .join("")}
+    </div>
+    <div class="cta-row wrap">
+      <button type="button" class="btn btn-primary" id="rotation-paper">${esc(t(locale, "sendRotationPaper"))}</button>
+    </div>
+  </section>`;
+}
+
+function renderPatternMonitor(locale: Locale, data: LatestPayload): string {
+  const mon = data.patternMonitor;
+  const hits = mon?.newHits ?? [];
+  return `<section class="pattern-monitor-panel" id="quant-monitor">
+    <h2>${esc(t(locale, "patternMonitorTitle"))}</h2>
+    <p class="muted tiny">${esc(t(locale, "patternMonitorLead"))}
+      ${mon?.priorGeneratedAt ? ` · prior ${esc(mon.priorGeneratedAt.slice(0, 19))}` : ""}</p>
+    ${
+      !hits.length
+        ? `<p class="muted">—</p>`
+        : `<ul class="pattern-list">${hits
+            .slice(0, 12)
+            .map((h) => {
+              const label =
+                locale === "zh"
+                  ? PATTERN_META[h.patternId as keyof typeof PATTERN_META]?.zh ??
+                    h.patternId
+                  : PATTERN_META[h.patternId as keyof typeof PATTERN_META]?.en ??
+                    h.patternId;
+              return `<li><a href="#/asset/${encodeURIComponent(h.symbol)}">${esc(h.symbol)}</a>
+                <span class="chip">${esc(label)}</span> <time>${esc(h.date)}</time></li>`;
+            })
+            .join("")}</ul>`
+    }
+  </section>`;
+}
+
 /** Quant tool home — former site facade, now at /quant only. */
 export function renderQuant(
   root: HTMLElement,
@@ -1121,6 +1253,9 @@ export function renderQuant(
         iwencaiNews: iwencaiNews?.generatedAt,
       })}
       ${renderIndicesStrip(locale, indices)}
+      ${renderMacroTimingPanel(locale, data)}
+      ${renderRotationPanel(locale, data)}
+      ${renderPatternMonitor(locale, data)}
       ${
         stale
           ? `<div class="banner-stale">${esc(t(locale, "staleBanner"))}</div>`
@@ -1151,7 +1286,7 @@ export function renderQuant(
       ${renderAlphaRecipeCards(locale)}
       ${renderAdfStrip(locale, factors)}
       ${renderRecipeCards(locale, recipes)}
-      <section class="review">
+      <section class="review" id="quant-review">
         <h2>${esc(t(locale, "dailyReview"))}</h2>
         <p class="muted tiny">${esc(data.reportDate)} · ${esc(data.generatedAt.slice(0, 19))}Z</p>
         <ul>${bullets.map((b) => `<li>${esc(b)}</li>`).join("")}</ul>
@@ -1709,6 +1844,50 @@ export function renderQuant(
       a.download = `agenter-tomorrow-${data.reportDate}.csv`;
       a.click();
       URL.revokeObjectURL(url);
+    });
+
+    root.querySelector("#rotation-paper")?.addEventListener("click", () => {
+      const weights =
+        data.rotation?.fixed_5d.lastWeights ??
+        data.rotation?.daily.lastWeights ??
+        {};
+      const syms = Object.keys(weights);
+      let state = loadPaperState();
+      const lastClose: Record<string, number> = {};
+      for (const s of data.symbols) {
+        if (s.lastClose) lastClose[s.symbol] = s.lastClose;
+      }
+      const eq = equityMark(state, lastClose);
+      let applied = 0;
+      for (const sym of syms) {
+        const row = data.symbols.find((s) => s.symbol === sym);
+        if (!row || row.dataStatus === "missing") continue;
+        const sigDate = signalDateForRow(row);
+        const fill = resolveNextOpenFill(row.candles, sigDate);
+        if (!fill || fill.fillRule !== "next_open") continue;
+        const budget = eq * 0.01;
+        const rawQty = budget / fill.fillPrice;
+        const norm = normalizeQty(rawQty, row.group);
+        if (norm.error || !norm.qty) continue;
+        const r = applyBuy(state, {
+          symbol: sym,
+          qty: norm.qty,
+          fill,
+          source: "checklist",
+          note: "rotation lab",
+          lastCloseBySymbol: lastClose,
+        });
+        if (r.ok) {
+          state = r.state;
+          applied += 1;
+        }
+      }
+      savePaperState(state);
+      paint(
+        locale === "zh"
+          ? `轮动清单纸盘买入 ${applied} 票`
+          : `Papered ${applied} rotation names`,
+      );
     });
 
     if (panelTarget && !scrolledPanel) {

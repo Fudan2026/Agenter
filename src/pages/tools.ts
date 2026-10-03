@@ -297,6 +297,8 @@ export function renderTools(
       href: "#/quant",
       title: t(locale, "toolQuant"),
       desc: t(locale, "toolQuantDesc"),
+      chipHref: withHashQuery("/quant", { panel: "review" }),
+      chipLabel: t(locale, "dailyReview"),
     },
     {
       href: "#/paper",
