@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-02T00:00:00.000Z",
+  "generatedAt": "2026-10-03T00:00:00.000Z",
   "attribution": {
     "zh": "Agent 方法论文卡（SkillHub distill）。站点不跑 sklearn；完整流程见 Skills.md。",
     "en": "Agent methodology recipe cards (SkillHub distill). No sklearn in the browser — full workflows in Skills.md."
@@ -12,7 +12,7 @@
       "titleEn": "Rolling train → walk-forward signals",
       "bodyZh": "用 ml-strategy 技能：特征工程 → 滚动 sklearn 训练 → 禁未来函数的样本外信号。站点 Strategy Lab 用 ml_lite 滞后符号作教育 distill；完整 ML 训练留在 Agent CLI。",
       "bodyEn": "Use the ml-strategy skill: features → rolling sklearn fit → no-lookahead OOS signals. Strategy Lab exposes ml_lite lag-sign as an educational distill; full ML training stays in the Agent CLI.",
-      "href": "#/quant?lab=ml_lite"
+      "href": "#/quant?panel=lab&lab=ml_lite"
     },
     {
       "id": "strategy-generate",
@@ -21,7 +21,7 @@
       "titleEn": "Generate → backtest → tune",
       "bodyZh": "策略生成与优化技能：起草规则、参数网格与评估清单。把候选策略映射到 Lab 的 MA/RSI/形态，再用纸盘练习次日开盘成交。",
       "bodyEn": "Strategy-generate skill: draft rules, grids, and an evaluation checklist. Map candidates onto Lab MA/RSI/pattern strategies, then practice next-open fills on Paper.",
-      "href": "#/quant?lab=ma_cross"
+      "href": "#/quant?panel=lab&lab=ma_cross"
     },
     {
       "id": "factor-research",
@@ -30,7 +30,52 @@
       "titleEn": "Factor IC → TopN book",
       "bodyZh": "因子研究 / 多因子选股技能指导横截面打分。站点 Factor Board 用 OHLC 代理（动量·低波·ADV·质量）展示排名，非实时基本面。",
       "bodyEn": "Factor-research / multi-factor skills guide cross-section scoring. The Factor Board shows OHLC-proxy ranks (momentum · low-vol · ADV · quality), not live fundamentals.",
-      "href": "#/quant"
+      "href": "#/quant?panel=studio"
+    },
+    {
+      "id": "rsi-mean-rev",
+      "skill": "策略生成与优化",
+      "titleZh": "RSI 均值回归 Lab 预设",
+      "titleEn": "RSI mean-reversion Lab preset",
+      "bodyZh": "在 Strategy Lab 打开 RSI 策略，观察超买超卖阈值与次日开盘成交；对照固定 bps 与 √冲击成本。",
+      "bodyEn": "Open the RSI strategy in Strategy Lab; inspect OS/OB thresholds under next-open fills; contrast fixed vs √-impact costs.",
+      "href": "#/quant?panel=lab&lab=rsi"
+    },
+    {
+      "id": "confluence-pattern",
+      "skill": "K线形态识别",
+      "titleZh": "形态共振 → 清单",
+      "titleEn": "Pattern confluence → checklist",
+      "bodyZh": "K 线形态技能的 15 种形态在信号看板聚合为共振分。把偏多标的加入清单或批量纸盘，仍按次日开盘。",
+      "bodyEn": "Fifteen candlestick patterns feed the signal-board confluence score. Promote bullish names to checklist/Paper — still next-open only.",
+      "href": "#/quant?panel=signals"
+    },
+    {
+      "id": "exec-twap-vwap",
+      "skill": "执行模型",
+      "titleZh": "TWAP / VWAP 切片入账",
+      "titleEn": "TWAP / VWAP slice materialize",
+      "bodyZh": "执行模型技能：在纸盘执行台选 TWAP 或 VWAP，切片 Materialize 写入日记，再导出券商清单。",
+      "bodyEn": "Execution-model skill: on Paper exec desk pick TWAP or VWAP, materialize slices into the journal, then export the broker checklist.",
+      "href": "#/paper?panel=exec"
+    },
+    {
+      "id": "committee-filings",
+      "skill": "announcement-search",
+      "titleZh": "公告事件桶 → 委员会",
+      "titleEn": "Filing event buckets → Committee",
+      "bodyZh": "公告搜索技能 bake 后，事件桶进入委员会新闻角色证据。把偏多共识 Promote 到纸盘练习，不要把共识当成交许可。",
+      "bodyEn": "After announcement-search bake, event buckets feed Committee news-role evidence. Promote bullish consensus to Paper practice — consensus ≠ trade permission.",
+      "href": "#/quant?panel=committee"
+    },
+    {
+      "id": "sim-to-paper",
+      "skill": "模拟炒股",
+      "titleZh": "模拟台 → 纸盘对账",
+      "titleEn": "Sim Desk → Paper reconcile",
+      "bodyZh": "模拟炒股 distill：本地限价练习后导入纸盘，用对账面板核对现金与持仓差；站点不连 THS 交易 API。",
+      "bodyEn": "Sim-trading distill: after local limit practice, import into Paper and reconcile cash/qty deltas — site never calls THS trade APIs.",
+      "href": "#/sim"
     }
   ]
 }

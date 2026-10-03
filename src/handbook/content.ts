@@ -191,8 +191,8 @@ export const HANDBOOK_SKILLS: Array<{
       en: "skills/因子研究框架/factor-research/SKILL.md",
     },
     bake: {
-      zh: "factors:bake / factors-ic（规划中）",
-      en: "factors:bake / factors-ic (planned)",
+      zh: "factors:ic-bake → public/data/factors-ic.json（含多周期 IC）",
+      en: "factors:ic-bake → public/data/factors-ic.json (incl. multi-horizon IC)",
     },
   },
   {
@@ -573,7 +573,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Paper turns ideas into an auditable ops log. Today the site already has: ¥100M start, next-open fills, journal, positions, CSV/JSON broker checklists, optional hard gates. **Paper Pro (Step Three)** adds cockpit KPIs, blotter filters, P&L attribution by symbol/source, TWAP/VWAP slice fills into the journal, and a Research Audit card (costs on, survivor banner, haircut Sharpe, no-lookahead fill rule).\n\n**Discipline you can practice now.** (1) Keep signal date and fill date separate; (2) checklist wording is always NEXT OPEN; (3) batch buys size by equity percent — not all-in; (4) treat Lab gate-red results as contrasts, not actionable Promotes.\n\n**Links to Committee / Factor Studio.** Studio TopN and bullish committee consensus can feed Paper batch paths — both are **practice inputs**, not advice. The audit card asks whether you recorded assumptions honestly, not whether the equity curve looks pretty.\n\n**Homework:** Paper one buy from Quant checklist or Committee Promote; export JSON; write three audit toggles in your own words (costs / no-lookahead / survivor universe). When Step Three lands, check those toggles appear in the cockpit.",
     },
     deepLinks: [
-      { href: "#/paper", label: { zh: "纸盘", en: "Paper" } },
+      { href: "#/paper?panel=export", label: { zh: "纸盘", en: "Paper" } },
       { href: "#/quant?panel=committee", label: { zh: "量化 · 清单/委员会", en: "Quant · checklist/committee" } },
       { href: "#/learn", label: { zh: "入门场景 16", en: "Learn scenario 16" } },
     ],

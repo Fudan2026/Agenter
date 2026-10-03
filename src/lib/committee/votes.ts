@@ -4,6 +4,11 @@
  */
 
 import type { AnnouncementItem } from "../announcements/map";
+import {
+  classifyAnnouncementEvent,
+  EVENT_BUCKETS,
+  type EventBucketId,
+} from "../announcements/events";
 import type { FactorScores } from "../factors/cross-section";
 import type { IwencaiNewsItem } from "../iwencai-news/map";
 import { patternConfluenceScore } from "../patterns/confluence";
@@ -99,15 +104,34 @@ export function voteForSymbol(
     });
   }
 
-  // News/Filings — recent announcements count
+  // News/Filings — recent announcements + event buckets
   {
     const fils = (ctx.announcements ?? []).filter((a) => a.symbol === row.symbol);
-    const score = clamp(fils.length * 0.15 - 0.05, -1, 1);
+    const buckets = new Map<EventBucketId, number>();
+    for (const a of fils) {
+      const b = classifyAnnouncementEvent(a.titleZh, a.summaryZh);
+      buckets.set(b, (buckets.get(b) ?? 0) + 1);
+    }
+    const earnings = buckets.get("earnings") ?? 0;
+    const buyback = buckets.get("buyback") ?? 0;
+    const holder = buckets.get("holder_change") ?? 0;
+    // Earnings / buyback slightly supportive; heavy holder-change cautious
+    const score = clamp(
+      fils.length * 0.12 + earnings * 0.08 + buyback * 0.1 - holder * 0.05 - 0.05,
+      -1,
+      1,
+    );
+    const parts = EVENT_BUCKETS.filter((b) => (buckets.get(b.id) ?? 0) > 0)
+      .map((b) => `${b.zh}:${buckets.get(b.id)}`)
+      .join(" · ");
+    const partsEn = EVENT_BUCKETS.filter((b) => (buckets.get(b.id) ?? 0) > 0)
+      .map((b) => `${b.en}:${buckets.get(b.id)}`)
+      .join(" · ");
     votes.push({
       role: "news",
       score,
-      evidenceZh: `近期公告 ${fils.length} 条（烘焙）`,
-      evidenceEn: `${fils.length} recent baked filings`,
+      evidenceZh: `近期公告 ${fils.length} 条${parts ? `（${parts}）` : ""}`,
+      evidenceEn: `${fils.length} recent filings${partsEn ? ` (${partsEn})` : ""}`,
     });
   }
 

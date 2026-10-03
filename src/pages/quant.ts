@@ -36,6 +36,7 @@ import {
 } from "../lib/factors/cross-section";
 import {
   FACTOR_TILTS,
+  quantileSpread,
   type FactorTiltId,
   type FactorsIcPayload,
 } from "../lib/factors/ic";
@@ -231,10 +232,47 @@ function renderIcPanel(
 ): string {
   if (!ic?.rows?.length) return "";
   const attr = locale === "zh" ? ic.attribution.zh : ic.attribution.en;
+  const fmtIc = (n: number | null | undefined) =>
+    n == null || !Number.isFinite(n) ? "—" : n.toFixed(3);
+  const horizonStrip =
+    ic.horizons && ic.horizons.length
+      ? `<div class="ic-horizon-strip" aria-label="multi-horizon IC">
+          <p class="tiny muted">${esc(t(locale, "icMultiHorizon"))}</p>
+          <div class="table-wrap"><table class="agent-table tiny">
+            <thead><tr>
+              <th>H</th>
+              <th>Mom IC</th>
+              <th>Mom IR</th>
+              <th>LowVol IC</th>
+              <th>LowVol IR</th>
+              <th>Mom Q-spread</th>
+            </tr></thead>
+            <tbody>
+              ${ic.horizons
+                .map((h) => {
+                  const mom = h.rows.find((r) => r.factor === "momentum");
+                  const lv = h.rows.find((r) => r.factor === "lowVol");
+                  const spread = quantileSpread(mom);
+                  return `<tr>
+                    <td>${h.horizonBars}d</td>
+                    <td>${esc(fmtIc(mom?.icMean))}</td>
+                    <td>${esc(fmtIc(mom?.ir))}</td>
+                    <td>${esc(fmtIc(lv?.icMean))}</td>
+                    <td>${esc(fmtIc(lv?.ir))}</td>
+                    <td>${esc(spread == null ? "—" : `${(spread * 100).toFixed(2)}%`)}</td>
+                  </tr>`;
+                })
+                .join("")}
+            </tbody>
+          </table></div>
+          <p class="muted tiny">${esc(t(locale, "icDecayNote"))}</p>
+        </div>`
+      : `<p class="muted tiny">${esc(t(locale, "icDecayNote"))}</p>`;
   return `<section class="ic-panel" id="quant-ic">
     <h2>${esc(t(locale, "icPanel"))}</h2>
     <p class="muted tiny">${esc(t(locale, "icPanelLead"))}</p>
     <p class="muted tiny">${esc(attr)} · horizon ${ic.horizonBars}d · ${esc(fmtIsoSlice(ic.generatedAt))}</p>
+    ${horizonStrip}
     <div class="ic-rows">
       ${ic.rows
         .map((r) => {
@@ -663,7 +701,10 @@ function renderScreensPanel(
     ${
       !panels.length
         ? `<p class="muted">${esc(t(locale, "screensEmpty"))}</p>`
-        : `<div class="screens-grid">
+        : `<div class="cta-row wrap">
+      <button type="button" class="btn btn-primary" id="screens-all-paper">${esc(t(locale, "screensPromoteAll"))}</button>
+    </div>
+    <div class="screens-grid">
       ${panels
         .map((p) => {
           const name = locale === "zh" ? p.nameZh : p.nameEn;
@@ -689,6 +730,7 @@ function renderScreensPanel(
                 ? `<ul class="screen-tickers">${tickers}</ul>`
                 : `<p class="muted tiny">${esc(t(locale, "screensEmpty"))}</p>`
             }
+            <button type="button" class="btn" data-screen-paper="${esc(p.id)}">${esc(t(locale, "screensPromote"))}</button>
           </article>`;
         })
         .join("")}
@@ -1012,6 +1054,30 @@ export function renderQuant(
     }
     savePaperState(state);
     return applied;
+  };
+
+  /** Map Iwencai screen codes (600519.SH) onto baked Yahoo symbols (600519.SS). */
+  const resolveScreenSymbols = (codes: string[]): string[] => {
+    const out: string[] = [];
+    const seen = new Set<string>();
+    for (const raw of codes) {
+      const code = raw.trim().toUpperCase();
+      const bare = code.replace(/\.(SH|SS|SZ)$/i, "");
+      const hit = data.symbols.find((s) => {
+        const sym = s.symbol.toUpperCase();
+        return (
+          sym === code ||
+          sym === `${bare}.SS` ||
+          sym === `${bare}.SZ` ||
+          sym.startsWith(`${bare}.`)
+        );
+      });
+      if (hit && !seen.has(hit.symbol)) {
+        seen.add(hit.symbol);
+        out.push(hit.symbol);
+      }
+    }
+    return out;
   };
 
   const boardRows = (): SymbolRow[] => {
@@ -1374,6 +1440,33 @@ export function renderQuant(
           ? `工作室 TopN 纸盘买入 ${n} 票`
           : `Papered ${n} Factor Studio TopN names`,
       );
+    });
+
+    root.querySelector("#screens-all-paper")?.addEventListener("click", () => {
+      const codes = (screens?.screens ?? []).flatMap((p) =>
+        p.tickers.map((tk) => tk.code),
+      );
+      const syms = resolveScreenSymbols(codes);
+      const n = paperBatchSymbols(syms, "screen:all 1% equity");
+      paint(
+        locale === "zh"
+          ? `精选屏合计纸盘买入 ${n} 票（宇宙内可映射）`
+          : `Papered ${n} screen hits in bake universe`,
+      );
+    });
+    root.querySelectorAll<HTMLButtonElement>("[data-screen-paper]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const id = btn.dataset.screenPaper ?? "";
+        const panel = (screens?.screens ?? []).find((p) => p.id === id);
+        if (!panel) return;
+        const syms = resolveScreenSymbols(panel.tickers.map((tk) => tk.code));
+        const n = paperBatchSymbols(syms, `screen:${id} 1% equity`);
+        paint(
+          locale === "zh"
+            ? `精选屏「${panel.nameZh}」纸盘买入 ${n} 票`
+            : `Papered ${n} from screen ${panel.nameEn}`,
+        );
+      });
     });
 
     root

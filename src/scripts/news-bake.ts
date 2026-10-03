@@ -16,6 +16,16 @@ const FEEDS: Array<{ id: string; url: string; lang: "en" | "zh" }> = [
     lang: "en",
   },
   { id: "qbitai", url: "https://www.qbitai.com/feed", lang: "zh" },
+  {
+    id: "googleapis-ai",
+    url: "https://blog.google/technology/ai/rss/",
+    lang: "en",
+  },
+  {
+    id: "jiqizhixin",
+    url: "https://www.jiqizhixin.com/rss",
+    lang: "zh",
+  },
 ];
 
 interface Item {

@@ -130,8 +130,12 @@ function renderIwencaiNewsLis(
     .map((n) => {
       const title = locale === "zh" ? n.titleZh : n.titleEn;
       const summary = locale === "zh" ? n.summaryZh : n.summaryEn;
+      const qTag = n.query
+        ? `<span class="chip query-tag">${esc(n.query)}</span>`
+        : "";
       return `<li>
         <time>${esc(n.date)}</time>
+        ${qTag}
         <strong>${esc(title)}</strong>
         <p class="muted">${esc(summary)}</p>
         ${n.url ? `<p><a href="${esc(n.url)}" target="_blank" rel="noopener">source</a></p>` : ""}
@@ -195,24 +199,13 @@ export function renderNews(
   const items = news?.items ?? [];
   const annItems = announcements?.items ?? [];
   const iwItems = iwencaiNews?.items ?? [];
-  const bakeMeta = (payload: {
-    generatedAt?: string;
-    query?: string;
-    channel?: string;
-    status_msg?: string;
-    statusMsg?: string;
-    source?: string;
-  } | null): string => {
-    if (!payload) return "";
-    const bits: string[] = [];
-    if (payload.query) bits.push(`query: ${payload.query}`);
-    if (payload.channel) bits.push(`channel: ${payload.channel}`);
-    const status = payload.status_msg ?? payload.statusMsg;
-    if (status) bits.push(status);
-    return bits.length
+  const iwQueries = [
+    ...new Set(iwItems.map((n) => n.query).filter((q): q is string => !!q)),
+  ];
+  const bakeLine = (bits: string[]): string =>
+    bits.length
       ? `<p class="muted tiny bake-meta">${esc(bits.join(" · "))}</p>`
       : "";
-  };
   const body = `
     <h1>${esc(t(locale, "newsNavTitleFull"))}</h1>
     <div class="cta-row wrap news-section-chips" role="navigation" aria-label="News sections">
@@ -223,7 +216,7 @@ export function renderNews(
     <section class="news-section" id="news-ai">
       <h2>${esc(t(locale, "newsTitle"))}</h2>
       <p class="lead muted tiny">${esc(news?.generatedAt?.slice(0, 19) ?? "")} · ${esc(news?.source ?? "fixture")}</p>
-      ${bakeMeta(news)}
+      ${bakeLine(news?.source ? [`source: ${news.source}`] : [])}
       <ul class="news-list">
         ${
           items.length
@@ -231,8 +224,12 @@ export function renderNews(
                 .map((n) => {
                   const title = locale === "zh" ? n.titleZh : n.titleEn;
                   const summary = locale === "zh" ? n.summaryZh : n.summaryEn;
+                  const tags = (n.tags ?? [])
+                    .map((tg) => `<span class="chip query-tag">${esc(tg)}</span>`)
+                    .join("");
                   return `<li>
                     <time>${esc(n.date)}</time>
+                    ${tags}
                     <strong>${esc(title)}</strong>
                     <p class="muted">${esc(summary)}</p>
                     ${n.url ? `<p><a href="${esc(n.url)}" target="_blank" rel="noopener">source</a></p>` : ""}
@@ -247,7 +244,13 @@ export function renderNews(
       <h2>${esc(t(locale, "announcementsTitle"))}</h2>
       <p class="lead muted tiny">${esc(announcements?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "announcementsSource"))}</p>
       <p class="muted tiny">${esc(t(locale, "announcementsLead"))}</p>
-      ${bakeMeta(announcements)}
+      ${bakeLine(
+        [
+          announcements?.skill ? `skill: ${announcements.skill}` : "",
+          "channel: announcement",
+          `n=${annItems.length}`,
+        ].filter(Boolean),
+      )}
       ${renderEventBucketCounts(locale, annItems)}
       <ul class="news-list">
         ${renderAnnouncementLis(locale, annItems)}
@@ -257,7 +260,13 @@ export function renderNews(
       <h2>${esc(t(locale, "iwencaiNewsTitle"))}</h2>
       <p class="lead muted tiny">${esc(iwencaiNews?.generatedAt?.slice(0, 19) ?? "")} · ${esc(t(locale, "iwencaiSource"))}</p>
       <p class="muted tiny">${esc(t(locale, "iwencaiNewsLead"))}</p>
-      ${bakeMeta(iwencaiNews)}
+      ${bakeLine(
+        [
+          iwencaiNews?.skill ? `skill: ${iwencaiNews.skill}` : "",
+          "channel: news",
+          ...iwQueries.slice(0, 4).map((q) => `query: ${q}`),
+        ].filter(Boolean),
+      )}
       <ul class="news-list">
         ${renderIwencaiNewsLis(locale, iwItems)}
       </ul>

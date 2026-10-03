@@ -6,7 +6,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-import { buildFactorsIc } from "../lib/factors/ic";
+import { buildFactorsIcMulti } from "../lib/factors/ic";
 import { buildCorrMatrix } from "../lib/stats/corr";
 import type { LatestPayload } from "../pages/types";
 
@@ -27,9 +27,8 @@ function main() {
     candles: s.candles,
   }));
 
-  const payload = buildFactorsIc(rows, {
+  const payload = buildFactorsIcMulti(rows, {
     reportDate: latest.reportDate,
-    horizonBars: 21,
     step: 21,
   });
 

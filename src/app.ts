@@ -247,7 +247,7 @@ async function render(): Promise<void> {
         if (quantError || !quantData) {
           root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
         } else {
-          renderPaper(root, quantData, locale);
+          renderPaper(root, quantData, locale, announcementsData);
         }
         break;
       case "sim":

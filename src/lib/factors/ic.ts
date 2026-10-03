@@ -14,6 +14,11 @@ export interface FactorIcRow {
   nPeriods: number;
 }
 
+export interface FactorIcHorizonSlice {
+  horizonBars: number;
+  rows: FactorIcRow[];
+}
+
 export interface FactorsIcPayload {
   generatedAt: string;
   reportDate: string;
@@ -21,6 +26,8 @@ export interface FactorsIcPayload {
   attribution: { zh: string; en: string };
   horizonBars: number;
   rows: FactorIcRow[];
+  /** Multi-horizon IC strip (5/10/21) when baked. */
+  horizons?: FactorIcHorizonSlice[];
   corrHeatmap?: Array<{ a: string; b: string; corr: number | null }>;
 }
 
@@ -203,6 +210,33 @@ export function buildFactorsIc(
       summarize("lowVol", icVol, lastQVol),
     ],
   };
+}
+
+/** Bake helper: primary 21d IC plus 5/10/21 multi-horizon strip. */
+export function buildFactorsIcMulti(
+  rows: BakeRow[],
+  opts?: { step?: number; quantiles?: number; reportDate?: string },
+): FactorsIcPayload {
+  const horizons = [5, 10, 21];
+  const primary = buildFactorsIc(rows, {
+    ...opts,
+    horizonBars: 21,
+  });
+  primary.horizons = horizons.map((h) => {
+    const slice = buildFactorsIc(rows, { ...opts, horizonBars: h });
+    return { horizonBars: h, rows: slice.rows };
+  });
+  return primary;
+}
+
+/** Simple post-publication decay proxy: Q5−Q1 spread across horizons (literacy). */
+export function quantileSpread(row: FactorIcRow | undefined): number | null {
+  const q = row?.quantileReturns;
+  if (!q || q.length < 2) return null;
+  const lo = q[0];
+  const hi = q[q.length - 1];
+  if (!Number.isFinite(lo) || !Number.isFinite(hi)) return null;
+  return hi - lo;
 }
 
 /** IC-weight vector from latest IC means (fallback equal). */

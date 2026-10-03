@@ -45,6 +45,10 @@ import {
   topUpToHundredMillion,
 } from "../lib/paper/journal";
 import { type PaperJournalEntry, type PaperState } from "../lib/paper/types";
+import type { AnnouncementsPayload } from "../lib/announcements/map";
+import {
+  bucketAnnouncements,
+} from "../lib/announcements/events";
 import {
   PAPER_PANEL_IDS,
   readHashQuery,
@@ -202,6 +206,7 @@ export function renderPaper(
   root: HTMLElement,
   data: LatestPayload,
   locale: Locale,
+  announcements: AnnouncementsPayload | null = null,
 ): void {
   destroyEquityChart();
   let state: PaperState = loadPaperState();
@@ -414,6 +419,7 @@ export function renderPaper(
             : ""
         }</p>
         <p class="muted tiny" id="p-kelly"></p>
+        <p class="muted tiny filing-badge" id="p-filing-badge"></p>
         <div class="cta-row">
           <button type="button" class="btn" id="kelly-fill">${esc(t(locale, "paperKellySuggest"))}</button>
           <button type="button" class="btn btn-primary" id="p-buy">${esc(t(locale, "paperBuy"))}</button>
@@ -603,14 +609,42 @@ export function renderPaper(
         : "";
     };
 
+    const updateFilingBadge = (): void => {
+      const el = root.querySelector("#p-filing-badge");
+      if (!el || !symEl) return;
+      const sym = symEl.value;
+      const items = (announcements?.items ?? []).filter((a) => a.symbol === sym);
+      if (!items.length) {
+        el.textContent = "";
+        return;
+      }
+      const bucketed = bucketAnnouncements(items).slice(0, 3);
+      const bits = bucketed.map((a) => {
+        const label =
+          a.bucket === "earnings"
+            ? t(locale, "eventEarnings")
+            : a.bucket === "buyback"
+              ? t(locale, "eventBuyback")
+              : a.bucket === "holder_change"
+                ? t(locale, "eventHolder")
+                : t(locale, "eventOther");
+        return `${label}`;
+      });
+      el.textContent = `${t(locale, "paperFilingBadge")}: ${bits.join(" · ")} (${items.length})`;
+    };
+
     refillSignals();
+    updateFilingBadge();
     if (sigDefault && sigEl) {
       const opts = [...sigEl.options].map((o) => o.value);
       if (opts.includes(sigDefault)) sigEl.value = sigDefault;
       updatePreview();
     }
 
-    symEl?.addEventListener("change", () => refillSignals());
+    symEl?.addEventListener("change", () => {
+      refillSignals();
+      updateFilingBadge();
+    });
     sigEl?.addEventListener("change", () => updatePreview());
 
     // Charts
