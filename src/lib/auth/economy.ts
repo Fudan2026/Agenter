@@ -1,9 +1,18 @@
 /** Economy client helpers — shared Letus hard gold (GOLD_PER_USD = 100). */
 
 import { accessToken, isLoggedIn } from "./session";
-import { GOLD_PER_USD } from "./config";
+import { GOLD_PER_USD, MIN_GOLD_FLOOR } from "./config";
 
-export { GOLD_PER_USD };
+export { GOLD_PER_USD, MIN_GOLD_FLOOR };
+
+export type FinMode =
+  | "pick"
+  | "factor"
+  | "strategy"
+  | "review"
+  | "multifactor"
+  | "e2e"
+  | "transformer";
 
 export interface EconomyBalance {
   gold: number;
@@ -11,6 +20,15 @@ export interface EconomyBalance {
   email?: string | null;
   gold_per_usd?: number;
   shared_wallet?: boolean;
+  min_gold_floor?: number;
+  is_admin?: boolean;
+  usage?: Array<{
+    id?: number;
+    feature?: string;
+    tokens?: number;
+    gold?: number;
+    created_at?: string;
+  }>;
 }
 
 export async function fetchBalance(): Promise<EconomyBalance | null> {
@@ -28,6 +46,9 @@ export async function fetchBalance(): Promise<EconomyBalance | null> {
       email?: string | null;
       gold_per_usd?: number;
       shared_wallet?: boolean;
+      min_gold_floor?: number;
+      is_admin?: boolean;
+      usage?: EconomyBalance["usage"];
     };
     if (!data.ok) return null;
     return {
@@ -36,6 +57,9 @@ export async function fetchBalance(): Promise<EconomyBalance | null> {
       email: data.email,
       gold_per_usd: Number(data.gold_per_usd ?? GOLD_PER_USD),
       shared_wallet: Boolean(data.shared_wallet),
+      min_gold_floor: Number(data.min_gold_floor ?? MIN_GOLD_FLOOR),
+      is_admin: Boolean(data.is_admin),
+      usage: Array.isArray(data.usage) ? data.usage : [],
     };
   } catch {
     return null;
@@ -74,8 +98,6 @@ export async function redeemCode(
   }
 }
 
-export type FinMode = "pick" | "factor" | "strategy" | "review";
-
 export async function callFinDesk(input: {
   mode: FinMode;
   prompt: string;
@@ -89,7 +111,7 @@ export async function callFinDesk(input: {
       gold_remaining: number | null;
       meta?: unknown;
     }
-  | { ok: false; error: string; gold_needed?: number }
+  | { ok: false; error: string; gold_needed?: number; code?: string }
 > {
   try {
     const res = await fetch("/api/fin-desk", {
@@ -115,6 +137,7 @@ export async function callFinDesk(input: {
         ok: false,
         error: String(data.error || data.code || "fin_desk_failed"),
         gold_needed: data.gold_needed,
+        code: data.code,
       };
     }
     return {

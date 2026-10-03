@@ -5,12 +5,33 @@ import {
   fetchBalance,
   type FinMode,
 } from "../lib/auth/economy";
+import { MIN_GOLD_FLOOR } from "../lib/auth/config";
 import { isLoggedIn } from "../lib/auth/session";
 import { esc } from "../lib/util/esc";
-import { renderShell } from "./shell";
+import { bindShellChrome, renderShell } from "./shell";
 import type { LatestPayload } from "./types";
 import type { FactorsIcPayload } from "../lib/factors/ic";
 import type { ScreensPayload } from "../lib/screens/map";
+
+function readQueryPrompt(): string {
+  try {
+    const h = location.hash || "";
+    const q = h.includes("?") ? h.slice(h.indexOf("?") + 1) : "";
+    return new URLSearchParams(q).get("q") || "";
+  } catch {
+    return "";
+  }
+}
+
+function modeLabel(locale: Locale, mode: FinMode): string {
+  if (mode === "pick") return t(locale, "finModePick");
+  if (mode === "factor") return t(locale, "finModeFactor");
+  if (mode === "strategy") return t(locale, "finModeStrategy");
+  if (mode === "review") return t(locale, "finModeReview");
+  if (mode === "multifactor") return t(locale, "finModeMultifactor");
+  if (mode === "e2e") return t(locale, "finModeE2e");
+  return t(locale, "finModeTransformer");
+}
 
 export function renderFinDesk(
   root: HTMLElement,
@@ -24,10 +45,12 @@ export function renderFinDesk(
     return;
   }
 
-  let mode: FinMode = "pick";
+  let mode: FinMode = "multifactor";
   let goldLabel = "…";
   let answer = "";
   let flash = "";
+  let isAdmin = false;
+  let promptSeed = readQueryPrompt();
 
   const buildContext = (): string => {
     const parts: string[] = [];
@@ -65,78 +88,84 @@ export function renderFinDesk(
         `TimingTop:\n` +
           data.timing
             .slice(0, 5)
-            .map((t) => `- ${t.symbol} score=${t.score}`)
+            .map((row) => `- ${row.symbol} score=${row.score}`)
             .join("\n"),
       );
     }
     return parts.join("\n\n").slice(0, 10000);
   };
 
+  const modes: FinMode[] = [
+    "pick",
+    "factor",
+    "strategy",
+    "review",
+    "multifactor",
+    "e2e",
+    "transformer",
+  ];
+
   const paint = (): void => {
-    const modes: FinMode[] = ["pick", "factor", "strategy", "review"];
     const body = `
-      <h1>${esc(t(locale, "finDeskTitle"))}</h1>
+      <h1 class="type-heading-m">${esc(t(locale, "finDeskTitle"))}</h1>
       <p class="lead">${esc(t(locale, "finDeskLead"))}</p>
       <p class="muted tiny">${esc(t(locale, "finDeskStamp"))} · ${esc(t(locale, "goldBalance"))}: <strong>${esc(goldLabel)}</strong>
-        · <a href="#/account">${esc(t(locale, "accountTitle"))}</a></p>
-      ${flash ? `<p class="flash">${esc(flash)}</p>` : ""}
-      <div class="cta-row wrap">
-        ${modes
-          .map((m) => {
-            const label =
-              m === "pick"
-                ? t(locale, "finModePick")
-                : m === "factor"
-                  ? t(locale, "finModeFactor")
-                  : m === "strategy"
-                    ? t(locale, "finModeStrategy")
-                    : t(locale, "finModeReview");
-            return `<button type="button" class="btn ${mode === m ? "btn-primary" : ""}" data-mode="${m}">${esc(label)}</button>`;
-          })
-          .join("")}
-      </div>
-      <section class="paper-ticket fin-desk-form">
+        ${isAdmin ? ` · ${esc(locale === "zh" ? "管理员" : "admin")}` : ""}</p>
+      <p class="muted tiny">${esc(t(locale, "goldFloorNote"))}</p>
+      ${flash ? `<p class="notice notice-error">${esc(flash)}</p>` : ""}
+      <form class="fin-desk-form composer-card" id="fin-form">
+        <div class="fin-modes" role="tablist">
+          ${modes
+            .map(
+              (m) =>
+                `<button type="button" class="fin-mode ${mode === m ? "active" : ""}" data-mode="${m}">${esc(modeLabel(locale, m))}</button>`,
+            )
+            .join("")}
+        </div>
         <label>${esc(t(locale, "finPrompt"))}
-          <textarea id="fin-prompt" rows="5" placeholder="${esc(t(locale, "finPromptPh"))}"></textarea>
+          <textarea id="fin-prompt" rows="5" placeholder="${esc(t(locale, "finPromptPh"))}">${esc(promptSeed)}</textarea>
         </label>
-        <button type="button" class="btn btn-primary" id="fin-run">${esc(t(locale, "finRun"))}</button>
-      </section>
-      <section class="review fin-answer">
+        <div class="cta-row wrap">
+          <button type="submit" class="btn btn-ink">${esc(t(locale, "finRun"))}</button>
+          <a class="btn btn-ghost" href="#/quant?panel=lab">${esc(t(locale, "openLab"))}</a>
+          <a class="btn btn-ghost" href="#/account">${esc(t(locale, "accountTitle"))}</a>
+        </div>
+      </form>
+      <section class="fin-answer">
         <h2>${esc(t(locale, "finAnswer"))}</h2>
-        ${
-          answer
-            ? `<pre class="fin-answer-body">${esc(answer)}</pre>`
-            : `<p class="muted">${esc(t(locale, "finAnswerEmpty"))}</p>`
-        }
+        <pre class="fin-answer-body">${esc(answer || t(locale, "finAnswerEmpty"))}</pre>
       </section>
-      <p class="muted tiny"><a href="#/quant?panel=lab">${esc(t(locale, "openLab"))}</a>
-        · <a href="#/quant?panel=screens">${esc(t(locale, "screensTitle"))}</a>
-        · <a href="#/quant?panel=review">${esc(t(locale, "dailyReview"))}</a></p>
     `;
     root.innerHTML = renderShell(locale, "fin", body, {
-      subtitle: t(locale, "finDeskTitle"),
+      subtitle: t(locale, "finDeskStamp"),
     });
+    bindShellChrome(root);
     document.title = `${t(locale, "finDeskTitle")} · Supro`;
 
     root.querySelectorAll("[data-mode]").forEach((btn) => {
       btn.addEventListener("click", () => {
-        mode = ((btn as HTMLElement).dataset.mode as FinMode) || "pick";
+        mode = (btn as HTMLElement).dataset.mode as FinMode;
+        promptSeed = (
+          root.querySelector("#fin-prompt") as HTMLTextAreaElement
+        ).value;
         paint();
       });
     });
 
-    root.querySelector("#fin-run")?.addEventListener("click", async () => {
+    root.querySelector("#fin-form")?.addEventListener("submit", async (e) => {
+      e.preventDefault();
       const prompt = (
         root.querySelector("#fin-prompt") as HTMLTextAreaElement
       ).value.trim();
+      promptSeed = prompt;
       if (!prompt) {
         flash = t(locale, "finPromptRequired");
         paint();
         return;
       }
-      flash = t(locale, "loading");
+      flash = "";
+      answer = t(locale, "loading");
       paint();
-      (root.querySelector("#fin-prompt") as HTMLTextAreaElement).value = prompt;
       const r = await callFinDesk({
         mode,
         prompt,
@@ -145,30 +174,34 @@ export function renderFinDesk(
       });
       if (!r.ok) {
         flash =
-          r.error === "insufficient_gold"
-            ? t(locale, "insufficientGold")
-            : r.error;
+          r.code === "insufficient_gold_floor"
+            ? t(locale, "insufficientGoldFloor")
+            : r.error === "insufficient_gold" || r.code === "insufficient_gold"
+              ? t(locale, "insufficientGold")
+              : r.error;
         answer = "";
         paint();
-        (root.querySelector("#fin-prompt") as HTMLTextAreaElement).value =
-          prompt;
         return;
       }
       answer = r.answer;
-      flash =
-        locale === "zh"
-          ? `已扣 ${r.gold_spent} 金币`
-          : `Spent ${r.gold_spent} gold`;
       if (r.gold_remaining != null) goldLabel = String(r.gold_remaining);
       paint();
-      (root.querySelector("#fin-prompt") as HTMLTextAreaElement).value = prompt;
     });
   };
 
   paint();
   void fetchBalance().then((b) => {
-    if (b) goldLabel = String(b.gold);
-    else goldLabel = "—";
+    if (!b) {
+      flash = t(locale, "economyUnavailable");
+      goldLabel = "—";
+      paint();
+      return;
+    }
+    goldLabel = String(b.gold);
+    isAdmin = Boolean(b.is_admin);
+    if (!b.is_admin && b.gold < (b.min_gold_floor ?? MIN_GOLD_FLOOR)) {
+      flash = t(locale, "insufficientGoldFloor");
+    }
     paint();
   });
 }

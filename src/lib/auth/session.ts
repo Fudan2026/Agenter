@@ -250,5 +250,5 @@ export const PUBLIC_ROUTES = new Set([
 ]);
 
 export function requiresAuth(page: string): boolean {
-  return page === "fin" || page === "account";
+  return page === "fin" || page === "account" || page === "admin";
 }

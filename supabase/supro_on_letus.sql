@@ -1,18 +1,22 @@
 -- =============================================================================
--- Supro on Letus — additive Fin Desk gold metering
--- Apply in the SHARED Letus Supabase project (jrnabzfvdcmcoxyadmax).
+-- Supro / SuPo on Letus — shared wallet + 苏坡大模型 metering
+-- Apply in the SHARED Letus Supabase project ONLY:
+--   Project ref: jrnabzfvdcmcoxyadmax
+--   URL: https://jrnabzfvdcmcoxyadmax.supabase.co
 --
--- DO NOT apply supabase/economy.sql here (uuid PK + RPC clash with Letus).
+-- DO NOT create a new Supabase project (that would isolate Auth/gold).
+-- DO NOT apply supabase/economy.sql here (uuid PK clash with Letus text user_id).
 --
--- Prerequisites: Letus P0 schema already live:
---   user_economy (user_id text, gold, total_earned, …)
---   ensure_my_economy(), redeem_vip_code(), uid_text()
+-- Owner after apply:
+--   Auth → Redirect URLs: https://supro.si/** , https://www.supro.si/** , Pages preview
+--   Optional: set app_metadata.role = "admin" on seanfudan@163.com
 --
--- Shared hard gold + USD peg: GOLD_PER_USD = 100 (documented in app; 100 gold = $1).
--- Soft Soft / Soft Softlet remain Letus-only.
+-- Shared hard gold: GOLD_PER_USD = 100 (100 gold = $1). Soft Soft stays Letus-only.
+-- MIN_GOLD_FLOOR = 20 for non-admin Fin Desk / 苏坡大模型 calls.
+-- Admin email: seanfudan@163.com → grant ≥100000 gold; spend no-ops cost.
 -- =============================================================================
 
--- Fin Desk usage ledger (text user_id — matches Letus)
+-- Fin Desk / 苏坡大模型 usage ledger (text user_id — matches Letus)
 create table if not exists public.fin_desk_usage (
   id bigserial primary key,
   user_id text not null,
@@ -51,8 +55,42 @@ alter table public.gold_codes enable row level security;
 revoke all on table public.gold_codes from public, anon, authenticated;
 grant all on table public.gold_codes to service_role;
 
--- Ensure wallet row exists (service_role path; no separate welcome steal).
--- Mirrors Letus insert-on-conflict; admin bootstrap stays in ensure_my_economy.
+-- Admin detection: email allowlist and/or JWT app_metadata.role=admin
+create or replace function public.is_supro_admin(p_user_id text)
+returns boolean
+language plpgsql
+stable
+security definer
+set search_path = public, auth
+as $$
+declare
+  uid text := nullif(trim(coalesce(p_user_id, '')), '');
+  v_email text;
+  v_role text;
+begin
+  if uid is null then
+    return false;
+  end if;
+
+  select lower(u.email), coalesce(u.raw_app_meta_data ->> 'role', '')
+    into v_email, v_role
+  from auth.users u
+  where u.id::text = uid;
+
+  if v_role = 'admin' then
+    return true;
+  end if;
+  if v_email = 'seanfudan@163.com' then
+    return true;
+  end if;
+  return false;
+end;
+$$;
+
+revoke all on function public.is_supro_admin(text) from public, anon, authenticated;
+grant execute on function public.is_supro_admin(text) to service_role;
+
+-- Ensure wallet row; bootstrap admin to ≥100000 gold
 create or replace function public.ensure_supro_economy(p_user_id text)
 returns jsonb
 language plpgsql
@@ -62,6 +100,7 @@ as $$
 declare
   eco public.user_economy;
   uid text := nullif(trim(coalesce(p_user_id, '')), '');
+  admin_grant integer := 100000;
 begin
   if uid is null then
     raise exception 'missing_user';
@@ -70,12 +109,25 @@ begin
   insert into public.user_economy (user_id) values (uid)
     on conflict (user_id) do nothing;
 
+  if public.is_supro_admin(uid) then
+    update public.user_economy
+       set gold = greatest(gold, admin_grant),
+           total_earned = greatest(total_earned, admin_grant),
+           updated_at = now()
+     where user_id = uid;
+  end if;
+
   select * into eco from public.user_economy where user_id = uid;
-  return to_jsonb(eco);
+  return to_jsonb(eco) || jsonb_build_object(
+    'is_admin', public.is_supro_admin(uid),
+    'min_gold_floor', 20,
+    'gold_per_usd', 100
+  );
 end;
 $$;
 
--- Atomic server spend against shared Letus gold (Fin Desk)
+-- Atomic spend AFTER model usage. Admin: log tokens, spent=0.
+-- Non-admin: require gold >= 20 before debit; then gold >= cost.
 create or replace function public.spend_gold_for_usage(
   p_user_id text,
   p_tokens integer,
@@ -91,28 +143,47 @@ declare
   uid text := nullif(trim(coalesce(p_user_id, '')), '');
   v_cost integer;
   v_gold integer;
+  v_admin boolean;
+  min_floor integer := 20;
 begin
   if uid is null then
     raise exception 'missing_user';
   end if;
 
   perform public.ensure_supro_economy(uid);
+  v_admin := public.is_supro_admin(uid);
 
   v_cost := coalesce(
     p_gold,
     greatest(1, ceil(greatest(coalesce(p_tokens, 0), 1)::numeric / 1000.0))::integer
   );
 
+  if v_admin then
+    select gold into v_gold from public.user_economy where user_id = uid;
+    insert into public.fin_desk_usage (user_id, feature, tokens, gold)
+    values (uid, coalesce(p_feature, 'fin_desk'), coalesce(p_tokens, 0), 0);
+    return jsonb_build_object(
+      'ok', true,
+      'gold', v_gold,
+      'spent', 0,
+      'admin', true,
+      'tokens', coalesce(p_tokens, 0)
+    );
+  end if;
+
+  select gold into v_gold from public.user_economy where user_id = uid for update;
+  if coalesce(v_gold, 0) < min_floor then
+    raise exception 'insufficient_gold_floor';
+  end if;
+  if coalesce(v_gold, 0) < v_cost then
+    raise exception 'insufficient_gold';
+  end if;
+
   update public.user_economy
   set gold = gold - v_cost,
       updated_at = now()
   where user_id = uid
-    and gold >= v_cost
   returning gold into v_gold;
-
-  if v_gold is null then
-    raise exception 'insufficient_gold';
-  end if;
 
   insert into public.fin_desk_usage (user_id, feature, tokens, gold)
   values (uid, coalesce(p_feature, 'fin_desk'), coalesce(p_tokens, 0), v_cost);
@@ -120,7 +191,48 @@ begin
   return jsonb_build_object(
     'ok', true,
     'gold', v_gold,
-    'spent', v_cost
+    'spent', v_cost,
+    'admin', false,
+    'tokens', coalesce(p_tokens, 0)
+  );
+end;
+$$;
+
+-- Preflight only (no debit): check floor / admin before calling LLM
+create or replace function public.preflight_fin_desk(p_user_id text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid text := nullif(trim(coalesce(p_user_id, '')), '');
+  eco jsonb;
+  v_gold integer;
+  v_admin boolean;
+  min_floor integer := 20;
+begin
+  if uid is null then
+    raise exception 'missing_user';
+  end if;
+  eco := public.ensure_supro_economy(uid);
+  v_gold := coalesce((eco ->> 'gold')::integer, 0);
+  v_admin := public.is_supro_admin(uid);
+  if (not v_admin) and v_gold < min_floor then
+    return jsonb_build_object(
+      'ok', false,
+      'code', 'insufficient_gold_floor',
+      'gold', v_gold,
+      'min_gold_floor', min_floor,
+      'is_admin', false
+    );
+  end if;
+  return jsonb_build_object(
+    'ok', true,
+    'gold', v_gold,
+    'min_gold_floor', min_floor,
+    'is_admin', v_admin,
+    'gold_per_usd', 100
   );
 end;
 $$;
@@ -182,13 +294,50 @@ begin
 end;
 $$;
 
+-- Recent usage for account / admin prototype
+create or replace function public.list_fin_desk_usage(
+  p_user_id text,
+  p_limit integer default 20
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  uid text := nullif(trim(coalesce(p_user_id, '')), '');
+  lim integer := least(greatest(coalesce(p_limit, 20), 1), 100);
+begin
+  if uid is null then
+    raise exception 'missing_user';
+  end if;
+  return coalesce(
+    (
+      select jsonb_agg(row_to_json(t)::jsonb order by t.created_at desc)
+      from (
+        select id, feature, tokens, gold, created_at
+        from public.fin_desk_usage
+        where user_id = uid
+        order by created_at desc
+        limit lim
+      ) t
+    ),
+    '[]'::jsonb
+  );
+end;
+$$;
+
 revoke all on function public.ensure_supro_economy(text) from public, anon, authenticated;
 revoke all on function public.spend_gold_for_usage(text, integer, text, integer) from public, anon, authenticated;
 revoke all on function public.redeem_gold_code(text, text) from public, anon, authenticated;
+revoke all on function public.preflight_fin_desk(text) from public, anon, authenticated;
+revoke all on function public.list_fin_desk_usage(text, integer) from public, anon, authenticated;
 
 grant execute on function public.ensure_supro_economy(text) to service_role;
 grant execute on function public.spend_gold_for_usage(text, integer, text, integer) to service_role;
 grant execute on function public.redeem_gold_code(text, text) to service_role;
+grant execute on function public.preflight_fin_desk(text) to service_role;
+grant execute on function public.list_fin_desk_usage(text, integer) to service_role;
 
 -- Seed demo codes (owner may rotate). Credits shared Letus gold.
 insert into public.gold_codes (code, gold) values
@@ -196,3 +345,17 @@ insert into public.gold_codes (code, gold) values
   ('SUPRO500', 500),
   ('WELCOME50', 50)
 on conflict (code) do nothing;
+
+-- Bootstrap admin wallet if the Auth user already exists
+do $$
+declare
+  admin_id text;
+begin
+  select u.id::text into admin_id
+  from auth.users u
+  where lower(u.email) = 'seanfudan@163.com'
+  limit 1;
+  if admin_id is not null then
+    perform public.ensure_supro_economy(admin_id);
+  end if;
+end $$;

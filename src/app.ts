@@ -21,6 +21,8 @@ import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
 import { renderLogin } from "./pages/login";
 import { renderAccount } from "./pages/account";
 import { renderFinDesk } from "./pages/fin";
+import { renderAdmin } from "./pages/admin";
+import { bindShellChrome } from "./pages/shell";
 import type { LatestPayload } from "./pages/types";
 import type { FactorsPayload } from "./lib/factors/cross-section";
 import type { FactorsIcPayload } from "./lib/factors/ic";
@@ -55,7 +57,8 @@ type Route =
   | { page: "asset"; symbol: string }
   | { page: "login" }
   | { page: "account" }
-  | { page: "fin" };
+  | { page: "fin" }
+  | { page: "admin" };
 
 async function loadQuantData(): Promise<void> {
   try {
@@ -220,6 +223,7 @@ function parseRoute(): Route {
   if (path === "/login") return { page: "login" };
   if (path === "/account") return { page: "account" };
   if (path === "/fin") return { page: "fin" };
+  if (path === "/admin") return { page: "admin" };
   const asset = path.match(/^\/asset\/(.+)$/);
   if (asset) return { page: "asset", symbol: decodeURIComponent(asset[1]) };
   return { page: "home" };
@@ -274,6 +278,9 @@ async function render(): Promise<void> {
           screensData,
           factorsIcData,
         );
+        break;
+      case "admin":
+        renderAdmin(root, locale);
         break;
       case "compare": {
         const agents = await loadAgents();
@@ -353,6 +360,7 @@ async function render(): Promise<void> {
   }
 
   bindLocale(root);
+  bindShellChrome(root);
 }
 
 export async function startApp(): Promise<void> {

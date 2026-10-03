@@ -4,7 +4,7 @@ import type { AgentRecord } from "../lib/agents/types";
 import type { AiRatingsPayload, AiRatingRow } from "../lib/ai-ratings/map";
 import { esc } from "../lib/util/esc";
 import { loadAgents } from "./compare";
-import { renderShell } from "./shell";
+import { bindShellChrome, renderShell } from "./shell";
 
 function agentName(a: AgentRecord, locale: Locale): string {
   return locale === "zh" ? a.nameZh : a.nameEn;
@@ -13,7 +13,9 @@ function agentName(a: AgentRecord, locale: Locale): string {
 function logoSrc(a: AgentRecord): string {
   const base = import.meta.env.BASE_URL || "/";
   if (a.logo) {
-    return a.logo.startsWith("http") ? a.logo : `${base}${a.logo.replace(/^\//, "")}`;
+    return a.logo.startsWith("http")
+      ? a.logo
+      : `${base}${a.logo.replace(/^\//, "")}`;
   }
   return `${base}logos/${a.id}.svg`;
 }
@@ -22,9 +24,26 @@ function rankFor(
   a: AgentRecord,
   byId: Map<string, AiRatingRow>,
 ): number | null {
-  const r = byId.get(a.id);
-  return r?.rank ?? null;
+  return byId.get(a.id)?.rank ?? null;
 }
+
+const TRY_PROMPTS_EN = [
+  "Multi-factor screen: momentum + low-vol with liquidity filter",
+  "Draft an e2e Lab strategy using confluence and next-open fills",
+  "Explain IC decay and McLean-style post-publication fade",
+  "Review today’s baked daily review in plain English",
+  "Map a transformer / FinCast idea to what this site can and cannot run",
+  "Propose factor tilts from the IC board without promising returns",
+];
+
+const TRY_PROMPTS_ZH = [
+  "多因子选股：动量 + 低波，并考虑流动性",
+  "端到端策略：用 confluence，强调次日开盘成交",
+  "解释 IC 衰减与发表后可预测性变弱",
+  "用白话复盘今日烘焙日报",
+  "把 Transformer / FinCast 想法映射到本站能做与不能做的边界",
+  "根据 IC 面板给因子倾斜建议，不承诺收益",
+];
 
 function renderRankBoard(
   locale: Locale,
@@ -32,7 +51,7 @@ function renderRankBoard(
   agents: AgentRecord[],
 ): string {
   if (!ratings?.rows?.length) {
-    return `<p class="muted">${esc(locale === "zh" ? "暂无周排名数据（等待 ai-ratings bake）。" : "No weekly ranks yet (awaiting ai-ratings bake).")}</p>`;
+    return `<p class="muted">${esc(locale === "zh" ? "暂无周排名（等待 ai-ratings bake）。" : "No weekly ranks yet (awaiting ai-ratings bake).")}</p>`;
   }
   const byAgent = new Map(agents.map((a) => [a.id, a]));
   const rows = [...ratings.rows]
@@ -93,7 +112,7 @@ function renderDirectory(
     return agentName(a, locale).localeCompare(agentName(b, locale));
   });
 
-  const cards = sorted
+  return `<ul class="home-ai-list" id="home-ai-grid">${sorted
     .map((a) => {
       const name = agentName(a, locale);
       const href = a.links.homepage || a.links.docs || "#/compare";
@@ -101,8 +120,8 @@ function renderDirectory(
       const rank = rankFor(a, byId);
       const rankBtn =
         rank != null
-          ? `<button type="button" class="home-rank-chip" data-open-ranks="1" title="${esc(t(locale, "homeWeeklyRanks"))}">#${esc(String(rank))}</button>`
-          : `<button type="button" class="home-rank-chip muted" data-open-ranks="1" title="${esc(t(locale, "homeWeeklyRanks"))}">${esc(t(locale, "homeRankCol"))}</button>`;
+          ? `<button type="button" class="home-rank-chip" data-open-ranks="1">#${esc(String(rank))}</button>`
+          : `<button type="button" class="home-rank-chip muted" data-open-ranks="1">${esc(t(locale, "homeRankCol"))}</button>`;
       const initials = name
         .replace(/[^a-zA-Z0-9\u4e00-\u9fff]+/g, " ")
         .trim()
@@ -112,7 +131,7 @@ function renderDirectory(
         .join("")
         .slice(0, 2);
       return `
-        <article class="home-ai-card" data-agent="${esc(a.id)}">
+        <li class="home-ai-row" data-agent="${esc(a.id)}">
           <div class="home-ai-logo-wrap">
             <img class="home-ai-logo" src="${esc(logoSrc(a))}" alt="" width="40" height="40" loading="lazy"
               onerror="this.style.display='none';this.nextElementSibling.style.display='grid'" />
@@ -126,15 +145,13 @@ function renderDirectory(
             ${rankBtn}
             ${
               a.links.homepage
-                ? `<a class="home-ai-link" href="${esc(a.links.homepage)}" target="_blank" rel="noopener noreferrer">${esc(t(locale, "homeVisitSite"))}</a>`
+                ? `<a class="home-ai-link site-link-dotted" href="${esc(a.links.homepage)}" target="_blank" rel="noopener noreferrer">${esc(t(locale, "homeVisitSite"))}</a>`
                 : ""
             }
           </div>
-        </article>`;
+        </li>`;
     })
-    .join("");
-
-  return `<div class="home-ai-grid" id="home-ai-grid">${cards}</div>`;
+    .join("")}</ul>`;
 }
 
 export function renderBrandHome(
@@ -142,37 +159,54 @@ export function renderBrandHome(
   locale: Locale,
   aiRatings: AiRatingsPayload | null = null,
 ): void {
+  const prompts = locale === "zh" ? TRY_PROMPTS_ZH : TRY_PROMPTS_EN;
+  const chips = prompts
+    .map(
+      (p, i) => `
+      <li class="try-chip">
+        <span class="try-chip-q">${esc(p)}</span>
+        <button type="button" class="try-chip-btn" data-try="${i}">${esc(t(locale, "homeTry"))}</button>
+      </li>`,
+    )
+    .join("");
+
   const body = `
-    <section class="hero brand-hero home-hero-pro">
-      <p class="hero-kicker">${esc(t(locale, "tagline"))}</p>
-      <h1 class="hero-brand">${esc(t(locale, "homeH1"))}</h1>
+    <section class="hero brand-hero home-hero-america">
+      <p class="hero-kicker">${esc(t(locale, "helloKicker"))}</p>
+      <h1 class="hero-brand type-site-hero">${esc(t(locale, "homeH1"))}</h1>
       <p class="hero-sub">${esc(t(locale, "homeSub"))}</p>
       <p class="hero-lead">${esc(t(locale, "homeLead"))}</p>
-      <div class="cta-row wrap">
-        <a class="btn btn-primary" href="#/compare">${esc(t(locale, "ctaCompare"))}</a>
-        <a class="btn" href="#/quant">${esc(t(locale, "ctaQuantHome"))}</a>
-        <a class="btn" href="#/fin">${esc(t(locale, "ctaFinHome"))}</a>
-        <a class="btn btn-ghost" href="#/handbook">${esc(t(locale, "ctaHandbook"))}</a>
-      </div>
+
+      <form class="home-composer" id="home-composer" aria-label="${esc(t(locale, "homeComposerLabel"))}">
+        <label class="sr-only" for="home-composer-input">${esc(t(locale, "homeComposerLabel"))}</label>
+        <textarea id="home-composer-input" name="q" rows="2" placeholder="${esc(t(locale, "homeComposerPh"))}"></textarea>
+        <button type="submit" class="composer-submit">${esc(t(locale, "homeComposerSubmit"))}</button>
+      </form>
+      <p class="composer-meta">
+        <a class="site-link-dotted" href="#/handbook">${esc(t(locale, "homePrivacyLink"))}</a>
+        <span class="meta-dot" aria-hidden="true">·</span>
+        <a class="site-link-dotted" href="#/fin">${esc(t(locale, "homeHowLink"))}</a>
+      </p>
+      <ul class="try-row" aria-label="examples">${chips}</ul>
     </section>
 
     <section class="home-directory" id="home-directory">
       <div class="home-section-head">
         <div>
-          <h2>${esc(t(locale, "homeDirectoryTitle"))}</h2>
+          <h2 class="type-heading-m">${esc(t(locale, "homeDirectoryTitle"))}</h2>
           <p class="muted">${esc(t(locale, "homeDirectoryLead"))}</p>
         </div>
-        <button type="button" class="btn btn-primary" id="home-open-ranks">${esc(t(locale, "homeWeeklyRanks"))}</button>
+        <button type="button" class="btn btn-ink" id="home-open-ranks">${esc(t(locale, "homeWeeklyRanks"))}</button>
       </div>
       <div id="home-directory-body"><p class="muted">${esc(t(locale, "loading"))}</p></div>
       <div id="home-ranks-slot" hidden></div>
     </section>
 
     <section class="home-quant-strip">
-      <h2>${esc(t(locale, "homeQuantStripTitle"))}</h2>
+      <h2 class="type-heading-m">${esc(t(locale, "homeQuantStripTitle"))}</h2>
       <p class="muted">${esc(t(locale, "homeQuantStripLead"))}</p>
       <div class="cta-row wrap">
-        <a class="btn btn-primary" href="#/quant">${esc(t(locale, "navQuant"))}</a>
+        <a class="btn btn-ink" href="#/quant">${esc(t(locale, "navQuant"))}</a>
         <a class="btn" href="#/paper">${esc(t(locale, "navPaper"))}</a>
         <a class="btn" href="#/fin">${esc(t(locale, "finDeskTitle"))}</a>
         <a class="btn btn-ghost" href="#/tools">${esc(t(locale, "ctaTools"))}</a>
@@ -183,20 +217,43 @@ export function renderBrandHome(
   root.innerHTML = renderShell(locale, "home", body, {
     subtitle: t(locale, "homeSub"),
   });
+  bindShellChrome(root);
   document.title = `${t(locale, "homeH1")} · ${t(locale, "tagline")}`;
 
+  const input = root.querySelector(
+    "#home-composer-input",
+  ) as HTMLTextAreaElement | null;
+  root.querySelectorAll("[data-try]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const i = Number((btn as HTMLElement).dataset.try);
+      if (!input || !Number.isFinite(i) || !prompts[i]) return;
+      input.value = prompts[i];
+      input.focus();
+    });
+  });
+  root.querySelector("#home-composer")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const q = (input?.value || "").trim();
+    const enc = encodeURIComponent(q);
+    location.hash = q ? `#/fin?q=${enc}` : "#/fin";
+  });
+
   const dirBody = root.querySelector("#home-directory-body");
-  const ranksSlot = root.querySelector("#home-ranks-slot") as HTMLElement | null;
+  const ranksSlot = root.querySelector(
+    "#home-ranks-slot",
+  ) as HTMLElement | null;
   let loadedAgents: AgentRecord[] = [];
 
   const openRanks = (): void => {
     if (!ranksSlot) return;
     ranksSlot.hidden = false;
     ranksSlot.innerHTML = renderRankBoard(locale, aiRatings, loadedAgents);
-    ranksSlot.querySelector("#home-ranks-close")?.addEventListener("click", () => {
-      ranksSlot.hidden = true;
-      ranksSlot.innerHTML = "";
-    });
+    ranksSlot
+      .querySelector("#home-ranks-close")
+      ?.addEventListener("click", () => {
+        ranksSlot.hidden = true;
+        ranksSlot.innerHTML = "";
+      });
     ranksSlot.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
@@ -214,7 +271,7 @@ export function renderBrandHome(
     })
     .catch(() => {
       if (dirBody) {
-        dirBody.innerHTML = `<p class="flash">${esc(t(locale, "loadError"))}</p>`;
+        dirBody.innerHTML = `<p class="notice notice-error">${esc(t(locale, "loadError"))}</p>`;
       }
     });
 }
