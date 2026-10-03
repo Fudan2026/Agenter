@@ -20,12 +20,13 @@ This README is the **canonical English build brief**.
 | `/#/compare` | Apple-style sticky shortlist + dimension matrix + harness presets |
 | `/#/learn` | Guided tour + practice scenarios |
 | `/#/handbook` | Bilingual deep manual — modules, 13-skill catalog, workflows |
-| `/#/tools` | **Sole hub** for Quant / Paper / Sim / News (secondary tools) |
-| `/#/news` | AI news + A-share announcements + Iwencai finance news digest (via Tools) |
-| `/#/quant` | Quant review + Factor Studio + Committee + Strategy Lab (deep link; not primary nav) |
-| `/#/paper` | Paper Pro workstation — cockpit, blotter, attribution, next-open desk (deep link) |
-| `/#/sim` | Sim Desk — SkillHub「模拟炒股」distill (local ¥100M; deep link) |
+| `/#/tools` | **Sole hub** — 5 cards: Handbook · Quant · Paper (export chip) · Sim · News hub |
+| `/#/news` | AI · filings · Iwencai on one page (`?section=ai|filings|iwencai`) |
+| `/#/quant` | Factor Studio · Committee · screens→Paper · Strategy Lab (`?panel=…`) |
+| `/#/paper` | Paper Pro — brackets · risk pack · Sim reconcile · TWAP/VWAP (`?panel=…`) |
+| `/#/sim` | Sim Desk — SkillHub「模拟炒股」distill; handoff `#/paper?panel=reconcile` |
 | `/#/asset/:symbol` | Candlestick + MA + factor exposures |
+| `/#/compare` | Sticky shortlist + harness (`?preset=quant` applies Quant weights) |
 
 **Primary nav = Home · Compare · Learn · Handbook · Tools.** Quant/Paper/Sim are tools — not the brand face.  
 **Correction:** Round-1 Quant-as-home was wrong; corrected this round.
@@ -62,7 +63,8 @@ npm run news:bake            # RSS → public/data/ai-news.json (fail-open)
 npm run announcements:bake   # Iwencai CLI → public/data/announcements.json (fail-open; needs IWENCAI_API_KEY)
 npm run iwencai-news:bake    # news-search CLI → public/data/iwencai-news.json
 npm run indices:bake         # zhishu CLI → public/data/indices.json (Quant strip)
-npm run screens:bake         # selector CLI → public/data/screens.json (3 editorial screens)
+npm run screens:bake         # selector CLI → public/data/screens.json (editorial screens)
+npm run factors:ic-bake      # latest.json → factors-ic.json (multi-horizon IC)
 npm run build
 npm run dev
 ```
@@ -130,9 +132,13 @@ Legacy 16 unchanged + additive: `510050.SS`, `159919.SZ`, `512690.SS`, `515790.S
 - **Cockpit** strip: equity, cash, day PnL%, max DD, win rate, profit factor, open names, trades
 - **Blotter**: filter by symbol/side/source; playbook + slice columns; top-N journal
 - **Attribution**: by symbol and by playbook (momentum / mean_rev / committee / lab / manual)
-- **Exec desk**: TWAP/VWAP schedule + √-impact; **Materialize slices → journal** (next-open educational fills + `sliceLabel`)
-- **Research Audit** card on Paper ops + Lab tear sheet (cost / next-open / time-split / survivorship literacy)
-- Ticket playbook tags stash on journal; soft + optional hard gates; checklist export with next-open wording
+- **Exec desk**: TWAP/VWAP + presets (TWAP-8 / VWAP-√ / TWAP-tight); **Materialize slices → journal**
+- **Brackets**: attach stop%/TP% on positions; sweep on OHLC — same-bar conflict fills **stop first**
+- **Risk pack**: soft strip + optional hard gates (max name %, min cash %, max open names, daily MTM loss halt)
+- **CN calendar lite**: `public/data/cn-calendar.json` skips educational non-sessions when resolving next-open
+- **Sim reconcile**: import Sim positions → Paper (`source: sim`); `#/paper?panel=reconcile`
+- **Research Audit** card; checklist export with next-open wording
+- Deep links: `#/paper?panel=export|exec|ticket|blotter|audit|risk|reconcile`
 - No xiadan / THS / broker SDKs
 
 ### Compare · Academy · skills
@@ -174,7 +180,7 @@ Do **not** commit `CNAME` until owner DNS is ready (protects `github.io`).
 - Skills: `quant-no-lookahead`, `quant-daily-ops` (list not live), `quant-risk-gates` (UI warnings), `quant-backtest-review` (tear-sheet R/Y/G)
 - Interactive agents: see root **`Skills.md`** (Iwencai OpenAPI skills + nine methodology packages under `skills/`: K线形态识别, 执行模型, factor/ML/stats frameworks, etc.).
 - Site distill: 15 patterns · Factor Board · ADF strip · recipe cards · √-impact costs — agents keep full SkillHub workflows.
-- Site: bake-time JSON only (`latest.json`, `announcements.json`, `iwencai-news.json`, `indices.json`, `screens.json`). **`#/news`** shows RSS AI news + announcements + Iwencai finance news. **`#/quant`** shows index snapshot + three fixed editorial screens. **`#/sim`** is a local distill of SkillHub 模拟炒股. Agents use vendored CLIs; the browser never embeds broker SDKs or `IWENCAI_API_KEY`.
+- Site: bake-time JSON only (`latest.json`, `announcements.json`, `iwencai-news.json`, `indices.json`, `screens.json`, `factors-ic.json`, `cn-calendar.json`). **`#/news`** shows RSS AI news + announcements + Iwencai finance news. **`#/quant`** shows index snapshot + six editorial screens (Promote→Paper) + multi-horizon IC. **`#/sim`** is a local distill of SkillHub 模拟炒股. Agents use vendored CLIs; the browser never embeds broker SDKs or `IWENCAI_API_KEY`. Owner must set Actions `IWENCAI_API_KEY` manually for fresher Iwencai bakes.
 
 ---
 

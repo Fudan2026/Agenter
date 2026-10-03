@@ -23,10 +23,18 @@ function normalizeState(parsed: Partial<PaperState> & { version?: number }): Pap
     journal: Array.isArray(parsed.journal) ? parsed.journal : [],
     hardRiskGates: Boolean(parsed.hardRiskGates),
     costModelEnabled: parsed.costModelEnabled !== false,
+    costConfig: parsed.costConfig ?? base.costConfig,
     boughtLots:
       parsed.boughtLots && typeof parsed.boughtLots === "object"
         ? parsed.boughtLots
         : {},
+    riskLimits: parsed.riskLimits
+      ? { ...base.riskLimits!, ...parsed.riskLimits }
+      : base.riskLimits,
+    priorEquityMark:
+      typeof parsed.priorEquityMark === "number"
+        ? parsed.priorEquityMark
+        : base.priorEquityMark,
     version: 2,
   };
 }

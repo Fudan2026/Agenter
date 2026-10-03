@@ -24,11 +24,14 @@ import {
 import {
   applyBuy,
   applySell,
+  attachBrackets,
   equityMark,
   normalizeQty,
   paperRiskSnapshot,
   resolveNextOpenFill,
+  sweepBrackets,
 } from "../lib/paper/engine";
+import type { CnCalendarPayload } from "../lib/paper/calendar";
 import {
   buildMarkToMarketSeries,
   defaultSignalDate,
@@ -44,11 +47,18 @@ import {
   savePaperState,
   topUpToHundredMillion,
 } from "../lib/paper/journal";
-import { type PaperJournalEntry, type PaperState } from "../lib/paper/types";
-import type { AnnouncementsPayload } from "../lib/announcements/map";
 import {
-  bucketAnnouncements,
-} from "../lib/announcements/events";
+  DEFAULT_RISK_LIMITS,
+  type PaperJournalEntry,
+  type PaperState,
+} from "../lib/paper/types";
+import {
+  importSimPositionsToPaper,
+  reconcileSimPaper,
+} from "../lib/paper/sim-bridge";
+import { loadSimLedger } from "../lib/sim/persist";
+import type { AnnouncementsPayload } from "../lib/announcements/map";
+import { bucketAnnouncements } from "../lib/announcements/events";
 import {
   PAPER_PANEL_IDS,
   readHashQuery,
@@ -207,9 +217,11 @@ export function renderPaper(
   data: LatestPayload,
   locale: Locale,
   announcements: AnnouncementsPayload | null = null,
+  calendar: CnCalendarPayload | null = null,
 ): void {
   destroyEquityChart();
   let state: PaperState = loadPaperState();
+  if (!state.riskLimits) state.riskLimits = { ...DEFAULT_RISK_LIMITS };
   let viewMode: "equity" | "pnlPct" = "pnlPct";
   let execAlgo: ExecAlgo = "twap";
   let execSlices = 8;
@@ -227,6 +239,7 @@ export function renderPaper(
     (s) => s.dataStatus !== "missing" && s.candles.length >= 2,
   );
 
+  const simLedger = loadSimLedger();
   const paint = (flash?: string): void => {
     destroyEquityChart();
     const lastClose: Record<string, number> = {};
@@ -235,6 +248,8 @@ export function renderPaper(
     }
     const eq = equityMark(state, lastClose);
     const risk = paperRiskSnapshot(state, lastClose);
+    const reconcile = reconcileSimPaper(simLedger, state);
+
     const showTopUp = needsTopUp(state);
     const defaultSym =
       (preselect && tradeable.some((s) => s.symbol === preselect)
@@ -249,7 +264,7 @@ export function renderPaper(
       "";
 
     const previewFill = row0
-      ? resolveNextOpenFill(row0.candles, sigDefault || undefined)
+      ? resolveNextOpenFill(row0.candles, sigDefault || undefined, calendar)
       : null;
 
     const { points, markers } = buildMarkToMarketSeries(
@@ -312,6 +327,12 @@ export function renderPaper(
       <section class="exec-desk" id="ws-exec">
         <h2>${esc(t(locale, "execDesk"))}</h2>
         <p class="muted tiny">${esc(t(locale, "execDeskLead"))}</p>
+        <div class="cta-row wrap exec-presets">
+          <span class="tiny muted">${esc(t(locale, "execPresets"))}:</span>
+          <button type="button" class="btn btn-ghost" data-exec-preset="twap8">TWAP-8</button>
+          <button type="button" class="btn btn-ghost" data-exec-preset="vwap-sqrt">VWAP-√</button>
+          <button type="button" class="btn btn-ghost" data-exec-preset="twap-tight">TWAP-tight</button>
+        </div>
         <div class="cta-row wrap exec-controls">
           <label>${esc(t(locale, "execAlgo"))}
             <select id="exec-algo">
@@ -384,7 +405,8 @@ export function renderPaper(
             <option value="sqrt"${state.costConfig?.slippageModel === "sqrt" ? " selected" : ""}>${esc(t(locale, "slipSqrt"))}</option>
           </select>
         </label>
-        <p class="muted tiny">${esc(t(locale, "paperRiskNote"))} · ${esc(t(locale, "slipNote"))}</p>
+                <p class="muted tiny">${esc(t(locale, "paperRiskNames"))}: ${risk.openNames} / ${state.riskLimits?.maxOpenNames ?? 12} · ${esc(t(locale, "paperRiskDaily"))}: ${fmtPct(risk.dailyLossPct * 100)} ${risk.dailyLossHalt ? "⚠" : ""}</p>
+<p class="muted tiny">${esc(t(locale, "paperRiskNote"))} · ${esc(t(locale, "slipNote"))}</p>
       </section>
 
       <section class="paper-ticket" id="ws-ticket">
@@ -418,6 +440,16 @@ export function renderPaper(
             ? `${esc(t(locale, "paperFillPreview"))}: ${previewFill.fillRule} @ ${previewFill.fillPrice.toFixed(3)} on ${previewFill.fillDate}`
             : ""
         }</p>
+        <div class="cta-row wrap">
+          <label class="tiny">${esc(t(locale, "paperStopPct"))}
+            <input type="number" id="p-stop" min="0" max="50" step="0.5" value="3" />
+          </label>
+          <label class="tiny">${esc(t(locale, "paperTpPct"))}
+            <input type="number" id="p-tp" min="0" max="80" step="0.5" value="6" />
+          </label>
+          <button type="button" class="btn" id="p-attach-brackets">${esc(t(locale, "paperAttachBrackets"))}</button>
+          <button type="button" class="btn" id="p-sweep-brackets">${esc(t(locale, "paperSweepBrackets"))}</button>
+        </div>
         <p class="muted tiny" id="p-kelly"></p>
         <p class="muted tiny filing-badge" id="p-filing-badge"></p>
         <div class="cta-row">
@@ -549,13 +581,33 @@ export function renderPaper(
         survivorUniverse: true,
       })}
 
-      <section class="reconcile-panel muted tiny" id="ws-reconcile">
-        <h2>${esc(locale === "zh" ? "Sim 对账" : "Sim reconcile")}</h2>
-        <p>${esc(
-          locale === "zh"
-            ? "Sim→纸盘导入与对账将在本区显示（TOP Step Three）。"
-            : "Sim→Paper import and reconcile will appear here (TOP Step Three).",
-        )}</p>
+            <section class="reconcile-panel" id="ws-reconcile">
+        <h2>${esc(t(locale, "paperReconcile"))}</h2>
+        <p class="muted tiny">${esc(t(locale, "paperReconcileLead"))}</p>
+        <p class="tiny">Sim cash ${fmtMoney(reconcile.simCash)} · Paper cash ${fmtMoney(reconcile.paperCash)} · Δ ${fmtMoney(reconcile.cashDelta)}</p>
+        ${
+          reconcile.rows.length
+            ? `<div class="table-wrap"><table class="agent-table">
+                <thead><tr><th>Symbol</th><th>Sim</th><th>Paper</th><th>Δ</th></tr></thead>
+                <tbody>
+                  ${reconcile.rows
+                    .map(
+                      (r) => `<tr>
+                        <td>${esc(r.symbol)}</td>
+                        <td>${r.simQty}</td>
+                        <td>${r.paperQty}</td>
+                        <td>${r.deltaQty}</td>
+                      </tr>`,
+                    )
+                    .join("")}
+                </tbody>
+              </table></div>`
+            : `<p class="muted tiny">${esc(t(locale, "paperReconcileEmpty"))}</p>`
+        }
+        <div class="cta-row wrap">
+          <button type="button" class="btn btn-primary" id="p-import-sim">${esc(t(locale, "paperImportSim"))}</button>
+          <a class="btn btn-ghost" href="#/sim">${esc(t(locale, "toolSim"))}</a>
+        </div>
       </section>
 
       <div class="cta-row wrap" id="ws-ops">
@@ -603,7 +655,7 @@ export function renderPaper(
       if (!symEl || !sigEl || !prev) return;
       const row = data.symbols.find((s) => s.symbol === symEl.value);
       if (!row) return;
-      const fill = resolveNextOpenFill(row.candles, sigEl.value);
+      const fill = resolveNextOpenFill(row.candles, sigEl.value, calendar);
       prev.textContent = fill
         ? `${t(locale, "paperFillPreview")}: ${fill.fillRule} @ ${fill.fillPrice.toFixed(3)} on ${fill.fillDate}`
         : "";
@@ -783,7 +835,7 @@ export function renderPaper(
         paint(locale === "zh" ? "无标的" : "No symbol");
         return;
       }
-      const fill = resolveNextOpenFill(row.candles, signalDate);
+      const fill = resolveNextOpenFill(row.candles, signalDate, calendar);
       if (!fill) {
         paint("no fill");
         return;
@@ -905,7 +957,7 @@ export function renderPaper(
         paint(errMsg(locale, norm.error));
         return;
       }
-      const fill = resolveNextOpenFill(row.candles, signalDate);
+      const fill = resolveNextOpenFill(row.candles, signalDate, calendar);
       if (!fill) {
         paint("no fill");
         return;
@@ -973,6 +1025,88 @@ export function renderPaper(
         paint(locale === "zh" ? "导入失败" : "Import failed");
       }
     });
+
+    root.querySelectorAll<HTMLButtonElement>("[data-exec-preset]").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = btn.dataset.execPreset;
+        if (key === "twap8") {
+          execAlgo = "twap";
+          execSlices = 8;
+          execAdv = 1_000_000;
+        } else if (key === "vwap-sqrt") {
+          execAlgo = "vwap";
+          execSlices = 10;
+          execAdv = 2_000_000;
+          state = {
+            ...state,
+            costConfig: {
+              ...(state.costConfig ?? {
+                enabled: true,
+                commissionBps: 2.5,
+                minCommissionCny: 5,
+                stampDutyBpsSell: 5,
+                transferFeeBps: 0.1,
+                slippageBpsDefault: 1.5,
+                slippageBpsIlliquid: 5,
+              }),
+              slippageModel: "sqrt",
+            },
+          };
+          savePaperState(state);
+        } else if (key === "twap-tight") {
+          execAlgo = "twap";
+          execSlices = 4;
+          execQty = 50_000;
+          execAdv = 500_000;
+        }
+        paint(locale === "zh" ? `执行预设 ${key}` : `Exec preset ${key}`);
+      });
+    });
+
+    root.querySelector("#p-attach-brackets")?.addEventListener("click", () => {
+      if (!symEl) return;
+      const stop =
+        Number((root.querySelector("#p-stop") as HTMLInputElement | null)?.value ?? 0) /
+        100;
+      const tp =
+        Number((root.querySelector("#p-tp") as HTMLInputElement | null)?.value ?? 0) /
+        100;
+      state = attachBrackets(state, symEl.value, stop, tp);
+      savePaperState(state);
+      paint(locale === "zh" ? "已挂保护止损/止盈" : "Brackets attached");
+    });
+
+    root.querySelector("#p-sweep-brackets")?.addEventListener("click", () => {
+      const map: Record<string, (typeof data.symbols)[0]["candles"]> = {};
+      for (const s of data.symbols) map[s.symbol] = s.candles;
+      const swept = sweepBrackets(state, map);
+      state = swept.state;
+      savePaperState(state);
+      paint(
+        locale === "zh"
+          ? `括号扫出 ${swept.closed} 笔（同 bar 先止损）`
+          : `Swept ${swept.closed} bracket exits (stop-first)`,
+      );
+    });
+
+    root.querySelector("#p-import-sim")?.addEventListener("click", () => {
+      const lastClose: Record<string, number> = {};
+      const candles: Record<string, (typeof data.symbols)[0]["candles"]> = {};
+      const groups: Record<string, "macro" | "china-etf" | "china-ashare"> = {};
+      for (const s of data.symbols) {
+        if (s.lastClose) lastClose[s.symbol] = s.lastClose;
+        candles[s.symbol] = s.candles;
+        groups[s.symbol] = s.group;
+      }
+      const r = importSimPositionsToPaper(simLedger, candles, groups, lastClose);
+      state = r.state;
+      paint(
+        locale === "zh"
+          ? `Sim 导入 ${r.applied} 票，跳过 ${r.skipped}`
+          : `Imported ${r.applied} from Sim; skipped ${r.skipped}`,
+      );
+    });
+
   };
 
   paint();

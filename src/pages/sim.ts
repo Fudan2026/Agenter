@@ -253,7 +253,7 @@ export function renderSim(
 
       <div class="cta-row wrap">
         <button type="button" class="btn btn-primary" id="sim-handoff">${esc(t(locale, "simHandoff"))}</button>
-        <a class="btn" href="#/paper">${esc(t(locale, "openPaperLink"))}</a>
+        <a class="btn" href="#/paper?panel=reconcile">${esc(t(locale, "openPaperLink"))}</a>
         <button type="button" class="btn btn-danger" id="sim-reset">${esc(t(locale, "simReset"))}</button>
       </div>
       <p class="muted tiny">${esc(t(locale, "simHandoffLead"))}</p>

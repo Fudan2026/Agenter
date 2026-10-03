@@ -16,6 +16,7 @@ import { renderNews, renderTools, type NewsPayload } from "./pages/tools";
 import type { LatestPayload } from "./pages/types";
 import type { FactorsPayload } from "./lib/factors/cross-section";
 import type { FactorsIcPayload } from "./lib/factors/ic";
+import type { CnCalendarPayload } from "./lib/paper/calendar";
 
 let quantData: LatestPayload | null = null;
 let quantError: string | null = null;
@@ -27,6 +28,7 @@ let screensData: ScreensPayload | null = null;
 let factorsData: FactorsPayload | null = null;
 let factorsIcData: FactorsIcPayload | null = null;
 let recipesData: RecipesPayload | null = null;
+let calendarData: CnCalendarPayload | null = null;
 let locale: Locale = detectLocale();
 
 type Route =
@@ -153,6 +155,18 @@ async function loadRecipes(): Promise<void> {
   }
 }
 
+async function loadCalendar(): Promise<void> {
+  try {
+    const res = await fetch(`${import.meta.env.BASE_URL}data/cn-calendar.json`, {
+      cache: "no-cache",
+    });
+    if (!res.ok) return;
+    calendarData = (await res.json()) as CnCalendarPayload;
+  } catch {
+    calendarData = null;
+  }
+}
+
 function parseRoute(): Route {
   const hash = location.hash.replace(/^#/, "") || "/";
   const path = (hash.split("?")[0] || "/").replace(/\/$/, "") || "/";
@@ -247,7 +261,7 @@ async function render(): Promise<void> {
         if (quantError || !quantData) {
           root.innerHTML = `<main class="page"><p class="error">${t(locale, "loadError")} (${quantError ?? "empty"})</p></main>`;
         } else {
-          renderPaper(root, quantData, locale, announcementsData);
+          renderPaper(root, quantData, locale, announcementsData, calendarData);
         }
         break;
       case "sim":
@@ -292,6 +306,7 @@ export async function startApp(): Promise<void> {
     loadFactors(),
     loadFactorsIc(),
     loadRecipes(),
+    loadCalendar(),
   ]);
   await render();
   window.addEventListener("hashchange", () => {

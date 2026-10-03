@@ -12,11 +12,21 @@ import {
 } from "./costs";
 import {
   ASHARE_LOT,
+  DEFAULT_RISK_LIMITS,
   PAPER_FEE_BPS_RT,
   PAPER_START_CASH,
   type PaperJournalEntry,
   type PaperState,
 } from "./types";
+import {
+  nextSessionIndex,
+  type CnCalendarPayload,
+} from "./calendar";
+import {
+  bracketLevelsFromPct,
+  findBracketExit,
+  positionHasBrackets,
+} from "./brackets";
 
 export interface CandleBar {
   date: string;
@@ -38,6 +48,7 @@ export interface FillQuote {
 export function resolveNextOpenFill(
   candles: CandleBar[],
   signalDate?: string,
+  calendar?: CnCalendarPayload | null,
 ): FillQuote | null {
   if (!candles.length) return null;
   let signalIdx = candles.length - 1;
@@ -47,7 +58,16 @@ export function resolveNextOpenFill(
   }
   const signal = candles[signalIdx];
   if (!signal) return null;
-  const next = candles[signalIdx + 1];
+
+  let nextIdx = signalIdx + 1;
+  if (calendar) {
+    nextIdx = nextSessionIndex(
+      candles.map((c) => c.date),
+      signalIdx,
+      calendar,
+    );
+  }
+  const next = nextIdx >= 0 ? candles[nextIdx] : undefined;
   if (next && next.open > 0) {
     return {
       fillPrice: next.open,
@@ -100,6 +120,8 @@ export function defaultPaperState(): PaperState {
     costModelEnabled: true,
     costConfig: { ...DEFAULT_COST_CONFIG },
     boughtLots: {},
+    riskLimits: { ...DEFAULT_RISK_LIMITS },
+    priorEquityMark: PAPER_START_CASH,
   };
 }
 
@@ -125,7 +147,7 @@ function sellableQty(state: PaperState, symbol: string, fillDate: string): numbe
 export function paperRiskSnapshot(
   state: PaperState,
   lastCloseBySymbol: Record<string, number>,
-  maxNamePct = 0.2,
+  maxNamePct = state.riskLimits?.maxNamePct ?? DEFAULT_RISK_LIMITS.maxNamePct,
 ): {
   equity: number;
   cashPct: number;
@@ -133,7 +155,11 @@ export function paperRiskSnapshot(
   maxNameSymbol: string | null;
   overweight: boolean;
   consecutiveLosses: number;
+  openNames: number;
+  dailyLossPct: number;
+  dailyLossHalt: boolean;
 } {
+  const limits = { ...DEFAULT_RISK_LIMITS, ...(state.riskLimits ?? {}) };
   const eq = equityMark(state, lastCloseBySymbol);
   let maxPct = 0;
   let maxSym: string | null = null;
@@ -148,9 +174,6 @@ export function paperRiskSnapshot(
   let consecutiveLosses = 0;
   for (const j of state.journal) {
     if (j.side !== "sell") break;
-    const posCost = j.fillPrice; // approximate; count sell after buy loss via note not needed
-    // Count sells where fill < typical: use fee-adjusted vs last matching buy avg — simplified: loss if note has "loss" skip
-    // Better: compare sell fill to most recent buy avg for symbol from remaining journal
     const buy = state.journal.find(
       (x) => x.side === "buy" && x.symbol === j.symbol && x.ts < j.ts,
     );
@@ -159,6 +182,8 @@ export function paperRiskSnapshot(
     if (pnl < 0) consecutiveLosses += 1;
     else break;
   }
+  const prior = state.priorEquityMark ?? state.startingCash;
+  const dailyLossPct = prior > 0 ? (prior - eq) / prior : 0;
   return {
     equity: eq,
     cashPct: eq > 0 ? state.cash / eq : 1,
@@ -166,6 +191,9 @@ export function paperRiskSnapshot(
     maxNameSymbol: maxSym,
     overweight: maxPct > maxNamePct,
     consecutiveLosses,
+    openNames: state.positions.filter((p) => p.qty > 0).length,
+    dailyLossPct,
+    dailyLossHalt: dailyLossPct >= limits.dailyLossPct,
   };
 }
 
@@ -216,6 +244,9 @@ export function applyBuy(
   if (cost > state.cash + 1e-9) return { ok: false, error: "insufficient_cash" };
 
   if (state.hardRiskGates && opts.lastCloseBySymbol) {
+    const limits = { ...DEFAULT_RISK_LIMITS, ...(state.riskLimits ?? {}) };
+    const riskNow = paperRiskSnapshot(state, opts.lastCloseBySymbol);
+    if (riskNow.dailyLossHalt) return { ok: false, error: "risk_daily_loss" };
     const projectedCash = state.cash - cost;
     const projectedPositions = [...state.positions];
     const idx = projectedPositions.findIndex((p) => p.symbol === opts.symbol);
@@ -223,6 +254,9 @@ export function applyBuy(
       const prev = projectedPositions[idx];
       projectedPositions[idx] = { ...prev, qty: prev.qty + opts.qty };
     } else {
+      if (projectedPositions.length >= limits.maxOpenNames) {
+        return { ok: false, error: "risk_max_names" };
+      }
       projectedPositions.push({
         symbol: opts.symbol,
         qty: opts.qty,
@@ -234,9 +268,13 @@ export function applyBuy(
       cash: projectedCash,
       positions: projectedPositions,
     };
-    const risk = paperRiskSnapshot(shadow, opts.lastCloseBySymbol);
+    const risk = paperRiskSnapshot(
+      shadow,
+      opts.lastCloseBySymbol,
+      limits.maxNamePct,
+    );
     if (risk.overweight) return { ok: false, error: "risk_overweight" };
-    if (risk.cashPct < 0.1) return { ok: false, error: "risk_cash" };
+    if (risk.cashPct < limits.minCashPct) return { ok: false, error: "risk_cash" };
   }
 
   const positions = [...state.positions];
@@ -420,4 +458,70 @@ export function equityMark(
     eq += p.qty * px;
   }
   return eq;
+}
+
+/** Attach / update TP/SL percentages on an open position. */
+export function attachBrackets(
+  state: PaperState,
+  symbol: string,
+  stopPct: number,
+  takeProfitPct: number,
+): PaperState {
+  const positions = state.positions.map((p) =>
+    p.symbol === symbol
+      ? {
+          ...p,
+          stopPct: stopPct > 0 ? stopPct : undefined,
+          takeProfitPct: takeProfitPct > 0 ? takeProfitPct : undefined,
+        }
+      : p,
+  );
+  return { ...state, version: 2, positions };
+}
+
+/**
+ * Sweep open positions with brackets against baked OHLC.
+ * Same-bar SL+TP → stop first (pessimistic).
+ */
+export function sweepBrackets(
+  state: PaperState,
+  candlesBySymbol: Record<string, CandleBar[]>,
+): { state: PaperState; closed: number } {
+  let next = state;
+  let closed = 0;
+  for (const pos of [...state.positions]) {
+    if (!positionHasBrackets(pos)) continue;
+    const levels = bracketLevelsFromPct(
+      pos.avgCost,
+      pos.stopPct!,
+      pos.takeProfitPct!,
+    );
+    if (!levels) continue;
+    const candles = candlesBySymbol[pos.symbol];
+    if (!candles?.length) continue;
+    const lastBuy = next.journal.find(
+      (j) => j.symbol === pos.symbol && j.side === "buy",
+    );
+    const fromDate = lastBuy?.fillDate ?? candles[0].date;
+    const hit = findBracketExit(candles, fromDate, levels);
+    if (!hit) continue;
+    const sold = applySell(next, {
+      symbol: pos.symbol,
+      qty: pos.qty,
+      fill: {
+        fillPrice: hit.fillPrice,
+        fillDate: hit.fillDate,
+        fillRule: "next_open",
+        signalDate: hit.signalDate,
+      },
+      source: "bracket",
+      note: hit.hit === "stop" ? "bracket stop" : "bracket take-profit",
+      playbookTag: "other",
+    });
+    if (sold.ok) {
+      next = sold.state;
+      closed += 1;
+    }
+  }
+  return { state: next, closed };
 }
