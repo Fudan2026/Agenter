@@ -1,13 +1,13 @@
 {
-  "generatedAt": "2026-10-03T03:01:17.366Z",
+  "generatedAt": "2026-10-03T13:37:30.429Z",
   "chunkCount": 87,
   "chunks": [
     {
-      "id": "review-2026-10-02",
+      "id": "review-2026-10-03",
       "source": "daily-review",
-      "date": "2026-10-02",
-      "title": "Daily review 2026-10-02",
-      "text": "观察池 26 只：有效行情 26，缓存 0，缺失 0。 | 近 60 个交易日形态合计 985 次（看涨 388 / 看跌 284 / 中性 313）。 | 恒瑞医药（600276.SS）日涨跌 +3.46%。 | 半导体ETF（512480.SS）日涨跌 -3.05%。 | 五粮液 近窗看涨形态较多（含 启明星，2026-09-30）。 | 酒ETF 近窗看跌形态较多（含 三只乌鸦，2026-09-29）。 | Watchlist 26: live/usable 26, stale 0, missing 0. | Last 60 sessions: 985 pattern hits (bull 388 / bear 284 / neutral 313). | Hengrui Medicine (600276.SS) 1D change +3.46%. | Semiconductor ETF (512480.SS) 1D change -3.05%. | Wuliangye leads bullish hits (incl. Morning star on 2026-09-30). | Liquor ETF leads bearish hits (incl. Three black crows on 2026-09-29).",
+      "date": "2026-10-03",
+      "title": "Daily review 2026-10-03",
+      "text": "观察池 33 只：有效行情 33，缓存 0，缺失 0。 | 近 60 个交易日形态合计 1246 次（看涨 478 / 看跌 372 / 中性 396）。 | 热点板块（形态密度）：酒ETF×50、医药ETF×50（代理宇宙，非全市场）。 | 上证指数（000001.SS）日涨跌 -3.61%。 | 恒瑞医药（600276.SS）日涨跌 +3.46%。 | 历史信号评估：上证指数 的「倒锤子」5 日胜率 75%（n=8，样本约 1.4 年）。 | 五粮液 近窗看涨形态较多（含 启明星，2026-09-30）。 | 前瞻（素养，非预言）：近窗多头汇合偏强；关注均线与前高/支撑路径，勿当作必然上涨。 | Watchlist 33: live/usable 33, stale 0, missing 0. | Last 60 sessions: 1246 pattern hits (bull 478 / bear 372 / neutral 396). | Hotspot sectors (pattern density): Liquor ETF×50, Healthcare ETF×50 (proxy universe). | SSE Composite (000001.SS) 1D change -3.61%. | Hengrui Medicine (600276.SS) 1D change +3.46%. | Signal eval: SSE Composite «Inverted hammer» 5d win-rate 75% (n=8, ~1.4y sample). | Wuliangye leads bullish hits (incl. Morning star on 2026-09-30). | Outlook literacy (not prophecy): near-window bull confluence is stronger; watch MA paths and prior highs/supports — not a forecast.",
       "tags": [
         "review"
       ]
@@ -533,7 +533,95 @@
       "tags": []
     },
     {
-      "id": "ai-news-0-2026-10-02",
+      "id": "ai-news-0-2026-10-03",
+      "source": "ai-news",
+      "date": "2026-10-03",
+      "title": "DeepSeek扩招！弹性计算团队大量HC，尤其需要资深工程师",
+      "text": "岗位JD甩了篇技术报告",
+      "tags": [
+        "ai",
+        "qbitai"
+      ]
+    },
+    {
+      "id": "ai-news-1-2026-10-03",
+      "source": "ai-news",
+      "date": "2026-10-03",
+      "title": "OpenAI安全团队持续地震！负责人离职，三名员工因泄密被开",
+      "text": "又咋啦。。。",
+      "tags": [
+        "ai",
+        "qbitai"
+      ]
+    },
+    {
+      "id": "ai-news-2-2026-10-03",
+      "source": "ai-news",
+      "date": "2026-10-03",
+      "title": "Jev估值100亿美元！创始人Diogo Almeida回答一切",
+      "text": "来自公开 RSS 的 AI/Agent 资讯条目。",
+      "tags": [
+        "ai",
+        "qbitai"
+      ]
+    },
+    {
+      "id": "ai-news-3-2026-10-03",
+      "source": "ai-news",
+      "date": "2026-10-03",
+      "title": "G7 to release millions of barrels of oil and diesel after Trump threat",
+      "text": "（英）The co-ordinated release is aimed at heading off further price spikes and avoiding a ban on US diesel exports.",
+      "tags": [
+        "ai",
+        "bbc-business"
+      ]
+    },
+    {
+      "id": "ai-news-4-2026-10-03",
+      "source": "ai-news",
+      "date": "2026-10-03",
+      "title": "Suppliers pile pressure on government over energy bills",
+      "text": "（英）Immediate action is needed to help households struggling with bills this winter, says trade body Energy UK.",
+      "tags": [
+        "ai",
+        "bbc-business"
+      ]
+    },
+    {
+      "id": "ai-news-5-2026-10-02",
+      "source": "ai-news",
+      "date": "2026-10-02",
+      "title": "A model guide for the GPT-6 family",
+      "text": "（英）Learn how startups can choose GPT-6 models, tune reasoning effort, improve prompts and skills, coordinate tools, and prepare workflows for production.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ]
+    },
+    {
+      "id": "ai-news-6-2026-10-02",
+      "source": "ai-news",
+      "date": "2026-10-02",
+      "title": "Chatham scales its capital markets expertise with OpenAI",
+      "text": "（英）Chatham Financial uses Codex and GPT-5.6 to build technology and redesign workflows, cutting trade validation from 30 minutes to under 4.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ]
+    },
+    {
+      "id": "ai-news-7-2026-10-02",
+      "source": "ai-news",
+      "date": "2026-10-02",
+      "title": "Open-sourcing AstaBrief, the fast report-generation model in Asta",
+      "text": "（英）AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ]
+    },
+    {
+      "id": "ai-news-8-2026-10-02",
       "source": "ai-news",
       "date": "2026-10-02",
       "title": "AutoSynthData: Generating Training Data for Enterprise Agents",
@@ -544,190 +632,102 @@
       ]
     },
     {
-      "id": "ai-news-1-2026-10-01",
+      "id": "ai-news-9-2026-10-02",
       "source": "ai-news",
-      "date": "2026-10-01",
-      "title": "The eternal complement",
-      "text": "（英）Advanced AI may matter most for the routine work behind breakthrough ideas. Explore why execution could shape the next economy and the pace of progress.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ]
-    },
-    {
-      "id": "ai-news-2-2026-10-01",
-      "source": "ai-news",
-      "date": "2026-10-01",
-      "title": "How Albertsons Companies is reimagining retail from the inside out",
-      "text": "（英）Albertsons Cos. is using ChatGPT Enterprise and the OpenAI API to help teams work faster and make grocery shopping easier for millions of customers.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ]
-    },
-    {
-      "id": "ai-news-3-2026-10-01",
-      "source": "ai-news",
-      "date": "2026-10-01",
-      "title": "The Den frees up 10-15 hours a week to grow with ChatGPT Work",
-      "text": "（英）As it opens a new location, the social club prepares grant applications in 2 hours instead of 3 days and liquor-license materials in 3 hours instead of 4 days.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ]
-    },
-    {
-      "id": "ai-news-4-2026-10-01",
-      "source": "ai-news",
-      "date": "2026-10-01",
-      "title": "Introducing Olmo-core 3: Open, scalable training infrastructure for large MoEs",
-      "text": "（英）AI/agent headline distilled from public RSS.",
-      "tags": [
-        "ai",
-        "huggingface-blog"
-      ]
-    },
-    {
-      "id": "ai-news-5-2026-10-01",
-      "source": "ai-news",
-      "date": "2026-10-01",
-      "title": "何恺明团队新作：看猫片就能学会ARC挑战",
-      "text": "用ImageNet训练encoder",
+      "date": "2026-10-02",
+      "title": "openJiuwen X-Router自演进模型路由技术首发，昇腾亲和，Agent越跑越省，实测减少50+%Token消耗",
+      "text": "让每一次请求选对模型，让每一次反馈都成为下一次更优、更省的选择",
       "tags": [
         "ai",
         "qbitai"
       ]
     },
     {
-      "id": "ai-news-6-2026-10-01",
+      "id": "ai-news-10-2026-10-02",
       "source": "ai-news",
-      "date": "2026-10-01",
-      "title": "谷歌Gemini 4突然发布！RSI加持，GPT和Opus都让让",
-      "text": "价格只有Astra一半",
+      "date": "2026-10-02",
+      "title": "丘成桐新论文致谢了GPT和Claude",
+      "text": "44年前被亲自列入问题清单",
       "tags": [
         "ai",
         "qbitai"
       ]
     },
     {
-      "id": "ai-news-7-2026-09-30",
+      "id": "ai-news-11-2026-10-02",
       "source": "ai-news",
-      "date": "2026-09-30",
-      "title": "Disrupting a coordinated model-distillation campaign",
-      "text": "（英）Learn how OpenAI disrupted a campaign to extract protected model reasoning and is strengthening defenses against adversarial distillation.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ]
-    },
-    {
-      "id": "ai-news-8-2026-09-30",
-      "source": "ai-news",
-      "date": "2026-09-30",
-      "title": "Helping small businesses put AI to work",
-      "text": "（英）OpenAI is partnering with America’s SBDC to expand hands-on AI training and local support for small businesses, alongside a new report on how small teams are using AI.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ]
-    },
-    {
-      "id": "ai-news-9-2026-09-30",
-      "source": "ai-news",
-      "date": "2026-09-30",
-      "title": "Open TTS Leaderboard: Scalable Evaluation for Multilingual Text-to-Speech and Voice Cloning",
-      "text": "（英）AI/agent headline distilled from public RSS.",
-      "tags": [
-        "ai",
-        "huggingface-blog"
-      ]
-    },
-    {
-      "id": "ai-news-10-2026-09-30",
-      "source": "ai-news",
-      "date": "2026-09-30",
-      "title": "OpenAI推理之父最新访谈！数学只是多智能体时代的开胃菜",
-      "text": "千禧年难题的突破，10000个Agent最多占了10%的功劳。",
+      "date": "2026-10-02",
+      "title": "arXiv最严新规！每人每月最多提交2篇，拒稿不退额度",
+      "text": "换区也没用",
       "tags": [
         "ai",
         "qbitai"
       ]
     },
     {
-      "id": "ai-news-11-2026-09-30",
+      "id": "ai-news-12-2026-10-02",
       "source": "ai-news",
-      "date": "2026-09-30",
-      "title": "直播回顾：工业AI的下一个机会在哪？",
-      "text": "什么样的AI才适合工业现场？企业真正开始做工业AI时，又该从哪里下手？",
+      "date": "2026-10-02",
+      "title": "The latest AI news we announced in September 2026",
+      "text": "（英）&lt;img src=\"https://storage.googleapis.com/gweb-uniblog-publish-prod/images/September_AI_Recap_hero.max-600x600.format-webp.webp\"&gt;Here are Google’s latest AI updates from September 2026",
       "tags": [
         "ai",
-        "qbitai"
+        "googleapis-ai"
       ]
     },
     {
-      "id": "ai-news-12-2026-09-30",
+      "id": "ai-news-13-2026-10-02",
       "source": "ai-news",
-      "date": "2026-09-30",
-      "title": "Anthropic，你是来给智谱打广告的吧！",
-      "text": "实测说GLM-5.3很强",
+      "date": "2026-10-02",
+      "title": "Redefining enterprise intelligence with autonomous AI",
+      "text": "（英）Enterprise AI is no longer a future ambition. It is in full operational flight. Model capabilities are advancing faster than most organizations can absorb, while the cost of performance continues to fall. Globally, AI in",
       "tags": [
         "ai",
-        "qbitai"
+        "mit-tr"
       ]
     },
     {
-      "id": "ai-news-13-2026-09-30",
+      "id": "ai-news-14-2026-10-02",
       "source": "ai-news",
-      "date": "2026-09-30",
-      "title": "Manus 2.0回来了！给AI配手机号和钱包，还能拉群干活",
-      "text": "给Agent配上手机号，再拉个群",
+      "date": "2026-10-02",
+      "title": "The Download: a biological de-aging contest and why LLMs don&#8217;t reason",
+      "text": "（英）This is today&#8217;s edition of The Download, our weekday newsletter that provides a daily dose of what&#8217;s going on in the world of technology. A new contest pits competitors against each other in a race to biologi",
       "tags": [
         "ai",
-        "qbitai"
+        "mit-tr"
       ]
     },
     {
-      "id": "ai-news-14-2026-09-29",
+      "id": "ai-news-15-2026-10-02",
       "source": "ai-news",
-      "date": "2026-09-29",
-      "title": "Introducing GPT-6.1 Sol",
-      "text": "（英）Meet GPT-6.1 Sol: near-Astra intelligence for coding, computer use, and professional work at one-fifth of Astra’s standard API input and output token prices.",
+      "date": "2026-10-02",
+      "title": "A new contest pits competitors against each other in a race to biological youth",
+      "text": "（英）This week, I officially signed up for an unusual competition. One that rewards competitors for getting younger. I recently turned 40, and I don’t need reminding that both time and my chronological age only tick forward. ",
       "tags": [
         "ai",
-        "openai-news"
+        "mit-tr"
       ]
     },
     {
-      "id": "ai-news-15-2026-09-29",
+      "id": "ai-news-16-2026-10-02",
       "source": "ai-news",
-      "date": "2026-09-29",
-      "title": "NVIDIA Kumo Tabular Sets a New Accuracy-Efficiency Frontier for Tabular Prediction",
-      "text": "（英）AI/agent headline distilled from public RSS.",
+      "date": "2026-10-02",
+      "title": "Don’t be fooled—LLMs don’t reason",
+      "text": "（英）On an afternoon in Seoul in March 2016, I watched a program I helped build put a stone on the fifth line of a Go board in what looked like a gift to its human opponent. Move 37 in game two of the five-game match looked s",
       "tags": [
         "ai",
-        "huggingface-blog"
+        "mit-tr"
       ]
     },
     {
-      "id": "ai-news-16-2026-09-29",
+      "id": "ai-news-17-2026-10-02",
       "source": "ai-news",
-      "date": "2026-09-29",
-      "title": "Getting the Source Right, Not Just the Fact: Source-Aware Verification for MCP Agents",
-      "text": "（英）AI/agent headline distilled from public RSS.",
+      "date": "2026-10-02",
+      "title": "UK diesel prices top £2 a litre for first time, RAC says",
+      "text": "（英）The rise in global oil prices has been pushing up the pump prices of petrol and diesel in the UK.",
       "tags": [
         "ai",
-        "huggingface-blog"
-      ]
-    },
-    {
-      "id": "ai-news-17-2026-09-28",
-      "source": "ai-news",
-      "date": "2026-09-28",
-      "title": "Holo4: powering generalist computer-use agents",
-      "text": "（英）AI/agent headline distilled from public RSS.",
-      "tags": [
-        "ai",
-        "huggingface-blog"
+        "bbc-business"
       ]
     },
     {

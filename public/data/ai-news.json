@@ -1,9 +1,113 @@
 {
-  "generatedAt": "2026-10-02T06:15:04.109Z",
+  "generatedAt": "2026-10-03T13:37:27.543Z",
   "source": "rss-bake",
   "items": [
     {
+      "id": "qbitai-2026-10-03-0",
+      "date": "2026-10-03",
+      "titleZh": "DeepSeek扩招！弹性计算团队大量HC，尤其需要资深工程师",
+      "titleEn": "DeepSeek扩招！弹性计算团队大量HC，尤其需要资深工程师",
+      "summaryZh": "岗位JD甩了篇技术报告",
+      "summaryEn": "(ZH) 岗位JD甩了篇技术报告",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/10/501381.html"
+    },
+    {
+      "id": "qbitai-2026-10-03-1",
+      "date": "2026-10-03",
+      "titleZh": "OpenAI安全团队持续地震！负责人离职，三名员工因泄密被开",
+      "titleEn": "OpenAI安全团队持续地震！负责人离职，三名员工因泄密被开",
+      "summaryZh": "又咋啦。。。",
+      "summaryEn": "(ZH) 又咋啦。。。",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/10/501368.html"
+    },
+    {
+      "id": "qbitai-2026-10-03-2",
+      "date": "2026-10-03",
+      "titleZh": "Jev估值100亿美元！创始人Diogo Almeida回答一切",
+      "titleEn": "Jev估值100亿美元！创始人Diogo Almeida回答一切",
+      "summaryZh": "来自公开 RSS 的 AI/Agent 资讯条目。",
+      "summaryEn": "(ZH) 来自公开 RSS 的 AI/Agent 资讯条目。",
+      "tags": [
+        "ai",
+        "qbitai"
+      ],
+      "url": "https://www.qbitai.com/2026/10/500148.html"
+    },
+    {
+      "id": "bbc-business-2026-10-03-0",
+      "date": "2026-10-03",
+      "titleZh": "G7 to release millions of barrels of oil and diesel after Trump threat",
+      "titleEn": "G7 to release millions of barrels of oil and diesel after Trump threat",
+      "summaryZh": "（英）The co-ordinated release is aimed at heading off further price spikes and avoiding a ban on US diesel exports.",
+      "summaryEn": "The co-ordinated release is aimed at heading off further price spikes and avoiding a ban on US diesel exports.",
+      "tags": [
+        "ai",
+        "bbc-business"
+      ],
+      "url": "https://www.bbc.co.uk/news/articles/ck87zg8jnwngo?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "id": "bbc-business-2026-10-03-1",
+      "date": "2026-10-03",
+      "titleZh": "Suppliers pile pressure on government over energy bills",
+      "titleEn": "Suppliers pile pressure on government over energy bills",
+      "summaryZh": "（英）Immediate action is needed to help households struggling with bills this winter, says trade body Energy UK.",
+      "summaryEn": "Immediate action is needed to help households struggling with bills this winter, says trade body Energy UK.",
+      "tags": [
+        "ai",
+        "bbc-business"
+      ],
+      "url": "https://www.bbc.co.uk/news/articles/cq0ld88kzxw8o?at_medium=RSS&amp;at_campaign=rss"
+    },
+    {
+      "id": "openai-news-2026-10-02-0",
+      "date": "2026-10-02",
+      "titleZh": "A model guide for the GPT-6 family",
+      "titleEn": "A model guide for the GPT-6 family",
+      "summaryZh": "（英）Learn how startups can choose GPT-6 models, tune reasoning effort, improve prompts and skills, coordinate tools, and prepare workflows for production.",
+      "summaryEn": "Learn how startups can choose GPT-6 models, tune reasoning effort, improve prompts and skills, coordinate tools, and prepare workflows for production.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/practical-guide-building-gpt-6"
+    },
+    {
+      "id": "openai-news-2026-10-02-1",
+      "date": "2026-10-02",
+      "titleZh": "Chatham scales its capital markets expertise with OpenAI",
+      "titleEn": "Chatham scales its capital markets expertise with OpenAI",
+      "summaryZh": "（英）Chatham Financial uses Codex and GPT-5.6 to build technology and redesign workflows, cutting trade validation from 30 minutes to under 4.",
+      "summaryEn": "Chatham Financial uses Codex and GPT-5.6 to build technology and redesign workflows, cutting trade validation from 30 minutes to under 4.",
+      "tags": [
+        "ai",
+        "openai-news"
+      ],
+      "url": "https://openai.com/index/chatham-financial"
+    },
+    {
       "id": "huggingface-blog-2026-10-02-0",
+      "date": "2026-10-02",
+      "titleZh": "Open-sourcing AstaBrief, the fast report-generation model in Asta",
+      "titleEn": "Open-sourcing AstaBrief, the fast report-generation model in Asta",
+      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
+      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "tags": [
+        "ai",
+        "huggingface-blog"
+      ],
+      "url": "https://huggingface.co/blog/allenai/astabrief"
+    },
+    {
+      "id": "huggingface-blog-2026-10-02-1",
       "date": "2026-10-02",
       "titleZh": "AutoSynthData: Generating Training Data for Enterprise Agents",
       "titleEn": "AutoSynthData: Generating Training Data for Enterprise Agents",
@@ -16,225 +120,121 @@
       "url": "https://huggingface.co/blog/ServiceNow-AI/autosynthdata"
     },
     {
-      "id": "openai-news-2026-10-01-0",
-      "date": "2026-10-01",
-      "titleZh": "The eternal complement",
-      "titleEn": "The eternal complement",
-      "summaryZh": "（英）Advanced AI may matter most for the routine work behind breakthrough ideas. Explore why execution could shape the next economy and the pace of progress.",
-      "summaryEn": "Advanced AI may matter most for the routine work behind breakthrough ideas. Explore why execution could shape the next economy and the pace of progress.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ],
-      "url": "https://openai.com/index/the-eternal-complement"
-    },
-    {
-      "id": "openai-news-2026-10-01-1",
-      "date": "2026-10-01",
-      "titleZh": "How Albertsons Companies is reimagining retail from the inside out",
-      "titleEn": "How Albertsons Companies is reimagining retail from the inside out",
-      "summaryZh": "（英）Albertsons Cos. is using ChatGPT Enterprise and the OpenAI API to help teams work faster and make grocery shopping easier for millions of customers.",
-      "summaryEn": "Albertsons Cos. is using ChatGPT Enterprise and the OpenAI API to help teams work faster and make grocery shopping easier for millions of customers.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ],
-      "url": "https://openai.com/index/albertsons-reimagining-retail"
-    },
-    {
-      "id": "openai-news-2026-10-01-2",
-      "date": "2026-10-01",
-      "titleZh": "The Den frees up 10-15 hours a week to grow with ChatGPT Work",
-      "titleEn": "The Den frees up 10-15 hours a week to grow with ChatGPT Work",
-      "summaryZh": "（英）As it opens a new location, the social club prepares grant applications in 2 hours instead of 3 days and liquor-license materials in 3 hours instead of 4 days.",
-      "summaryEn": "As it opens a new location, the social club prepares grant applications in 2 hours instead of 3 days and liquor-license materials in 3 hours instead of 4 days.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ],
-      "url": "https://openai.com/index/the-den-family-social"
-    },
-    {
-      "id": "huggingface-blog-2026-10-01-1",
-      "date": "2026-10-01",
-      "titleZh": "Introducing Olmo-core 3: Open, scalable training infrastructure for large MoEs",
-      "titleEn": "Introducing Olmo-core 3: Open, scalable training infrastructure for large MoEs",
-      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
-      "summaryEn": "AI/agent headline distilled from public RSS.",
-      "tags": [
-        "ai",
-        "huggingface-blog"
-      ],
-      "url": "https://huggingface.co/blog/allenai/olmocore3"
-    },
-    {
-      "id": "qbitai-2026-10-01-0",
-      "date": "2026-10-01",
-      "titleZh": "何恺明团队新作：看猫片就能学会ARC挑战",
-      "titleEn": "何恺明团队新作：看猫片就能学会ARC挑战",
-      "summaryZh": "用ImageNet训练encoder",
-      "summaryEn": "(ZH) 用ImageNet训练encoder",
+      "id": "qbitai-2026-10-02-3",
+      "date": "2026-10-02",
+      "titleZh": "openJiuwen X-Router自演进模型路由技术首发，昇腾亲和，Agent越跑越省，实测减少50+%Token消耗",
+      "titleEn": "openJiuwen X-Router自演进模型路由技术首发，昇腾亲和，Agent越跑越省，实测减少50+%Token消耗",
+      "summaryZh": "让每一次请求选对模型，让每一次反馈都成为下一次更优、更省的选择",
+      "summaryEn": "(ZH) 让每一次请求选对模型，让每一次反馈都成为下一次更优、更省的选择",
       "tags": [
         "ai",
         "qbitai"
       ],
-      "url": "https://www.qbitai.com/2026/10/499812.html"
+      "url": "https://www.qbitai.com/2026/10/500098.html"
     },
     {
-      "id": "qbitai-2026-10-01-1",
-      "date": "2026-10-01",
-      "titleZh": "谷歌Gemini 4突然发布！RSI加持，GPT和Opus都让让",
-      "titleEn": "谷歌Gemini 4突然发布！RSI加持，GPT和Opus都让让",
-      "summaryZh": "价格只有Astra一半",
-      "summaryEn": "(ZH) 价格只有Astra一半",
+      "id": "qbitai-2026-10-02-4",
+      "date": "2026-10-02",
+      "titleZh": "丘成桐新论文致谢了GPT和Claude",
+      "titleEn": "丘成桐新论文致谢了GPT和Claude",
+      "summaryZh": "44年前被亲自列入问题清单",
+      "summaryEn": "(ZH) 44年前被亲自列入问题清单",
       "tags": [
         "ai",
         "qbitai"
       ],
-      "url": "https://www.qbitai.com/2026/10/499663.html"
+      "url": "https://www.qbitai.com/2026/10/499991.html"
     },
     {
-      "id": "openai-news-2026-09-30-3",
-      "date": "2026-09-30",
-      "titleZh": "Disrupting a coordinated model-distillation campaign",
-      "titleEn": "Disrupting a coordinated model-distillation campaign",
-      "summaryZh": "（英）Learn how OpenAI disrupted a campaign to extract protected model reasoning and is strengthening defenses against adversarial distillation.",
-      "summaryEn": "Learn how OpenAI disrupted a campaign to extract protected model reasoning and is strengthening defenses against adversarial distillation.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ],
-      "url": "https://openai.com/index/disrupting-a-coordinated-model-distillation-campaign"
-    },
-    {
-      "id": "openai-news-2026-09-30-4",
-      "date": "2026-09-30",
-      "titleZh": "Helping small businesses put AI to work",
-      "titleEn": "Helping small businesses put AI to work",
-      "summaryZh": "（英）OpenAI is partnering with America’s SBDC to expand hands-on AI training and local support for small businesses, alongside a new report on how small teams are using AI.",
-      "summaryEn": "OpenAI is partnering with America’s SBDC to expand hands-on AI training and local support for small businesses, alongside a new report on how small teams are using AI.",
-      "tags": [
-        "ai",
-        "openai-news"
-      ],
-      "url": "https://openai.com/index/helping-small-businesses-put-ai-to-work"
-    },
-    {
-      "id": "huggingface-blog-2026-09-30-2",
-      "date": "2026-09-30",
-      "titleZh": "Open TTS Leaderboard: Scalable Evaluation for Multilingual Text-to-Speech and Voice Cloning",
-      "titleEn": "Open TTS Leaderboard: Scalable Evaluation for Multilingual Text-to-Speech and Voice Cloning",
-      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
-      "summaryEn": "AI/agent headline distilled from public RSS.",
-      "tags": [
-        "ai",
-        "huggingface-blog"
-      ],
-      "url": "https://huggingface.co/blog/open-tts-leaderboard"
-    },
-    {
-      "id": "qbitai-2026-09-30-2",
-      "date": "2026-09-30",
-      "titleZh": "OpenAI推理之父最新访谈！数学只是多智能体时代的开胃菜",
-      "titleEn": "OpenAI推理之父最新访谈！数学只是多智能体时代的开胃菜",
-      "summaryZh": "千禧年难题的突破，10000个Agent最多占了10%的功劳。",
-      "summaryEn": "(ZH) 千禧年难题的突破，10000个Agent最多占了10%的功劳。",
+      "id": "qbitai-2026-10-02-5",
+      "date": "2026-10-02",
+      "titleZh": "arXiv最严新规！每人每月最多提交2篇，拒稿不退额度",
+      "titleEn": "arXiv最严新规！每人每月最多提交2篇，拒稿不退额度",
+      "summaryZh": "换区也没用",
+      "summaryEn": "(ZH) 换区也没用",
       "tags": [
         "ai",
         "qbitai"
       ],
-      "url": "https://www.qbitai.com/2026/09/499654.html"
+      "url": "https://www.qbitai.com/2026/10/499958.html"
     },
     {
-      "id": "qbitai-2026-09-30-3",
-      "date": "2026-09-30",
-      "titleZh": "直播回顾：工业AI的下一个机会在哪？",
-      "titleEn": "直播回顾：工业AI的下一个机会在哪？",
-      "summaryZh": "什么样的AI才适合工业现场？企业真正开始做工业AI时，又该从哪里下手？",
-      "summaryEn": "(ZH) 什么样的AI才适合工业现场？企业真正开始做工业AI时，又该从哪里下手？",
+      "id": "googleapis-ai-2026-10-02-0",
+      "date": "2026-10-02",
+      "titleZh": "The latest AI news we announced in September 2026",
+      "titleEn": "The latest AI news we announced in September 2026",
+      "summaryZh": "（英）&lt;img src=\"https://storage.googleapis.com/gweb-uniblog-publish-prod/images/September_AI_Recap_hero.max-600x600.format-webp.webp\"&gt;Here are Google’s latest AI updates from September 2026",
+      "summaryEn": "&lt;img src=\"https://storage.googleapis.com/gweb-uniblog-publish-prod/images/September_AI_Recap_hero.max-600x600.format-webp.webp\"&gt;Here are Google’s latest AI updates from September 2026",
       "tags": [
         "ai",
-        "qbitai"
+        "googleapis-ai"
       ],
-      "url": "https://www.qbitai.com/2026/09/499605.html"
+      "url": "https://blog.google/innovation-and-ai/technology/ai/google-ai-updates-september-2026/"
     },
     {
-      "id": "qbitai-2026-09-30-4",
-      "date": "2026-09-30",
-      "titleZh": "Anthropic，你是来给智谱打广告的吧！",
-      "titleEn": "Anthropic，你是来给智谱打广告的吧！",
-      "summaryZh": "实测说GLM-5.3很强",
-      "summaryEn": "(ZH) 实测说GLM-5.3很强",
+      "id": "mit-tr-2026-10-02-0",
+      "date": "2026-10-02",
+      "titleZh": "Redefining enterprise intelligence with autonomous AI",
+      "titleEn": "Redefining enterprise intelligence with autonomous AI",
+      "summaryZh": "（英）Enterprise AI is no longer a future ambition. It is in full operational flight. Model capabilities are advancing faster than most organizations can absorb, while the cost of performance continues to fall. Globally, AI in",
+      "summaryEn": "Enterprise AI is no longer a future ambition. It is in full operational flight. Model capabilities are advancing faster than most organizations can absorb, while the cost of performance continues to fall. Globally, AI in",
       "tags": [
         "ai",
-        "qbitai"
+        "mit-tr"
       ],
-      "url": "https://www.qbitai.com/2026/09/499597.html"
+      "url": "https://www.technologyreview.com/2026/10/02/1143774/redefining-enterprise-intelligence-with-autonomous-ai/"
     },
     {
-      "id": "qbitai-2026-09-30-5",
-      "date": "2026-09-30",
-      "titleZh": "Manus 2.0回来了！给AI配手机号和钱包，还能拉群干活",
-      "titleEn": "Manus 2.0回来了！给AI配手机号和钱包，还能拉群干活",
-      "summaryZh": "给Agent配上手机号，再拉个群",
-      "summaryEn": "(ZH) 给Agent配上手机号，再拉个群",
+      "id": "mit-tr-2026-10-02-1",
+      "date": "2026-10-02",
+      "titleZh": "The Download: a biological de-aging contest and why LLMs don&#8217;t reason",
+      "titleEn": "The Download: a biological de-aging contest and why LLMs don&#8217;t reason",
+      "summaryZh": "（英）This is today&#8217;s edition of The Download, our weekday newsletter that provides a daily dose of what&#8217;s going on in the world of technology. A new contest pits competitors against each other in a race to biologi",
+      "summaryEn": "This is today&#8217;s edition of The Download, our weekday newsletter that provides a daily dose of what&#8217;s going on in the world of technology. A new contest pits competitors against each other in a race to biologi",
       "tags": [
         "ai",
-        "qbitai"
+        "mit-tr"
       ],
-      "url": "https://www.qbitai.com/2026/09/499592.html"
+      "url": "https://www.technologyreview.com/2026/10/02/1145666/the-download-biological-de-aging-ai-reasoning/"
     },
     {
-      "id": "openai-news-2026-09-29-5",
-      "date": "2026-09-29",
-      "titleZh": "Introducing GPT-6.1 Sol",
-      "titleEn": "Introducing GPT-6.1 Sol",
-      "summaryZh": "（英）Meet GPT-6.1 Sol: near-Astra intelligence for coding, computer use, and professional work at one-fifth of Astra’s standard API input and output token prices.",
-      "summaryEn": "Meet GPT-6.1 Sol: near-Astra intelligence for coding, computer use, and professional work at one-fifth of Astra’s standard API input and output token prices.",
+      "id": "mit-tr-2026-10-02-2",
+      "date": "2026-10-02",
+      "titleZh": "A new contest pits competitors against each other in a race to biological youth",
+      "titleEn": "A new contest pits competitors against each other in a race to biological youth",
+      "summaryZh": "（英）This week, I officially signed up for an unusual competition. One that rewards competitors for getting younger. I recently turned 40, and I don’t need reminding that both time and my chronological age only tick forward. ",
+      "summaryEn": "This week, I officially signed up for an unusual competition. One that rewards competitors for getting younger. I recently turned 40, and I don’t need reminding that both time and my chronological age only tick forward. ",
       "tags": [
         "ai",
-        "openai-news"
+        "mit-tr"
       ],
-      "url": "https://openai.com/index/introducing-gpt-6-1-sol"
+      "url": "https://www.technologyreview.com/2026/10/02/1145610/younger-contest-race-to-biological-youth/"
     },
     {
-      "id": "huggingface-blog-2026-09-29-3",
-      "date": "2026-09-29",
-      "titleZh": "NVIDIA Kumo Tabular Sets a New Accuracy-Efficiency Frontier for Tabular Prediction",
-      "titleEn": "NVIDIA Kumo Tabular Sets a New Accuracy-Efficiency Frontier for Tabular Prediction",
-      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
-      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "id": "mit-tr-2026-10-02-3",
+      "date": "2026-10-02",
+      "titleZh": "Don’t be fooled—LLMs don’t reason",
+      "titleEn": "Don’t be fooled—LLMs don’t reason",
+      "summaryZh": "（英）On an afternoon in Seoul in March 2016, I watched a program I helped build put a stone on the fifth line of a Go board in what looked like a gift to its human opponent. Move 37 in game two of the five-game match looked s",
+      "summaryEn": "On an afternoon in Seoul in March 2016, I watched a program I helped build put a stone on the fifth line of a Go board in what looked like a gift to its human opponent. Move 37 in game two of the five-game match looked s",
       "tags": [
         "ai",
-        "huggingface-blog"
+        "mit-tr"
       ],
-      "url": "https://huggingface.co/blog/nvidia/kumo-tabular"
+      "url": "https://www.technologyreview.com/2026/10/02/1145639/dont-be-fooled-llms-dont-reason/"
     },
     {
-      "id": "huggingface-blog-2026-09-29-4",
-      "date": "2026-09-29",
-      "titleZh": "Getting the Source Right, Not Just the Fact: Source-Aware Verification for MCP Agents",
-      "titleEn": "Getting the Source Right, Not Just the Fact: Source-Aware Verification for MCP Agents",
-      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
-      "summaryEn": "AI/agent headline distilled from public RSS.",
+      "id": "bbc-business-2026-10-02-2",
+      "date": "2026-10-02",
+      "titleZh": "UK diesel prices top £2 a litre for first time, RAC says",
+      "titleEn": "UK diesel prices top £2 a litre for first time, RAC says",
+      "summaryZh": "（英）The rise in global oil prices has been pushing up the pump prices of petrol and diesel in the UK.",
+      "summaryEn": "The rise in global oil prices has been pushing up the pump prices of petrol and diesel in the UK.",
       "tags": [
         "ai",
-        "huggingface-blog"
+        "bbc-business"
       ],
-      "url": "https://huggingface.co/blog/MultiverseComputingCAI/getting-the-source-right-not-just-the-fact-source"
-    },
-    {
-      "id": "huggingface-blog-2026-09-28-5",
-      "date": "2026-09-28",
-      "titleZh": "Holo4: powering generalist computer-use agents",
-      "titleEn": "Holo4: powering generalist computer-use agents",
-      "summaryZh": "（英）AI/agent headline distilled from public RSS.",
-      "summaryEn": "AI/agent headline distilled from public RSS.",
-      "tags": [
-        "ai",
-        "huggingface-blog"
-      ],
-      "url": "https://huggingface.co/blog/Hcompany/holo4"
+      "url": "https://www.bbc.co.uk/news/articles/crn8e86y5n0zo?at_medium=RSS&amp;at_campaign=rss"
     }
   ]
 }
