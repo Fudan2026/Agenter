@@ -105,8 +105,9 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
         const r = await passwordLogin(email, password);
         if (!r.ok) {
           const code = String(r.code || r.error || "").toLowerCase();
-          flash =
-            code.includes("email_not_confirmed")
+          flash = code.includes("cloud_not_configured")
+            ? t(locale, "cloudNotConfigured")
+            : code.includes("email_not_confirmed")
               ? t(locale, "loginEmailNotConfirmed")
               : r.error;
           paint();
@@ -130,7 +131,10 @@ export function renderLogin(root: HTMLElement, locale: Locale): void {
 
       const r = await signUp(email, password, nickname || undefined);
       if (!r.ok) {
-        flash = r.error;
+        const code = String(r.error || "").toLowerCase();
+        flash = code.includes("cloud_not_configured")
+          ? t(locale, "cloudNotConfigured")
+          : r.error;
         paint();
         return;
       }

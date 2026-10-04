@@ -7,6 +7,7 @@
 import { json } from "../_shared/http.js";
 import {
   anonKey,
+  cloudNotConfiguredBody,
   supabaseAuthConfigured,
   supabaseUrl,
 } from "../_shared/supabase.js";
@@ -68,14 +69,7 @@ function grantOk(body, extra = {}) {
 export async function onRequestPost({ request, env }) {
   try {
     if (!supabaseAuthConfigured(env)) {
-      return json(
-        withGate({
-          ok: false,
-          code: "cloud_not_configured",
-          error: "cloud_not_configured",
-        }),
-        503,
-      );
+      return json(withGate(cloudNotConfiguredBody()), 503);
     }
 
     const ip = request.headers.get("CF-Connecting-IP") || "anon";

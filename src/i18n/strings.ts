@@ -130,6 +130,8 @@ export const STRINGS = {
     logout: "退出登录",
     openFinDesk: "打开苏坡大模型",
     economyUnavailable: "经济接口暂不可用（检查 Supabase / Functions 密钥）。",
+    cloudNotConfigured:
+      "云端未配置：请在 Cloudflare Pages 项目 supro 的 Production 环境变量中设置 SUPABASE_URL 与 SUPABASE_ANON_KEY，然后重新部署。仅配置 GitHub 的 VITE_* 不够。",
     insufficientGold: "金币不足，请兑换码或充值后再试。",
     finDeskTitle: "苏坡大模型",
     finDeskLead: "Super Professional 金融 AIaaS：多因子可解释选股、Transformer 量价识字、动态配置、投研报告。需登录确认邮箱；用完按实际 Token 扣币。",
@@ -723,6 +725,8 @@ export const STRINGS = {
     openFinDesk: "Open Supro Model",
     economyUnavailable:
       "Economy API unavailable (check Supabase / Functions secrets).",
+    cloudNotConfigured:
+      "Cloud not configured: set SUPABASE_URL + SUPABASE_ANON_KEY on Cloudflare Pages project `supro` (Production), then redeploy. GitHub VITE_* alone is not enough for /api/*.",
     insufficientGold: "Insufficient gold — redeem a code or top up.",
     finDeskTitle: "Supro Model",
     finDeskLead:

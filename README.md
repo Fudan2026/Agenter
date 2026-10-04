@@ -93,7 +93,10 @@ Bake gate: `ok+stale >= max(8, floor(n/2))`.
 2. Apply [`supabase/supro.sql`](supabase/supro.sql). Archive only: [`supabase/supro_on_letus.sql`](supabase/supro_on_letus.sql).
 3. Auth: enable email confirmations; Site URL `https://supro.si`; Redirect URLs `https://supro.si/**`, www, Pages preview.
 4. Register `seanfudan@163.com` → confirm → SQL `ensure_supro_economy` grants ≥100000 gold. Optional `app_metadata.role=admin`.
-5. Secrets: see [`.env.example`](.env.example) — Pages needs new `SUPABASE_*` + `LLM_BACKEND=deepseek` + `LLM_API_KEY` (**never commit the key**).
+5. Secrets: see [`.env.example`](.env.example).
+   - **GitHub Actions:** `VITE_SUPABASE_URL` + `VITE_SUPABASE_ANON_KEY` (browser build).
+   - **Cloudflare Pages `supro` → Production env (required for `/api/signup`):** `SUPABASE_URL` + `SUPABASE_ANON_KEY` + `SUPABASE_SERVICE_ROLE_KEY` + `LLM_*`.
+   - If signup shows `cloud_not_configured`, Pages Production is missing `SUPABASE_*` (VITE_* alone is not enough). Redeploy after fixing.
 6. **No user migration** from Letus — fresh signup only.
 
 Hard gold peg: **100 gold = $1**. Supro Model: preflight `gold >= 20` (non-admin) → DeepSeek → debit **after** actual tokens. Pillars: explainable multifactor JSON · Transformer PV · research report · dynamic allocate.
