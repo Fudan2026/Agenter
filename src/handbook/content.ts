@@ -273,7 +273,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "What Supro is · JTBD",
     },
     body: {
-      zh: "Supro（supro.si · Super Professional · 苏坡）帮你**过滤、对比、挑选** AI / Agent，并以极度专业服务承载量化投资与**苏坡大模型**。中文名「苏坡」取自苏东坡姓名首尾字，寓意在量化与超级智能浪潮中保持乐观平和。品牌首页是 AI 目录（Logo · 名称 · 官网）与周更排名（自动爬取，不耗 LLM），并展示量化入口。\n\n核心 JTBD：场景过滤 → Harness 加权对比 → 短名单。次要 JTBD：烘焙信号练习纸盘/模拟；苏坡大模型按实际 Token 扣币（100 金币=$1，低于 20 禁止调用）。\n\n默认英文；Auth 使用 **Supro 独立 Supabase 组织**（确认邮件回到 supro.si）。不迁移 letusIELTS 用户，请重新注册。",
+      zh: "Supro（supro.si · Super Professional · **苏坡**）帮你**过滤、对比、挑选** AI / Agent，并以极度专业服务承载量化投资与**苏坡大模型**。\n\n中文名「苏坡」取自苏东坡姓名首尾字。苏东坡史上曾任翰林学士、侍读学士等职，民间尊称**「苏大学士」**——代表有温度的、豁达通透的顶级智慧。Supro 不仅是 Super Professional 的缩写，更希望继承苏东坡那种**在波动中保持从容、在复杂中洞见本质**的人格：这不是冰冷工具，而是有文化温度的金融决策伙伴。\n\n品牌首页是 AI 目录（Logo · 名称 · 官网）与周更排名（自动爬取，不耗 LLM），并展示量化入口。苏坡大模型支持**多轮对话**，可记住你刚提过的标的与因子。\n\n核心 JTBD：场景过滤 → Harness 加权对比 → 短名单。次要 JTBD：烘焙信号练习纸盘/模拟；问苏大学士按模式档位与实际 Token 扣币（100 金币=$1，低于 20 禁止调用）。\n\n默认英文；Auth 使用 **Supro 独立 Supabase 组织**（确认邮件回到 supro.si）。不迁移 letusIELTS 用户，请重新注册。",
       en: "Supro (supro.si · Super Professional) helps you **filter, compare, and pick** AI / Agent products and hosts a serious quant desk plus **Supro Model**. The Chinese name 苏坡 takes the first and last characters of Su Dongpo — a calm, optimistic stance toward quant and Super Intelligence. Home is an AI directory (logo · name · site) with weekly ranks (crawl-only, no LLM) plus Quant entry.\n\nPrimary JTBD: scenario filter → Harness-weighted compare → shortlist. Secondary: paper/sim on baked signals; Supro Model debits gold after actual tokens (100 gold=$1; floor 20).\n\nEnglish default. Auth uses a **standalone Supro Supabase org/project** (email confirm returns to supro.si). No Letus user migration — fresh signup.",
     },
     deepLinks: [
@@ -286,7 +286,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
     id: "mod-home",
     title: { zh: "模块 · 首页", en: "Module · Home" },
     body: {
-      zh: "品牌首页：主标题是 Supro（Super Professional）。主区是 AI 目录与周排名；量化投资条带在首页可见，不只藏在工具箱。",
+      zh: "品牌首页：主标题是 Supro（Super Professional / 苏坡）。主区是 AI 目录与周排名——目录文案将「苏坡」与「苏大学士」相连：有温度的顶级智慧。量化投资条带与「问苏大学士」入口在首页可见，不只藏在工具箱。",
       en: "Brand home: H1 is Supro (Super Professional). Primary block is the AI directory + weekly ranks; Quant investing is visible on Home — not Tools-only.",
     },
     deepLinks: [{ href: "#/", label: { zh: "打开首页", en: "Open Home" } }],
@@ -654,7 +654,7 @@ export const HANDBOOK_MODULES: HandbookModule[] = [
       en: "Ecosystem · Fin Desk AIaaS & gold",
     },
     body: {
-      zh: "对标匡时产教全景：**基础设施** = bake + `fin-corpus`；**中台** = Cloudflare Functions 上的**苏坡大模型**；**产品**不训练 Fin-R1 权重，而是 DeepSeek AIaaS + RAG。\n\n**账户与金币。** Supro **独立** Auth 组织（`GOLD_PER_USD=100`），须邮箱确认；不迁移 letusIELTS 用户。先调用模型，再按**实际 Token** 扣币；非管理员余额 &lt; 20 禁止调用。管理员 `seanfudan@163.com` 负责人额度 ≥100000。周排名 / bake **不耗** LLM。\n\n**域名。** `supro.si`（Pages 项目 `supro`）。SQL：在新项目执行 `supabase/supro.sql`。\n\n**三大支柱。** 可解释多因子 JSON · Transformer 量价识字 · 投研报告 · 动态配置。\n\n**作业：** 注册并确认邮箱；看金币；多因子/Transformer/研报各跑一轮。",
+      zh: "对标匡时产教全景：**基础设施** = bake + `fin-corpus`；**中台** = Cloudflare Functions 上的**苏坡大模型（苏大学士）**；**产品**不训练 Fin-R1 权重，而是 DeepSeek AIaaS + RAG + **多轮对话记忆**。\n\n**账户与金币。** Supro **独立** Auth 组织（`GOLD_PER_USD=100`），须邮箱确认；不迁移 letusIELTS 用户。先调用模型，再按**模式档位 × 实际 Token** 扣币（复盘 1x · 多因子/Transformer 2x · 研报 3x · 端到端 4x）；非管理员余额 &lt; 20 禁止调用。管理员 `seanfudan@163.com` 负责人额度 ≥100000。周排名 / bake **不耗** LLM。\n\n**域名。** `supro.si`（Pages 项目 `supro`）。SQL：执行 `supabase/supro.sql`，再执行 `supabase/supro_conversations_patch.sql`（多轮对话表）。\n\n**三大支柱。** 可解释多因子 JSON · Transformer 量价识字 · 投研报告 · 动态配置。\n\n**作业：** 注册并确认邮箱；看金币；与苏大学士多轮追问同一标的；多因子/Transformer/研报各跑一轮。",
       en: "Kuangshi map: **infra** = bake + `fin-corpus`; **mid-platform** = **Supro Model** on Cloudflare Functions; **product** does not train Fin-R1 — DeepSeek AIaaS + RAG.\n\n**Accounts & gold.** Standalone Supro org (`GOLD_PER_USD=100`). Email confirm required. No Letus migration. Call the model first, then debit **actual tokens**; non-admins with gold &lt; 20 are blocked. Admin `seanfudan@163.com` steward grant ≥100000 after confirm. Weekly ranks / bakes use **no** LLM.\n\n**Domain.** `supro.si` (Pages `supro`). SQL: apply `supabase/supro.sql` on the **new** Supro project.\n\n**Pillars.** Explainable multi-factor JSON · Transformer PV literacy · research reports · dynamic allocate.\n\n**Homework:** Register+confirm; check gold; run multifactor / transformer / report once each.",
     },
     deepLinks: [

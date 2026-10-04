@@ -16,6 +16,8 @@ export type FinMode =
   | "report"
   | "allocate";
 
+export type ChatMessage = { role: "user" | "assistant"; content: string };
+
 export interface EconomyBalance {
   gold: number;
   total_earned: number;
@@ -31,6 +33,28 @@ export interface EconomyBalance {
     gold?: number;
     created_at?: string;
   }>;
+}
+
+export interface FinConversationMeta {
+  id: string;
+  title: string;
+  mode: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+/** Mode gold tier multipliers (must match functions/_shared/gold-tiers.js). */
+export function modeGoldMultiplier(mode: FinMode | string): number {
+  if (mode === "e2e") return 4;
+  if (mode === "report") return 3;
+  if (
+    mode === "multifactor" ||
+    mode === "allocate" ||
+    mode === "transformer"
+  ) {
+    return 2;
+  }
+  return 1;
 }
 
 function flattenErr(err: unknown, fallback: string): string {
@@ -123,17 +147,86 @@ export async function redeemCode(
   }
 }
 
+export async function listFinConversations(): Promise<FinConversationMeta[]> {
+  if (!isLoggedIn()) return [];
+  try {
+    const res = await fetch("/api/fin-conversations", {
+      headers: { Authorization: `Bearer ${accessToken()}` },
+      cache: "no-cache",
+    });
+    const data = (await res.json()) as {
+      ok?: boolean;
+      conversations?: FinConversationMeta[];
+    };
+    if (!data.ok || !Array.isArray(data.conversations)) return [];
+    return data.conversations;
+  } catch {
+    return [];
+  }
+}
+
+export async function loadFinConversation(id: string): Promise<{
+  conversation: FinConversationMeta | null;
+  messages: ChatMessage[];
+}> {
+  if (!isLoggedIn() || !id) return { conversation: null, messages: [] };
+  try {
+    const res = await fetch(
+      `/api/fin-conversations?id=${encodeURIComponent(id)}`,
+      {
+        headers: { Authorization: `Bearer ${accessToken()}` },
+        cache: "no-cache",
+      },
+    );
+    const data = (await res.json()) as {
+      ok?: boolean;
+      conversation?: FinConversationMeta;
+      messages?: Array<{ role?: string; content?: string }>;
+    };
+    if (!data.ok) return { conversation: null, messages: [] };
+    const messages: ChatMessage[] = (data.messages || [])
+      .filter((m) => m.role === "user" || m.role === "assistant")
+      .map((m) => ({
+        role: m.role as "user" | "assistant",
+        content: String(m.content || ""),
+      }));
+    return { conversation: data.conversation || null, messages };
+  } catch {
+    return { conversation: null, messages: [] };
+  }
+}
+
+export async function deleteFinConversation(id: string): Promise<boolean> {
+  try {
+    const res = await fetch(
+      `/api/fin-conversations?id=${encodeURIComponent(id)}`,
+      {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${accessToken()}` },
+      },
+    );
+    const data = (await res.json()) as { ok?: boolean };
+    return Boolean(data.ok);
+  } catch {
+    return false;
+  }
+}
+
 export async function callFinDesk(input: {
   mode: FinMode;
   prompt: string;
   locale: "zh" | "en";
   context?: string;
+  messages?: ChatMessage[];
+  conversation_id?: string | null;
 }): Promise<
   | {
       ok: true;
       answer: string;
       gold_spent: number;
       gold_remaining: number | null;
+      conversation_id?: string | null;
+      mode_multiplier?: number;
       meta?: unknown;
     }
   | { ok: false; error: string; gold_needed?: number; code?: string }
@@ -152,17 +245,17 @@ export async function callFinDesk(input: {
       answer?: string;
       gold_spent?: number;
       gold_remaining?: number | null;
+      conversation_id?: string;
+      mode_multiplier?: number;
       meta?: unknown;
       error?: string;
       code?: string;
       gold_needed?: number;
+      hint?: string;
     };
     if (!data.ok || !data.answer) {
       const base = flattenErr(data.error || data.code, "fin_desk_failed");
-      const hint =
-        typeof (data as { hint?: unknown }).hint === "string"
-          ? String((data as { hint?: string }).hint)
-          : "";
+      const hint = typeof data.hint === "string" ? data.hint : "";
       return {
         ok: false,
         error: hint ? `${base} — ${hint}` : base,
@@ -176,6 +269,8 @@ export async function callFinDesk(input: {
       gold_spent: Number(data.gold_spent ?? 0),
       gold_remaining:
         data.gold_remaining == null ? null : Number(data.gold_remaining),
+      conversation_id: data.conversation_id ?? null,
+      mode_multiplier: data.mode_multiplier,
       meta: data.meta,
     };
   } catch {
