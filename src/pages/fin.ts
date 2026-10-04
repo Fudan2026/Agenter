@@ -27,6 +27,9 @@ import type { FactorsIcPayload } from "../lib/factors/ic";
 import type { AlphaLitePayload } from "../lib/factors/alpha-lite";
 import type { TransformerPvProxyPayload } from "../lib/fin/attention-proxy";
 import type { ScreensPayload } from "../lib/screens/map";
+import type { AnnouncementsPayload } from "../lib/announcements/map";
+import type { IwencaiNewsPayload } from "../lib/iwencai-news/map";
+import { LAB_STRATEGY_IDS } from "../lib/fin/e2e-recipe";
 
 function readQueryPrompt(): string {
   try {
@@ -61,6 +64,8 @@ export function renderFinDesk(
   factorsIc: FactorsIcPayload | null = null,
   alphaLite: AlphaLitePayload | null = null,
   transformerPv: TransformerPvProxyPayload | null = null,
+  announcements: AnnouncementsPayload | null = null,
+  iwencaiNews: IwencaiNewsPayload | null = null,
 ): void {
   if (!isLoggedIn()) {
     location.hash = `#/login`;
@@ -146,6 +151,36 @@ export function renderFinDesk(
       if (lim?.length) {
         parts.push(`TransformerLimits:\n- ${lim.slice(0, 3).join("\n- ")}`);
       }
+    }
+    parts.push(`LabIdsAllowed: ${LAB_STRATEGY_IDS.join(", ")}`);
+    type AnnRow = { symbol?: string; title?: string; event?: string };
+    const annBag = announcements as { rows?: AnnRow[]; items?: AnnRow[] } | null;
+    const annRows: AnnRow[] = annBag?.rows || annBag?.items || [];
+    if (annRows.length) {
+      parts.push(
+        `Announcements:\n` +
+          annRows
+            .slice(0, 8)
+            .map(
+              (a) =>
+                `- ${a.symbol || "?"} ${a.event || ""} ${String(a.title || "").slice(0, 80)}`,
+            )
+            .join("\n"),
+      );
+    }
+    const newsRows =
+      (iwencaiNews as { rows?: Array<{ title?: string; summary?: string }> } | null)
+        ?.rows ||
+      (iwencaiNews as { items?: Array<{ title?: string }> } | null)?.items ||
+      [];
+    if (Array.isArray(newsRows) && newsRows.length) {
+      parts.push(
+        `IwencaiNews:\n` +
+          newsRows
+            .slice(0, 6)
+            .map((n) => `- ${String(n.title || "").slice(0, 100)}`)
+            .join("\n"),
+      );
     }
     if (data?.timing?.length) {
       parts.push(
