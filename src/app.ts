@@ -28,6 +28,7 @@ import type { FactorsPayload } from "./lib/factors/cross-section";
 import type { FactorsIcPayload } from "./lib/factors/ic";
 import type { AlphaLitePayload } from "./lib/factors/alpha-lite";
 import type { TransformerPvProxyPayload } from "./lib/fin/attention-proxy";
+import type { TransformerInferBakePayload } from "./lib/fin/transformer-inference";
 import type { CnCalendarPayload } from "./lib/paper/calendar";
 import {
   requiresAuth,
@@ -46,6 +47,7 @@ let factorsData: FactorsPayload | null = null;
 let factorsIcData: FactorsIcPayload | null = null;
 let alphaLiteData: AlphaLitePayload | null = null;
 let transformerPvData: TransformerPvProxyPayload | null = null;
+let transformerInferData: TransformerInferBakePayload | null = null;
 let recipesData: RecipesPayload | null = null;
 let calendarData: CnCalendarPayload | null = null;
 let etfMetaData: EtfMetaPayload | null = null;
@@ -175,6 +177,16 @@ async function loadTransformerPv(): Promise<void> {
   }
 }
 
+async function loadTransformerInfer(): Promise<void> {
+  try {
+    transformerInferData = await fetchJsonWithRetry<TransformerInferBakePayload>(
+      "transformer-infer-bake.json",
+    );
+  } catch {
+    transformerInferData = null;
+  }
+}
+
 async function loadRecipes(): Promise<void> {
   try {
     recipesData = await fetchJsonWithRetry<RecipesPayload>("recipes.json");
@@ -297,6 +309,7 @@ async function render(): Promise<void> {
           transformerPvData,
           announcementsData,
           iwencaiNewsData,
+          transformerInferData,
         );
         break;
       case "admin":
@@ -397,6 +410,7 @@ export async function startApp(): Promise<void> {
     loadFactorsIc(),
     loadAlphaLite(),
     loadTransformerPv(),
+    loadTransformerInfer(),
     loadRecipes(),
     loadCalendar(),
     loadEtfMeta(),

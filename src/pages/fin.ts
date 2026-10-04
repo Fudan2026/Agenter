@@ -3,6 +3,7 @@ import { t } from "../i18n/strings";
 import {
   callFinDesk,
   fetchBalance,
+  fileToVisionDataUrl,
   listFinConversations,
   loadFinConversation,
   modeGoldMultiplier,
@@ -20,6 +21,12 @@ import {
   attentionProxyFromSeries,
   renderAttentionBoard,
 } from "../lib/fin/attention-proxy";
+import {
+  formatInferenceContext,
+  runTransformerInference,
+  type TransformerInferBakePayload,
+  type TransformerInferenceRow,
+} from "../lib/fin/transformer-inference";
 import { esc } from "../lib/util/esc";
 import { bindShellChrome, renderShell } from "./shell";
 import type { LatestPayload } from "./types";
@@ -52,6 +59,8 @@ function modeLabel(locale: Locale, mode: FinMode): string {
     transformer: t(locale, "finModeTransformer"),
     report: t(locale, "finModeReport"),
     allocate: t(locale, "finModeAllocate"),
+    edge_infer: t(locale, "finModeEdgeInfer"),
+    agent: t(locale, "finModeAgent"),
   };
   return map[mode];
 }
@@ -66,6 +75,7 @@ export function renderFinDesk(
   transformerPv: TransformerPvProxyPayload | null = null,
   announcements: AnnouncementsPayload | null = null,
   iwencaiNews: IwencaiNewsPayload | null = null,
+  transformerInfer: TransformerInferBakePayload | null = null,
 ): void {
   if (!isLoggedIn()) {
     location.hash = `#/login`;
@@ -81,6 +91,8 @@ export function renderFinDesk(
   let conversationId: string | null = null;
   let conversations: FinConversationMeta[] = [];
   let busy = false;
+  let pendingImage: string | null = null;
+  let pendingImageName = "";
 
   const buildContext = (): string => {
     const parts: string[] = [];
@@ -152,6 +164,12 @@ export function renderFinDesk(
         parts.push(`TransformerLimits:\n- ${lim.slice(0, 3).join("\n- ")}`);
       }
     }
+    if (transformerInfer?.rows?.length) {
+      parts.push(
+        `TransformerInfer:\n` +
+          formatInferenceContext(transformerInfer.rows, 8),
+      );
+    }
     parts.push(`LabIdsAllowed: ${LAB_STRATEGY_IDS.join(", ")}`);
     type AnnRow = { symbol?: string; title?: string; event?: string };
     const annBag = announcements as { rows?: AnnRow[]; items?: AnnRow[] } | null;
@@ -199,7 +217,39 @@ export function renderFinDesk(
     return parts.join("\n\n").slice(0, 12000);
   };
 
+  const liveEdgeRows = (): TransformerInferenceRow[] => {
+    if (!data?.symbols?.length) return transformerInfer?.rows?.slice(0, 6) || [];
+    return data.symbols
+      .filter((s) => s.dataStatus !== "missing")
+      .slice(0, 6)
+      .map((s) =>
+        runTransformerInference(
+          s.symbol,
+          (s.candles || []).map((c) => ({
+            o: c.open,
+            h: c.high,
+            l: c.low,
+            c: c.close,
+            v: c.volume,
+          })),
+          locale,
+        ),
+      )
+      .filter((r): r is TransformerInferenceRow => Boolean(r));
+  };
+
   const attentionHtml = (): string => {
+    if (mode === "edge_infer") {
+      const rows = liveEdgeRows();
+      if (!rows.length) return "";
+      return `<section><h3>${esc(t(locale, "finEdgeInferBoard"))}</h3>
+        <div class="attention-board">${rows
+          .map(
+            (r) =>
+              `<div class="attention-cell"><strong>${esc(r.symbol)}</strong><br/>mid ${r.prediction_band.mid.toFixed(2)} · conf ${(r.prediction_confidence * 100).toFixed(0)}%<br/>band ${r.prediction_band.lo.toFixed(2)}–${r.prediction_band.hi.toFixed(2)}<br/><span class="muted">${esc(r.note)}</span></div>`,
+          )
+          .join("")}</div></section>`;
+    }
     if (mode !== "transformer" || !data?.symbols?.length) return "";
     const rows = data.symbols
       .filter((s) => s.dataStatus !== "missing")
@@ -224,6 +274,7 @@ export function renderFinDesk(
     "multifactor",
     "e2e",
     "transformer",
+    "edge_infer",
     "report",
     "allocate",
   ];
@@ -285,6 +336,10 @@ export function renderFinDesk(
         <label>${esc(t(locale, "finPrompt"))}
           <textarea id="fin-prompt" rows="4" ${busy ? "disabled" : ""} placeholder="${esc(t(locale, "finPromptPh"))}">${esc(promptSeed)}</textarea>
         </label>
+        <label class="fin-upload muted tiny">${esc(t(locale, "finUploadImage"))}
+          <input type="file" id="fin-image" accept="image/png,image/jpeg,image/webp,image/gif" ${busy ? "disabled" : ""} />
+          ${pendingImageName ? `<span class="fin-upload-name">${esc(pendingImageName)}</span>` : ""}
+        </label>
         <div class="cta-row wrap">
           <button type="submit" class="btn btn-ink" ${busy ? "disabled" : ""}>${esc(busy ? t(locale, "loading") : t(locale, "finRun"))}</button>
           <a class="btn btn-ghost" href="#/quant?panel=lab">${esc(t(locale, "openLab"))}</a>
@@ -317,8 +372,24 @@ export function renderFinDesk(
       conversationId = null;
       turns = [];
       promptSeed = "";
+      pendingImage = null;
+      pendingImageName = "";
       flash = "";
       paint();
+    });
+
+    root.querySelector("#fin-image")?.addEventListener("change", (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) {
+        pendingImage = null;
+        pendingImageName = "";
+        return;
+      }
+      void fileToVisionDataUrl(file).then((url) => {
+        pendingImage = url;
+        pendingImageName = file.name;
+        paint();
+      });
     });
 
     root.querySelector("#fin-conv-select")?.addEventListener("change", (e) => {
@@ -350,8 +421,13 @@ export function renderFinDesk(
       flash = "";
       busy = true;
       const history = turns.slice();
-      turns = [...turns, { role: "user", content: prompt }];
+      const userLabel = pendingImageName
+        ? `${prompt}\n[${locale === "zh" ? "附图" : "image"}: ${pendingImageName}]`
+        : prompt;
+      turns = [...turns, { role: "user", content: userLabel }];
       paint();
+      const edgeRows = mode === "edge_infer" ? liveEdgeRows() : [];
+      const inference = edgeRows[0] || null;
       const r = await callFinDesk({
         mode,
         prompt,
@@ -359,6 +435,8 @@ export function renderFinDesk(
         context: buildContext(),
         messages: history,
         conversation_id: conversationId,
+        image: pendingImage,
+        inference,
       });
       busy = false;
       if (!r.ok) {
@@ -387,10 +465,16 @@ export function renderFinDesk(
         paint();
         return;
       }
-      turns = [...history, { role: "user", content: prompt }, { role: "assistant", content: r.answer }];
+      turns = [
+        ...history,
+        { role: "user", content: userLabel },
+        { role: "assistant", content: r.answer },
+      ];
       if (r.conversation_id) conversationId = r.conversation_id;
       if (r.gold_remaining != null) goldLabel = String(r.gold_remaining);
       promptSeed = "";
+      pendingImage = null;
+      pendingImageName = "";
       void listFinConversations().then((list) => {
         conversations = list;
         paint();
