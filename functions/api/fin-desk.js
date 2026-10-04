@@ -26,13 +26,17 @@ import {
 import {
   allowFinOffline,
   callLlm,
-  goldCost,
   llmBackend,
   llmConfigured,
   llmModel,
   repairJsonLlm,
   sumUsage,
 } from "../_shared/llm.js";
+import {
+  billGoldForMode,
+  modeGoldMultiplier,
+  trimHistoryForModel,
+} from "../_shared/gold-tiers.js";
 
 const MIN_FLOOR = 20;
 const ADMIN_EMAIL = "seanfudan@163.com";
@@ -79,6 +83,10 @@ export async function onRequestPost({ request, env }) {
   }
   const locale = body?.locale === "zh" ? "zh" : "en";
   const context = String(body?.context || "").slice(0, 14000);
+  const historyIn = Array.isArray(body?.messages) ? body.messages : [];
+  let conversationId = body?.conversation_id
+    ? String(body.conversation_id)
+    : null;
 
   let pre = await rpcWithUserJwt(env, jwt, "preflight_my_fin_desk", {});
   if (!pre.ok && serviceKey(env)) {
@@ -149,10 +157,24 @@ export async function onRequestPost({ request, env }) {
     }
   }
 
+  const prior = trimHistoryForModel(historyIn, 30);
   const messages = [
     { role: "system", content: systemPrompt(mode, locale) },
+    ...prior,
     { role: "user", content: userContent },
   ];
+
+  // Ensure conversation row (persistence is best-effort if patch not applied)
+  {
+    const ens = await rpcWithUserJwt(env, jwt, "ensure_my_fin_conversation", {
+      p_id: conversationId,
+      p_title: prompt.slice(0, 80),
+      p_mode: mode,
+    });
+    if (ens.ok && ens.data?.id) {
+      conversationId = String(ens.data.id);
+    }
+  }
 
   if (!llmConfigured(env) && !allowFinOffline(env)) {
     return json(
@@ -233,9 +255,9 @@ export async function onRequestPost({ request, env }) {
     llmMeta = { ...llmMeta, usage: usageAcc, live: true };
   }
 
-  const cost = goldCost(tokensUsed);
-  // Admin steward: log tokens, spent=0. Offline: tokens=0 → cost=0.
-  const billGold = admin || tokensUsed <= 0 ? 0 : cost;
+  const mult = modeGoldMultiplier(mode);
+  const cost = billGoldForMode(tokensUsed, mode, { admin: false });
+  const billGold = billGoldForMode(tokensUsed, mode, { admin });
 
   let spend = await rpcWithUserJwt(env, jwt, "spend_my_gold_for_usage", {
     p_tokens: tokensUsed,
@@ -260,6 +282,7 @@ export async function onRequestPost({ request, env }) {
         code: insufficient ? "insufficient_gold" : "spend_failed",
         error: msg,
         gold_needed: cost,
+        mode_multiplier: mult,
       },
       insufficient ? 402 : spend.status || 500,
     );
@@ -276,23 +299,38 @@ export async function onRequestPost({ request, env }) {
   } else if (admin) {
     stamp =
       locale === "zh"
-        ? `\n\n— 苏坡大模型 · DeepSeek · 非投资建议 · Token ${tokensUsed} · 管理员免扣（标价 ${cost} 金币；100 金币=$1）`
-        : `\n\n— Supro Model · DeepSeek · not advice · tokens ${tokensUsed} · admin free (list price ${cost} gold; 100 gold=$1)`;
+        ? `\n\n— 苏坡大模型 · DeepSeek · 非投资建议 · Token ${tokensUsed} · ${mult}x档 · 管理员免扣（标价 ${cost} 金币；100 金币=$1）`
+        : `\n\n— Supro Model · DeepSeek · not advice · tokens ${tokensUsed} · ${mult}x tier · admin free (list price ${cost} gold; 100 gold=$1)`;
   } else {
     stamp =
       locale === "zh"
-        ? `\n\n— 苏坡大模型 · DeepSeek · 非投资建议 · Token ${tokensUsed} · 已扣 ${spent} 金币（100 金币=$1）`
-        : `\n\n— Supro Model · DeepSeek · not advice · tokens ${tokensUsed} · gold spent ${spent} (100 gold=$1)`;
+        ? `\n\n— 苏坡大模型 · DeepSeek · 非投资建议 · Token ${tokensUsed} · ${mult}x档 · 已扣 ${spent} 金币（100 金币=$1）`
+        : `\n\n— Supro Model · DeepSeek · not advice · tokens ${tokensUsed} · ${mult}x tier · gold spent ${spent} (100 gold=$1)`;
+  }
+
+  // Persist turn (best-effort)
+  if (conversationId) {
+    await rpcWithUserJwt(env, jwt, "append_my_fin_messages", {
+      p_conversation_id: conversationId,
+      p_user_content: prompt,
+      p_assistant_content: `${answerText}${stamp}`,
+      p_structured: structured,
+      p_tokens: tokensUsed,
+      p_gold: spent,
+      p_mode: mode,
+    });
   }
 
   return json({
     ok: true,
     mode,
+    conversation_id: conversationId,
     answer: `${answerText}${stamp}`,
     structured,
     gold_spent: spent,
     gold_remaining: Number(spend.data?.gold ?? null),
     tokens_used: tokensUsed,
+    mode_multiplier: mult,
     admin: Boolean(spend.data?.admin || admin),
     meta: llmMeta,
   });

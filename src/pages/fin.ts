@@ -3,6 +3,11 @@ import { t } from "../i18n/strings";
 import {
   callFinDesk,
   fetchBalance,
+  listFinConversations,
+  loadFinConversation,
+  modeGoldMultiplier,
+  type ChatMessage,
+  type FinConversationMeta,
   type FinMode,
 } from "../lib/auth/economy";
 import { MIN_GOLD_FLOOR } from "../lib/auth/config";
@@ -60,11 +65,13 @@ export function renderFinDesk(
 
   let mode: FinMode = "multifactor";
   let goldLabel = "…";
-  let answerRaw = "";
-  let structuredHtml = "";
   let flash = "";
   let isAdmin = false;
   let promptSeed = readQueryPrompt();
+  let turns: ChatMessage[] = [];
+  let conversationId: string | null = null;
+  let conversations: FinConversationMeta[] = [];
+  let busy = false;
 
   const buildContext = (): string => {
     const parts: string[] = [];
@@ -106,7 +113,6 @@ export function renderFinDesk(
             .join("\n"),
       );
     }
-    // SkillHub methodology distill (text only — no live THS)
     parts.push(
       locale === "zh"
         ? "Skills: 多因子选股策略 · 机器学习策略 · 因子研究框架 · 策略生成与优化（方法论蒸馏，非实盘）。"
@@ -144,47 +150,73 @@ export function renderFinDesk(
     "allocate",
   ];
 
-  const paint = (): void => {
-    const parsed = answerRaw
-      ? parseStructuredAnswer(answerRaw)
-      : { structured: null, narrative: "" };
-    structuredHtml = parsed.structured
-      ? renderStructuredHtml(locale, parsed.structured)
-      : "";
-    const narrative =
-      parsed.narrative ||
-      (answerRaw ? answerRaw : t(locale, "finAnswerEmpty"));
+  const renderThread = (): string => {
+    if (!turns.length) {
+      return `<p class="muted">${esc(t(locale, "finAnswerEmpty"))}</p>`;
+    }
+    return turns
+      .map((turn) => {
+        const isUser = turn.role === "user";
+        if (isUser) {
+          return `<article class="fin-turn fin-turn-user"><header>${esc(locale === "zh" ? "你" : "You")}</header><pre class="fin-answer-body">${esc(turn.content)}</pre></article>`;
+        }
+        const parsed = parseStructuredAnswer(turn.content);
+        const html = parsed.structured
+          ? renderStructuredHtml(locale, parsed.structured)
+          : "";
+        const narrative = parsed.narrative || turn.content;
+        return `<article class="fin-turn fin-turn-assistant"><header>${esc(locale === "zh" ? "苏大学士" : "Supro Model")}</header>${html}<pre class="fin-answer-body">${esc(narrative)}</pre></article>`;
+      })
+      .join("");
+  };
 
+  const paint = (): void => {
+    const tier = modeGoldMultiplier(mode);
     const body = `
       <h1 class="type-heading-m">${esc(t(locale, "finDeskTitle"))}</h1>
       <p class="lead">${esc(t(locale, "finDeskLead"))}</p>
+      <p class="fin-scholar-tagline">${esc(t(locale, "finScholarTagline"))}</p>
       <p class="muted tiny">${esc(t(locale, "finDeskStamp"))} · ${esc(t(locale, "goldBalance"))}: <strong>${esc(goldLabel)}</strong>
-        ${isAdmin ? ` · ${esc(locale === "zh" ? "管理员" : "admin")}` : ""}</p>
+        ${isAdmin ? ` · ${esc(locale === "zh" ? "管理员" : "admin")}` : ""}
+        · ${esc(t(locale, "finGoldTier"))}: <strong>${tier}x</strong></p>
       <p class="muted tiny">${esc(t(locale, "goldFloorNote"))}</p>
       ${flash ? `<p class="notice notice-error">${esc(flash)}</p>` : ""}
+      <div class="fin-conv-bar cta-row wrap">
+        <button type="button" class="btn btn-ghost" id="fin-new-chat">${esc(t(locale, "finNewChat"))}</button>
+        <label class="fin-conv-select muted tiny">${esc(t(locale, "finLoadChat"))}
+          <select id="fin-conv-select">
+            <option value="">—</option>
+            ${conversations
+              .map(
+                (c) =>
+                  `<option value="${esc(c.id)}" ${c.id === conversationId ? "selected" : ""}>${esc(c.title || c.id.slice(0, 8))}</option>`,
+              )
+              .join("")}
+          </select>
+        </label>
+      </div>
       <form class="fin-desk-form composer-card" id="fin-form">
         <div class="fin-modes" role="tablist">
           ${modes
-            .map(
-              (m) =>
-                `<button type="button" class="fin-mode ${mode === m ? "active" : ""}" data-mode="${m}">${esc(modeLabel(locale, m))}</button>`,
-            )
+            .map((m) => {
+              const mx = modeGoldMultiplier(m);
+              return `<button type="button" class="fin-mode ${mode === m ? "active" : ""}" data-mode="${m}">${esc(modeLabel(locale, m))} <span class="fin-tier">${mx}x</span></button>`;
+            })
             .join("")}
         </div>
         <label>${esc(t(locale, "finPrompt"))}
-          <textarea id="fin-prompt" rows="5" placeholder="${esc(t(locale, "finPromptPh"))}">${esc(promptSeed)}</textarea>
+          <textarea id="fin-prompt" rows="4" ${busy ? "disabled" : ""} placeholder="${esc(t(locale, "finPromptPh"))}">${esc(promptSeed)}</textarea>
         </label>
         <div class="cta-row wrap">
-          <button type="submit" class="btn btn-ink">${esc(t(locale, "finRun"))}</button>
+          <button type="submit" class="btn btn-ink" ${busy ? "disabled" : ""}>${esc(busy ? t(locale, "loading") : t(locale, "finRun"))}</button>
           <a class="btn btn-ghost" href="#/quant?panel=lab">${esc(t(locale, "openLab"))}</a>
           <a class="btn btn-ghost" href="#/account">${esc(t(locale, "accountTitle"))}</a>
         </div>
       </form>
-      <section class="fin-answer">
+      <section class="fin-thread">
         <h2>${esc(t(locale, "finAnswer"))}</h2>
-        ${structuredHtml || ""}
         ${attentionHtml()}
-        <pre class="fin-answer-body">${esc(narrative)}</pre>
+        ${renderThread()}
       </section>
     `;
     root.innerHTML = renderShell(locale, "fin", body, {
@@ -203,8 +235,31 @@ export function renderFinDesk(
       });
     });
 
+    root.querySelector("#fin-new-chat")?.addEventListener("click", () => {
+      conversationId = null;
+      turns = [];
+      promptSeed = "";
+      flash = "";
+      paint();
+    });
+
+    root.querySelector("#fin-conv-select")?.addEventListener("change", (e) => {
+      const id = (e.target as HTMLSelectElement).value;
+      if (!id) return;
+      void loadFinConversation(id).then((loaded) => {
+        conversationId = loaded.conversation?.id || id;
+        turns = loaded.messages;
+        if (loaded.conversation?.mode) {
+          mode = loaded.conversation.mode as FinMode;
+        }
+        flash = "";
+        paint();
+      });
+    });
+
     root.querySelector("#fin-form")?.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (busy) return;
       const prompt = (
         root.querySelector("#fin-prompt") as HTMLTextAreaElement
       ).value.trim();
@@ -215,16 +270,21 @@ export function renderFinDesk(
         return;
       }
       flash = "";
-      answerRaw = t(locale, "loading");
-      structuredHtml = "";
+      busy = true;
+      const history = turns.slice();
+      turns = [...turns, { role: "user", content: prompt }];
       paint();
       const r = await callFinDesk({
         mode,
         prompt,
         locale,
         context: buildContext(),
+        messages: history,
+        conversation_id: conversationId,
       });
+      busy = false;
       if (!r.ok) {
+        turns = history;
         flash =
           r.code === "insufficient_gold_floor"
             ? t(locale, "insufficientGoldFloor")
@@ -234,7 +294,8 @@ export function renderFinDesk(
                   r.code === "llm_error" ||
                   r.code === "llm_network_error"
                 ? t(locale, "finLlmUnavailable")
-                : r.error === "insufficient_gold" || r.code === "insufficient_gold"
+                : r.error === "insufficient_gold" ||
+                    r.code === "insufficient_gold"
                   ? t(locale, "insufficientGold")
                   : r.error;
         if (
@@ -245,12 +306,17 @@ export function renderFinDesk(
         ) {
           flash = `${flash} ${r.error}`;
         }
-        answerRaw = "";
         paint();
         return;
       }
-      answerRaw = r.answer;
+      turns = [...history, { role: "user", content: prompt }, { role: "assistant", content: r.answer }];
+      if (r.conversation_id) conversationId = r.conversation_id;
       if (r.gold_remaining != null) goldLabel = String(r.gold_remaining);
+      promptSeed = "";
+      void listFinConversations().then((list) => {
+        conversations = list;
+        paint();
+      });
       paint();
     });
   };
@@ -266,6 +332,10 @@ export function renderFinDesk(
     goldLabel = String(b.gold);
     isAdmin = Boolean(b.is_admin);
     void MIN_GOLD_FLOOR;
+    paint();
+  });
+  void listFinConversations().then((list) => {
+    conversations = list;
     paint();
   });
 }
