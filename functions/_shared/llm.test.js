@@ -7,7 +7,13 @@ import {
   llmApiKey,
   llmConfigured,
   llmModel,
+  llmVisionModel,
 } from "./llm.js";
+import {
+  isDataImageUrl,
+  sanitizeImageDataUrl,
+  visionUserContent,
+} from "./vision.js";
 
 describe("functions/_shared/llm", () => {
   it("reads LLM_API_KEY and DEEPSEEK_API_KEY aliases", () => {
@@ -20,6 +26,21 @@ describe("functions/_shared/llm", () => {
 
   it("defaults deepseek-chat model", () => {
     assert.equal(llmModel({ LLM_BACKEND: "deepseek" }), "deepseek-chat");
+  });
+
+  it("defaults vision model and shapes multimodal parts", () => {
+    assert.equal(llmVisionModel({}), "deepseek-v4-flash-vision-exp");
+    assert.equal(
+      llmVisionModel({ LLM_VISION_MODEL: "custom-vl" }),
+      "custom-vl",
+    );
+    const url = "data:image/png;base64,aaaa";
+    assert.equal(isDataImageUrl(url), true);
+    assert.equal(sanitizeImageDataUrl("http://x"), null);
+    const parts = visionUserContent("hi", url);
+    assert.equal(parts[0].type, "text");
+    assert.equal(parts[1].type, "image_url");
+    assert.equal(parts[1].image_url.url, url);
   });
 
   it("goldCost is proportional with floor 1 when tokens > 0", () => {

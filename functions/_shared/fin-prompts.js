@@ -14,22 +14,29 @@ export const MODES = new Set([
   "transformer",
   "report",
   "allocate",
+  "edge_infer",
+  "agent",
 ]);
 
 export const JSON_SCHEMA_HINT = `
 Return ONE JSON object only (no markdown fences) with fields:
 {
   "role": "supro_quant_researcher",
-  "task": "factor_screen|portfolio|signal|transformer|report|allocate|review",
+  "task": "factor_screen|portfolio|signal|transformer|report|allocate|review|edge_infer|agent",
   "universe_note": "string",
   "factors": [{"id":"string","tilt":"string","keep":true,"reject_reason":null,"rationale":"string"}],
   "eliminations": [{"factor_id":"string","reason":"string"}],
   "portfolio": [{"symbol":"string","weight":0.0,"reason":"string"}],
   "signals": [{"symbol":"string","side":"buy|sell|hold","horizon":"next_open","confidence":0.0,"rationale":"string"}],
   "reasoning_chain": ["step1","step2"],
+  "reasoning_steps": [{"step":1,"thought":"string","action":"string","observation":"string"}],
   "attention_view": {"heads_note":"string","features":["close","volume"],"limitations":["string"]},
+  "attention_heatmap_data": {"patch_count":0,"weights":[],"features":["string"]},
+  "prediction_confidence": 0.0,
+  "prediction_band": {"lo":0,"mid":0,"hi":0},
   "allocation": {"weights":[{"symbol":"string","weight":0.0}],"caps_note":"string","rebalance":"string"},
   "report": {"title":"string","summary":"string","sections":[{"heading":"string","body":"string"}],"rating":"string","quality_score":0.0,"sources":["string"]},
+  "vision_parse": {"ticker_guess":null,"chart_type":"other","summary":"string"},
   "risks": ["string"],
   "deep_links": ["#/quant?panel=factors","#/quant?panel=lab"],
   "disclaimer": "education_only",
@@ -73,6 +80,12 @@ export function systemPrompt(mode, locale) {
     allocate: zh
       ? "任务=AI 动态资产配置：在仓位上限下给出 weights、再平衡说明、次日开盘约束；引用多因子组合逻辑；填 allocation + portfolio + reasoning_chain。"
       : "Task=dynamic allocation: capped weights, rebalance notes, next-open constraint; cite multi-factor logic; fill allocation + portfolio + reasoning_chain.",
+    edge_infer: zh
+      ? "任务=边缘 Transformer 推理 + 多模态（5x 金币档）：①引用 Context 的 EdgeInfer / TransformerInfer 行（prediction_band、attention_heatmap、prediction_confidence）；②若有 VisionParse，整合截图结构化事实；③必须填 attention_heatmap_data、prediction_confidence、prediction_band、attention_view、signals、reasoning_chain≥5；④标明 distill_patch（非 Workers ONNX）；教育演示非投顾。"
+      : "Task=edge Transformer inference + multimodal (5x gold): (1) cite EdgeInfer / TransformerInfer rows (prediction_band, attention_heatmap, prediction_confidence); (2) if VisionParse present, merge screenshot facts; (3) MUST fill attention_heatmap_data, prediction_confidence, prediction_band, attention_view, signals, reasoning_chain≥5; (4) disclose distill_patch (no Worker ONNX). Educational — not advice.",
+    agent: zh
+      ? "任务=Fin-Research Agent 综合（6x）：结合工具观察写投研报告；填 report + reasoning_steps + reasoning_chain；教育演示。"
+      : "Task=Fin-Research Agent synthesis (6x): use tool observations; fill report + reasoning_steps + reasoning_chain. Educational.",
   };
 
   return `${base}\n${byMode[mode] || ""}\n${JSON_SCHEMA_HINT}`;
