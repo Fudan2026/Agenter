@@ -27,6 +27,7 @@ import type { LatestPayload } from "./pages/types";
 import type { FactorsPayload } from "./lib/factors/cross-section";
 import type { FactorsIcPayload } from "./lib/factors/ic";
 import type { AlphaLitePayload } from "./lib/factors/alpha-lite";
+import type { TransformerPvProxyPayload } from "./lib/fin/attention-proxy";
 import type { CnCalendarPayload } from "./lib/paper/calendar";
 import {
   requiresAuth,
@@ -44,6 +45,7 @@ let screensData: ScreensPayload | null = null;
 let factorsData: FactorsPayload | null = null;
 let factorsIcData: FactorsIcPayload | null = null;
 let alphaLiteData: AlphaLitePayload | null = null;
+let transformerPvData: TransformerPvProxyPayload | null = null;
 let recipesData: RecipesPayload | null = null;
 let calendarData: CnCalendarPayload | null = null;
 let etfMetaData: EtfMetaPayload | null = null;
@@ -160,6 +162,16 @@ async function loadAlphaLite(): Promise<void> {
     );
   } catch {
     alphaLiteData = null;
+  }
+}
+
+async function loadTransformerPv(): Promise<void> {
+  try {
+    transformerPvData = await fetchJsonWithRetry<TransformerPvProxyPayload>(
+      "transformer-pv-proxy.json",
+    );
+  } catch {
+    transformerPvData = null;
   }
 }
 
@@ -282,6 +294,7 @@ async function render(): Promise<void> {
           screensData,
           factorsIcData,
           alphaLiteData,
+          transformerPvData,
         );
         break;
       case "admin":
@@ -381,6 +394,7 @@ export async function startApp(): Promise<void> {
     loadFactors(),
     loadFactorsIc(),
     loadAlphaLite(),
+    loadTransformerPv(),
     loadRecipes(),
     loadCalendar(),
     loadEtfMeta(),

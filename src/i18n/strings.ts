@@ -752,7 +752,7 @@ export const STRINGS = {
     finModeFactor: "Smart factors",
     finModeStrategy: "Strategy draft",
     finModeReview: "Review Q&A",
-    finModeMultifactor: "Multi-factor screen",
+    finModeMultifactor: "Smart factors (distill)",
     finModeE2e: "End-to-end strategy",
     finModeTransformer: "Transformer PV",
     finModeReport: "Research report",
