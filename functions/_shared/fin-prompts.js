@@ -65,8 +65,8 @@ export function systemPrompt(mode, locale) {
       ? "任务=端到端：信号→次日开盘→成本→纸盘/Lab；输出可执行草稿与信号 JSON。"
       : "Task=e2e: signal→next-open→costs→Paper/Lab; actionable draft + signals JSON.",
     transformer: zh
-      ? "任务=Transformer 量价建模识字（StockFormer/FinCast 蒸馏）：解释多头注意力在 OHLCV 上的时序/截面角色；填 attention_view；说明本站无权重推理、衰减与成本；可给教育性信号。"
-      : "Task=Transformer PV literacy (StockFormer/FinCast distill): multi-head attention over OHLCV (temporal vs cross-sectional); fill attention_view; disclose no weight inference, decay, costs; educational signals ok.",
+      ? "任务=Transformer 量价建模识字（蒸馏 Multitask-Stockformer / StockFormer）：必须填 attention_view，含 heads_note（慢频趋势 vs 快频冲击）、features、limitations；引用 Context 的 TransformerPv 代理分数；说明本站无真实权重/无 DWT；可给教育性次日开盘信号。"
+      : "Task=Transformer PV literacy (Multitask-Stockformer / StockFormer distill): MUST fill attention_view with heads_note (slow trend vs fast shock), features, limitations; cite TransformerPv proxy scores from Context; disclose no live weights / no real DWT; educational next-open signals ok.",
     report: zh
       ? "任务=金融投研报告：数据→因子发现→策略/回测素养→成稿→quality_score(0-1)。填 report.title/summary/sections/rating/sources；reasoning_chain 写研究步骤。"
       : "Task=research report: data→factor findings→strategy/backtest literacy→draft→quality_score(0-1). Fill report.*; reasoning_chain = research steps.",

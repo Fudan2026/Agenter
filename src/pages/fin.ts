@@ -25,6 +25,7 @@ import { bindShellChrome, renderShell } from "./shell";
 import type { LatestPayload } from "./types";
 import type { FactorsIcPayload } from "../lib/factors/ic";
 import type { AlphaLitePayload } from "../lib/factors/alpha-lite";
+import type { TransformerPvProxyPayload } from "../lib/fin/attention-proxy";
 import type { ScreensPayload } from "../lib/screens/map";
 
 function readQueryPrompt(): string {
@@ -59,6 +60,7 @@ export function renderFinDesk(
   screens: ScreensPayload | null = null,
   factorsIc: FactorsIcPayload | null = null,
   alphaLite: AlphaLitePayload | null = null,
+  transformerPv: TransformerPvProxyPayload | null = null,
 ): void {
   if (!isLoggedIn()) {
     location.hash = `#/login`;
@@ -125,6 +127,25 @@ export function renderFinDesk(
             )
             .join("\n"),
       );
+    }
+    if (transformerPv?.rows?.length) {
+      parts.push(
+        `TransformerPv:\n` +
+          transformerPv.rows
+            .slice(0, 8)
+            .map(
+              (r) =>
+                `- ${r.symbol} P=${r.priceFocus.toFixed(2)} V=${r.volumeFocus.toFixed(2)} slow=${r.slowFocus.toFixed(2)} fast=${r.fastFocus.toFixed(2)} T=${r.temporalShare.toFixed(2)} X=${r.crossShare.toFixed(2)}`,
+            )
+            .join("\n"),
+      );
+      const lim =
+        locale === "zh"
+          ? transformerPv.limitations?.zh
+          : transformerPv.limitations?.en;
+      if (lim?.length) {
+        parts.push(`TransformerLimits:\n- ${lim.slice(0, 3).join("\n- ")}`);
+      }
     }
     if (data?.timing?.length) {
       parts.push(

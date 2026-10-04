@@ -1,0 +1,353 @@
+{
+  "generatedAt": "2026-10-04T04:11:02.777Z",
+  "reportDate": "2026-10-03",
+  "source": "StockFormer dual-frequency literacy proxy on bake OHLC (no weights)",
+  "attribution": {
+    "zh": "蒸馏 Multitask-Stockformer / StockFormer：双频（慢趋势/快冲击）与时序·截面注意力识字；本站不加载真实权重。",
+    "en": "Distill of Multitask-Stockformer / StockFormer: dual-frequency + temporal/cross attention literacy; no live weights on-site."
+  },
+  "limitations": {
+    "zh": [
+      "无 FinCast / StockFormer 权重推理",
+      "SMA 代理小波双频，非真实 DWT",
+      "教育演示，非投资建议"
+    ],
+    "en": [
+      "No FinCast / StockFormer weight inference",
+      "SMA stands in for wavelet dual-frequency (not real DWT)",
+      "Educational only — not advice"
+    ]
+  },
+  "rows": [
+    {
+      "symbol": "600276.SS",
+      "priceFocus": 0.8567632073560049,
+      "volumeFocus": 0.4844001837203763,
+      "slowFocus": 1,
+      "fastFocus": 1,
+      "temporalShare": 0.4311208242546242,
+      "crossShare": 0.5688791757453757,
+      "note": "P86%·V48% · slow100%/fast100% · temp43%/xsec57% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "159992.SZ",
+      "priceFocus": 0.8899012471364197,
+      "volumeFocus": 0.4064236490128346,
+      "slowFocus": 0.6336009174311897,
+      "fastFocus": 0.8409785932721703,
+      "temporalShare": 0.4273669191396531,
+      "crossShare": 0.5726330808603469,
+      "note": "P89%·V41% · slow63%/fast84% · temp43%/xsec57% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "512480.SS",
+      "priceFocus": 1,
+      "volumeFocus": 0.26874561805000263,
+      "slowFocus": 1,
+      "fastFocus": 0.7678883071553221,
+      "temporalShare": 0.3500130305206069,
+      "crossShare": 0.6499869694793932,
+      "note": "P100%·V27% · slow100%/fast77% · temp35%/xsec65% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "512010.SS",
+      "priceFocus": 0.6432259196884106,
+      "volumeFocus": 0.49326190154515,
+      "slowFocus": 0.6185567010309312,
+      "fastFocus": 0.790378006872851,
+      "temporalShare": 0.37004914314098647,
+      "crossShare": 0.6299508568590135,
+      "note": "P64%·V49% · slow62%/fast79% · temp37%/xsec63% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "601012.SS",
+      "priceFocus": 0.6666416878477811,
+      "volumeFocus": 0.34378588953767425,
+      "slowFocus": 0.17395182872435588,
+      "fastFocus": 0.8563782337198937,
+      "temporalShare": 0.41658192485592516,
+      "crossShare": 0.5834180751440748,
+      "note": "P67%·V34% · slow17%/fast86% · temp42%/xsec58% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "000001.SS",
+      "priceFocus": 1,
+      "volumeFocus": 0.3289055510328013,
+      "slowFocus": 1,
+      "fastFocus": 0.46560163131710497,
+      "temporalShare": 0.47451115611269457,
+      "crossShare": 0.5254888438873054,
+      "note": "P100%·V33% · slow100%/fast47% · temp47%/xsec53% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "512690.SS",
+      "priceFocus": 0.516851894405017,
+      "volumeFocus": 0.4728044420881211,
+      "slowFocus": 0.36570743405275746,
+      "fastFocus": 0.7354116706634681,
+      "temporalShare": 0.392016982911788,
+      "crossShare": 0.607983017088212,
+      "note": "P52%·V47% · slow37%/fast74% · temp39%/xsec61% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "588000.SS",
+      "priceFocus": 0.8790143781410933,
+      "volumeFocus": 0.25604881428062604,
+      "slowFocus": 1,
+      "fastFocus": 0.5610561056105596,
+      "temporalShare": 0.35645168230977525,
+      "crossShare": 0.6435483176902248,
+      "note": "P88%·V26% · slow100%/fast56% · temp36%/xsec64% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "000333.SZ",
+      "priceFocus": 0.5176844883987148,
+      "volumeFocus": 0.3699902063721765,
+      "slowFocus": 0.8039950062421997,
+      "fastFocus": 0.5759467332501054,
+      "temporalShare": 0.42110519189171775,
+      "crossShare": 0.5788948081082823,
+      "note": "P52%·V37% · slow80%/fast58% · temp42%/xsec58% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "002415.SZ",
+      "priceFocus": 0.5310673003479209,
+      "volumeFocus": 0.5241560757970647,
+      "slowFocus": 0.12553912507701534,
+      "fastFocus": 0.26699527623742275,
+      "temporalShare": 0.41500986778793586,
+      "crossShare": 0.5849901322120641,
+      "note": "P53%·V52% · slow13%/fast27% · temp42%/xsec58% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "300750.SZ",
+      "priceFocus": 0.7278641743562313,
+      "volumeFocus": 0.4215180176150405,
+      "slowFocus": 0.5733227989419797,
+      "fastFocus": 0.15709983625892252,
+      "temporalShare": 0.41939344320285965,
+      "crossShare": 0.5806065567971403,
+      "note": "P73%·V42% · slow57%/fast16% · temp42%/xsec58% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "601318.SS",
+      "priceFocus": 0.5401775741855829,
+      "volumeFocus": 0.33303351594956004,
+      "slowFocus": 0.05066616626008157,
+      "fastFocus": 0.4203415274910882,
+      "temporalShare": 0.4002821189356117,
+      "crossShare": 0.5997178810643883,
+      "note": "P54%·V33% · slow5%/fast42% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "600519.SS",
+      "priceFocus": 0.47002056397129033,
+      "volumeFocus": 0.4151273008040912,
+      "slowFocus": 0.14184185854348114,
+      "fastFocus": 0.40022670332056537,
+      "temporalShare": 0.40361300801837163,
+      "crossShare": 0.5963869919816284,
+      "note": "P47%·V42% · slow14%/fast40% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "000858.SZ",
+      "priceFocus": 0.3709979556341517,
+      "volumeFocus": 0.40404895969335,
+      "slowFocus": 0.13024550385383774,
+      "fastFocus": 0.46436387858026407,
+      "temporalShare": 0.40498476170351766,
+      "crossShare": 0.5950152382964824,
+      "note": "P37%·V40% · slow13%/fast46% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "601166.SS",
+      "priceFocus": 0.41041292092692894,
+      "volumeFocus": 0.42616516189891945,
+      "slowFocus": 0.3033240997229933,
+      "fastFocus": 0.3988919667590021,
+      "temporalShare": 0.4128743200000295,
+      "crossShare": 0.5871256799999705,
+      "note": "P41%·V43% · slow30%/fast40% · temp41%/xsec59% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "000001.SZ",
+      "priceFocus": 0.35982237675039297,
+      "volumeFocus": 0.237240054686908,
+      "slowFocus": 0.3522039757994819,
+      "fastFocus": 0.5646787669259602,
+      "temporalShare": 0.3973380678136909,
+      "crossShare": 0.6026619321863091,
+      "note": "P36%·V24% · slow35%/fast56% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "515790.SS",
+      "priceFocus": 0.6061855204328703,
+      "volumeFocus": 0.3764198006954389,
+      "slowFocus": 0.6701030927835029,
+      "fastFocus": 0.15463917525773208,
+      "temporalShare": 0.3665581479072008,
+      "crossShare": 0.6334418520927991,
+      "note": "P61%·V38% · slow67%/fast15% · temp37%/xsec63% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "600036.SS",
+      "priceFocus": 0.38374331743447343,
+      "volumeFocus": 0.3083713788297171,
+      "slowFocus": 0.2987154629180817,
+      "fastFocus": 0.4427209565357862,
+      "temporalShare": 0.40458983075675237,
+      "crossShare": 0.5954101692432476,
+      "note": "P38%·V31% · slow30%/fast44% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "601888.SS",
+      "priceFocus": 0.4556952531904493,
+      "volumeFocus": 0.36512267301746154,
+      "slowFocus": 0.06123639191290711,
+      "fastFocus": 0.3006739243131129,
+      "temporalShare": 0.36948734369231206,
+      "crossShare": 0.6305126563076879,
+      "note": "P46%·V37% · slow6%/fast30% · temp37%/xsec63% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "002594.SZ",
+      "priceFocus": 0.5356771217066804,
+      "volumeFocus": 0.3588251101134491,
+      "slowFocus": 0.3240907454087182,
+      "fastFocus": 0.2000560156843939,
+      "temporalShare": 0.46167709961056924,
+      "crossShare": 0.5383229003894308,
+      "note": "P54%·V36% · slow32%/fast20% · temp46%/xsec54% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "159915.SZ",
+      "priceFocus": 0.7211513838304113,
+      "volumeFocus": 0.26109484314914955,
+      "slowFocus": 1,
+      "fastFocus": 0.054956668780384285,
+      "temporalShare": 0.36804003363498483,
+      "crossShare": 0.6319599663650152,
+      "note": "P72%·V26% · slow100%/fast5% · temp37%/xsec63% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "399006.SZ",
+      "priceFocus": 0.7418299111117765,
+      "volumeFocus": 0.14534436134121584,
+      "slowFocus": 1,
+      "fastFocus": 0.05026664285167002,
+      "temporalShare": 0.3613505296347156,
+      "crossShare": 0.6386494703652844,
+      "note": "P74%·V15% · slow100%/fast5% · temp36%/xsec64% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "510500.SS",
+      "priceFocus": 0.5512187933345362,
+      "volumeFocus": 0.29348300055687765,
+      "slowFocus": 0.6955968950749419,
+      "fastFocus": 0.049964311206280476,
+      "temporalShare": 0.3610807728884246,
+      "crossShare": 0.6389192271115753,
+      "note": "P55%·V29% · slow70%/fast5% · temp36%/xsec64% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "512880.SS",
+      "priceFocus": 0.43035001618428725,
+      "volumeFocus": 0.30683705599619676,
+      "slowFocus": 0.46161321671526073,
+      "fastFocus": 0.10366051182377435,
+      "temporalShare": 0.3680722991463051,
+      "crossShare": 0.6319277008536949,
+      "note": "P43%·V31% · slow46%/fast10% · temp37%/xsec63% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "159919.SZ",
+      "priceFocus": 0.3507808559902874,
+      "volumeFocus": 0.2888575993958331,
+      "slowFocus": 0.5117685165191115,
+      "fastFocus": 0.10940761534586091,
+      "temporalShare": 0.40082291774188794,
+      "crossShare": 0.5991770822581121,
+      "note": "P35%·V29% · slow51%/fast11% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "000651.SZ",
+      "priceFocus": 0.35916361128571017,
+      "volumeFocus": 0.3667213032869633,
+      "slowFocus": 0.022204806687564603,
+      "fastFocus": 0.02089864158830003,
+      "temporalShare": 0.3778775466097485,
+      "crossShare": 0.6221224533902515,
+      "note": "P36%·V37% · slow2%/fast2% · temp38%/xsec62% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "510300.SS",
+      "priceFocus": 0.336884016873017,
+      "volumeFocus": 0.30376129022481946,
+      "slowFocus": 0.5274142599278011,
+      "fastFocus": 0.09326113116727011,
+      "temporalShare": 0.41437818907435436,
+      "crossShare": 0.5856218109256457,
+      "note": "P34%·V30% · slow53%/fast9% · temp41%/xsec59% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "510050.SS",
+      "priceFocus": 0.2775259266998169,
+      "volumeFocus": 0.29525202677051526,
+      "slowFocus": 0.2476174268209639,
+      "fastFocus": 0.1452235080553686,
+      "temporalShare": 0.4043377041081523,
+      "crossShare": 0.5956622958918477,
+      "note": "P28%·V30% · slow25%/fast15% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "399001.SZ",
+      "priceFocus": 0.5642493030015181,
+      "volumeFocus": 0.1071174436356275,
+      "slowFocus": 0.9087092884489171,
+      "fastFocus": 0.015042860254005535,
+      "temporalShare": 0.36566252370821517,
+      "crossShare": 0.6343374762917848,
+      "note": "P56%·V11% · slow91%/fast2% · temp37%/xsec63% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "600030.SS",
+      "priceFocus": 0.40790667656183244,
+      "volumeFocus": 0.25690610068647024,
+      "slowFocus": 0.471771075019331,
+      "fastFocus": 0.020623872131996006,
+      "temporalShare": 0.38538183731731773,
+      "crossShare": 0.6146181626826823,
+      "note": "P41%·V26% · slow47%/fast2% · temp39%/xsec61% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "600900.SS",
+      "priceFocus": 0.2923063129353767,
+      "volumeFocus": 0.3092520400111756,
+      "slowFocus": 0.19096005606166472,
+      "fastFocus": 0.0700770847932736,
+      "temporalShare": 0.36348101768949276,
+      "crossShare": 0.6365189823105073,
+      "note": "P29%·V31% · slow19%/fast7% · temp36%/xsec64% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "000300.SS",
+      "priceFocus": 0.3568068928791341,
+      "volumeFocus": 0.15913305694201524,
+      "slowFocus": 0.5483440501925346,
+      "fastFocus": 0.08955959139774652,
+      "temporalShare": 0.39929369544472243,
+      "crossShare": 0.6007063045552776,
+      "note": "P36%·V16% · slow55%/fast9% · temp40%/xsec60% (StockFormer literacy proxy, not real MHA)"
+    },
+    {
+      "symbol": "000016.SS",
+      "priceFocus": 0.2799369658007034,
+      "volumeFocus": 0.1758546673240846,
+      "slowFocus": 0.2567935167606431,
+      "fastFocus": 0.1393178619666981,
+      "temporalShare": 0.41699154060011884,
+      "crossShare": 0.5830084593998812,
+      "note": "P28%·V18% · slow26%/fast14% · temp42%/xsec58% (StockFormer literacy proxy, not real MHA)"
+    }
+  ]
+}
