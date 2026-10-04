@@ -60,20 +60,21 @@ export function estimateTokens(text) {
 }
 
 export function maxTokensForMode(mode) {
-  if (mode === "report") return 3200;
-  if (mode === "multifactor" || mode === "e2e" || mode === "allocate") return 2048;
-  return 1400;
+  if (mode === "report") return 4096;
+  if (mode === "multifactor" || mode === "e2e" || mode === "allocate") return 3072;
+  if (mode === "transformer") return 2560;
+  return 2048;
 }
 
-function deepseekBase(env) {
+function deepseekBases(env) {
   const raw = firstNonEmpty(env?.LLM_BASE_URL) || "https://api.deepseek.com";
   let u = raw.replace(/\/$/, "");
-  // Official DeepSeek accepts both /chat/completions and /v1/chat/completions.
-  // Normalize bare host → /v1 so OpenAI-compatible clients behave.
-  if (!/\/v\d+$/i.test(u) && !/\/chat\/completions$/i.test(u)) {
-    u = `${u}/v1`;
-  }
-  return u;
+  // Prefer /v1; also try bare host (DeepSeek accepts both).
+  const withV1 = /\/v\d+$/i.test(u) ? u : `${u}/v1`;
+  const bare = withV1.replace(/\/v\d+$/i, "");
+  const urls = [`${withV1}/chat/completions`];
+  if (bare && bare !== withV1) urls.push(`${bare}/chat/completions`);
+  return [...new Set(urls)];
 }
 
 function openaiBase(env) {
@@ -81,14 +82,58 @@ function openaiBase(env) {
   return raw.replace(/\/$/, "");
 }
 
-export async function callLlm(env, messages, mode) {
+/** DeepSeek chat + reasoner both may put text in content or reasoning_content. */
+export function extractChatText(data) {
+  const msg = data?.choices?.[0]?.message || {};
+  const content = String(msg.content || "").trim();
+  if (content) return content;
+  const reasoning = String(msg.reasoning_content || "").trim();
+  if (reasoning) return reasoning;
+  // Some gateways nest text
+  if (Array.isArray(msg.content)) {
+    return msg.content
+      .map((c) => (typeof c === "string" ? c : c?.text || ""))
+      .join("\n")
+      .trim();
+  }
+  return "";
+}
+
+function sumUsage(a, b) {
+  if (!a && !b) return null;
+  return {
+    input: (Number(a?.input) || 0) + (Number(b?.input) || 0) || null,
+    output: (Number(a?.output) || 0) + (Number(b?.output) || 0) || null,
+  };
+}
+
+async function openAiCompatibleCall(url, key, body) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${key}`,
+    },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json().catch(() => ({}));
+  return { res, data };
+}
+
+export async function callLlm(env, messages, mode, opts = {}) {
   const backend = llmBackend(env);
   const key = llmApiKey(env);
   if (!key) {
-    return { ok: false, code: "llm_not_configured", text: null, error: "llm_not_configured" };
+    return {
+      ok: false,
+      code: "llm_not_configured",
+      text: null,
+      error: "llm_not_configured",
+    };
   }
 
-  const max_tokens = maxTokensForMode(mode);
+  const max_tokens = opts.max_tokens || maxTokensForMode(mode);
+  const wantJson = opts.json !== false;
 
   try {
     if (backend === "anthropic") {
@@ -123,6 +168,14 @@ export async function callLlm(env, messages, mode) {
         .filter((c) => c.type === "text")
         .map((c) => c.text)
         .join("\n");
+      if (!String(text || "").trim()) {
+        return {
+          ok: false,
+          code: "llm_empty",
+          text: null,
+          error: "empty_model_content",
+        };
+      }
       return {
         ok: true,
         text,
@@ -130,78 +183,88 @@ export async function callLlm(env, messages, mode) {
           input: data.usage?.input_tokens ?? null,
           output: data.usage?.output_tokens ?? null,
         },
+        finish_reason: data.stop_reason || null,
       };
     }
 
-    const base = backend === "deepseek" ? deepseekBase(env) : openaiBase(env);
     const model = llmModel(env);
-    const url = `${base}/chat/completions`;
-    const res = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${key}`,
-      },
-      body: JSON.stringify({
+    const urls =
+      backend === "deepseek"
+        ? deepseekBases(env)
+        : [`${openaiBase(env)}/chat/completions`];
+
+    let lastErr = "llm_error";
+    let lastStatus = 502;
+
+    for (const url of urls) {
+      const baseBody = {
         model,
         messages,
-        temperature: 0.35,
+        temperature: opts.temperature ?? 0.35,
         max_tokens,
-        response_format: { type: "json_object" },
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      const errMsg = String(data?.error?.message || data?.message || "");
-      // Retry without response_format if provider rejects it
-      if (errMsg.toLowerCase().includes("response_format")) {
-        const res2 = await fetch(url, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${key}`,
-          },
-          body: JSON.stringify({
-            model,
-            messages,
-            temperature: 0.35,
-            max_tokens,
-          }),
-        });
-        const data2 = await res2.json().catch(() => ({}));
-        if (!res2.ok) {
-          return {
-            ok: false,
-            code: "llm_error",
-            text: null,
-            error: data2?.error?.message || `llm_http_${res2.status}`,
-            status: res2.status,
-          };
-        }
+      };
+      if (wantJson) {
+        baseBody.response_format = { type: "json_object" };
+      }
+
+      let { res, data } = await openAiCompatibleCall(url, key, baseBody);
+
+      if (
+        !res.ok &&
+        wantJson &&
+        String(data?.error?.message || "")
+          .toLowerCase()
+          .includes("response_format")
+      ) {
+        ({ res, data } = await openAiCompatibleCall(url, key, {
+          model,
+          messages,
+          temperature: opts.temperature ?? 0.35,
+          max_tokens,
+        }));
+      }
+
+      if (!res.ok) {
+        lastErr = data?.error?.message || data?.message || `llm_http_${res.status}`;
+        lastStatus = res.status;
+        // Try next URL (e.g. /v1 vs bare)
+        continue;
+      }
+
+      const text = extractChatText(data);
+      const finish = data?.choices?.[0]?.finish_reason || null;
+      if (!text) {
         return {
-          ok: true,
-          text: data2.choices?.[0]?.message?.content || "",
+          ok: false,
+          code: "llm_empty",
+          text: null,
+          error: "empty_model_content",
+          finish_reason: finish,
           usage: {
-            input: data2.usage?.prompt_tokens ?? null,
-            output: data2.usage?.completion_tokens ?? null,
+            input: data.usage?.prompt_tokens ?? null,
+            output: data.usage?.completion_tokens ?? null,
           },
+          url,
         };
       }
       return {
-        ok: false,
-        code: "llm_error",
-        text: null,
-        error: errMsg || `llm_http_${res.status}`,
-        status: res.status,
+        ok: true,
+        text,
+        usage: {
+          input: data.usage?.prompt_tokens ?? null,
+          output: data.usage?.completion_tokens ?? null,
+        },
+        finish_reason: finish,
+        url,
       };
     }
+
     return {
-      ok: true,
-      text: data.choices?.[0]?.message?.content || "",
-      usage: {
-        input: data.usage?.prompt_tokens ?? null,
-        output: data.usage?.completion_tokens ?? null,
-      },
+      ok: false,
+      code: "llm_error",
+      text: null,
+      error: lastErr,
+      status: lastStatus,
     };
   } catch (e) {
     return {
@@ -212,3 +275,27 @@ export async function callLlm(env, messages, mode) {
     };
   }
 }
+
+/** Second-pass: force JSON from a prior prose / truncated answer. */
+export async function repairJsonLlm(env, mode, priorText, locale) {
+  const zh = locale === "zh";
+  const messages = [
+    {
+      role: "system",
+      content: zh
+        ? "你是 JSON 修复器。只输出一个合法 JSON 对象，不要 markdown。字段需符合苏坡大模型 schema（role/task/reasoning_chain/narrative 等）。"
+        : "You are a JSON repairer. Output ONE valid JSON object only, no markdown. Match Supro Model schema (role/task/reasoning_chain/narrative, etc.).",
+    },
+    {
+      role: "user",
+      content: `Convert the following model answer into the required JSON schema. Keep meaning.\n\n---\n${String(priorText || "").slice(0, 12000)}`,
+    },
+  ];
+  return callLlm(env, messages, mode, {
+    json: true,
+    temperature: 0.1,
+    max_tokens: 3072,
+  });
+}
+
+export { sumUsage };

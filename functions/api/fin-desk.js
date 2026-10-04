@@ -19,6 +19,7 @@ import { rateLimit } from "../_shared/rateLimit.js";
 import {
   MODES,
   extractJsonObject,
+  liveStructuredFromText,
   offlineStructured,
   systemPrompt,
 } from "../_shared/fin-prompts.js";
@@ -29,6 +30,8 @@ import {
   llmBackend,
   llmConfigured,
   llmModel,
+  repairJsonLlm,
+  sumUsage,
 } from "../_shared/llm.js";
 
 const MIN_FLOOR = 20;
@@ -121,61 +124,35 @@ export async function onRequestPost({ request, env }) {
     );
   }
 
+  // Client already sends bake context — only top up lightly to avoid truncation.
+  const ctxBudget = String(context || "");
+  let userContent = ctxBudget
+    ? `Context:\n${ctxBudget.slice(0, 6000)}\n\nUser:\n${prompt}`
+    : prompt;
+
+  if (ctxBudget.length < 1200) {
+    try {
+      const origin = new URL(request.url).origin;
+      const corpRes = await fetch(`${origin}/data/fin-corpus.json`, {
+        signal: AbortSignal.timeout(2500),
+      });
+      if (corpRes.ok) {
+        const corp = await corpRes.json();
+        const extra = (corp.chunks || [])
+          .slice(0, 4)
+          .map((c) => `- ${c.title}: ${String(c.text || "").slice(0, 220)}`)
+          .join("\n");
+        if (extra) userContent = `Corpus:\n${extra}\n\n${userContent}`;
+      }
+    } catch {
+      /* optional RAG */
+    }
+  }
+
   const messages = [
     { role: "system", content: systemPrompt(mode, locale) },
-    {
-      role: "user",
-      content: context
-        ? `Context:\n${context}\n\nUser:\n${prompt}`
-        : prompt,
-    },
+    { role: "user", content: userContent },
   ];
-
-  try {
-    const origin = new URL(request.url).origin;
-    const files = ["fin-corpus.json", "factors-ic.json", "screens.json"];
-    for (const f of files) {
-      try {
-        const corpRes = await fetch(`${origin}/data/${f}`, {
-          signal: AbortSignal.timeout(3500),
-        });
-        if (!corpRes.ok) continue;
-        const corp = await corpRes.json();
-        if (f === "fin-corpus.json") {
-          const extra = (corp.chunks || [])
-            .slice(0, 10)
-            .map((c) => `- ${c.title}: ${c.text}`)
-            .join("\n");
-          if (extra) {
-            messages[1].content = `Corpus:\n${extra}\n\n${messages[1].content}`;
-          }
-        } else if (f === "factors-ic.json" && Array.isArray(corp.rows)) {
-          const extra = corp.rows
-            .slice(0, 12)
-            .map(
-              (r) =>
-                `- ${r.factor}: IC=${r.icMean ?? "—"} IR=${r.ir ?? "—"}`,
-            )
-            .join("\n");
-          if (extra) {
-            messages[1].content = `FactorIC:\n${extra}\n\n${messages[1].content}`;
-          }
-        } else if (f === "screens.json" && Array.isArray(corp.screens)) {
-          const extra = corp.screens
-            .slice(0, 8)
-            .map((s) => `- ${s.id}: ${s.nameEn || s.nameZh} n=${s.codeCount}`)
-            .join("\n");
-          if (extra) {
-            messages[1].content = `Screens:\n${extra}\n\n${messages[1].content}`;
-          }
-        }
-      } catch {
-        /* ignore per file */
-      }
-    }
-  } catch {
-    /* ignore */
-  }
 
   if (!llmConfigured(env) && !allowFinOffline(env)) {
     return json(
@@ -193,7 +170,8 @@ export async function onRequestPost({ request, env }) {
     );
   }
 
-  const llm = await callLlm(env, messages, mode);
+  let llm = await callLlm(env, messages, mode);
+  let usageAcc = llm.usage || null;
   let structured = null;
   let answerText = "";
   let llmMeta = {
@@ -220,7 +198,6 @@ export async function onRequestPost({ request, env }) {
         llm.code === "llm_not_configured" ? 503 : 502,
       );
     }
-    // Explicit offline opt-in only — never invent billed tokens
     structured = offlineStructured(mode, prompt, locale);
     answerText = JSON.stringify(structured);
     llmMeta = { ...llmMeta, offline: true, code: llm.code };
@@ -228,37 +205,32 @@ export async function onRequestPost({ request, env }) {
   } else {
     structured = extractJsonObject(llm.text);
     if (!structured) {
-      structured = {
-        ...offlineStructured(mode, prompt, locale),
-        narrative: llm.text,
-        reasoning_chain: [
-          ...(offlineStructured(mode, prompt, locale).reasoning_chain || []),
-          "Model returned non-JSON; narrative preserved",
-        ],
-      };
-      // Clear offline-looking narrative if we have real model text
-      if (llm.text) {
-        structured.narrative = llm.text;
-        structured.reasoning_chain = [
-          "DeepSeek response parsed as narrative (non-JSON)",
-        ];
+      // Second pass: force JSON — never paint this as offline
+      const repaired = await repairJsonLlm(env, mode, llm.text, locale);
+      usageAcc = sumUsage(usageAcc, repaired.usage) || usageAcc;
+      if (repaired.ok) {
+        structured = extractJsonObject(repaired.text);
+        if (structured) llmMeta.repaired = true;
       }
-      answerText = JSON.stringify(structured);
-    } else {
-      answerText = JSON.stringify(structured);
     }
-    const inn = Number(llm.usage?.input);
-    const out = Number(llm.usage?.output);
+    if (!structured) {
+      // Live prose wrap — MUST NOT say "DeepSeek not called"
+      structured = liveStructuredFromText(mode, prompt, locale, llm.text);
+      llmMeta.non_json = true;
+      llmMeta.finish_reason = llm.finish_reason || null;
+    }
+    answerText = JSON.stringify(structured);
+    const inn = Number(usageAcc?.input);
+    const out = Number(usageAcc?.output);
     if (Number.isFinite(inn) || Number.isFinite(out)) {
       tokensUsed = Math.max(
         1,
         (Number.isFinite(inn) ? inn : 0) + (Number.isFinite(out) ? out : 0),
       );
     } else {
-      // Real call succeeded but provider omitted usage — bill a minimal floor
       tokensUsed = 1;
     }
-    llmMeta = { ...llmMeta, usage: llm.usage };
+    llmMeta = { ...llmMeta, usage: usageAcc, live: true };
   }
 
   const cost = goldCost(tokensUsed);

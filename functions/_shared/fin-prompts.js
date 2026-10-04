@@ -120,9 +120,69 @@ export function offlineStructured(mode, prompt, locale) {
   };
 }
 
+/**
+ * Live DeepSeek fallback when the model returns prose / truncated JSON.
+ * MUST NOT reuse offlineStructured — that falsely claims DeepSeek was not called.
+ */
+export function liveStructuredFromText(mode, prompt, locale, text) {
+  const zh = locale === "zh";
+  const body = String(text || "").trim();
+  const narrative =
+    body ||
+    (zh
+      ? "（DeepSeek 已调用，但返回空正文）"
+      : "(DeepSeek called, but empty body)");
+  return {
+    role: "supro_quant_researcher",
+    task: mode,
+    universe_note: zh ? "代理观察池（烘焙）" : "Baked proxy watchlist",
+    factors: [],
+    eliminations: [],
+    portfolio: [],
+    signals: [],
+    reasoning_chain: [
+      zh ? "苏坡大模型已调用 DeepSeek（在线）" : "Supro Model called DeepSeek (live)",
+      zh
+        ? "模型未返回可解析 JSON，已保留原文叙事（非离线）"
+        : "Model returned non-JSON; narrative preserved (not offline)",
+      zh
+        ? `用户问题摘要：${String(prompt || "").slice(0, 80)}`
+        : `Prompt summary: ${String(prompt || "").slice(0, 80)}`,
+    ],
+    attention_view: {
+      heads_note: zh
+        ? "教育性说明：多头注意力分别关注价/量模式（无真实权重）"
+        : "Literacy: heads attend to price/volume patterns (no live weights)",
+      features: ["close", "volume", "return"],
+      limitations: [
+        zh ? "本站不加载 FinCast/StockFormer 权重" : "No FinCast/StockFormer weights on-site",
+      ],
+    },
+    allocation: { weights: [], caps_note: "", rebalance: "" },
+    report: {
+      title: zh ? "苏坡大模型在线回答" : "Supro Model live answer",
+      summary: narrative.slice(0, 600),
+      sections: body
+        ? [{ heading: zh ? "模型原文" : "Model text", body: narrative.slice(0, 8000) }]
+        : [],
+      rating: "n/a",
+      quality_score: 0,
+      sources: ["deepseek", "fin-corpus"],
+    },
+    risks: [zh ? "教育演示，非投资建议" : "Educational only — not advice"],
+    deep_links: ["#/quant?panel=studio", "#/quant?panel=lab"],
+    disclaimer: "education_only",
+    narrative,
+    live: true,
+  };
+}
+
 export function extractJsonObject(text) {
-  const raw = String(text || "").trim();
+  let raw = String(text || "").trim();
   if (!raw) return null;
+  // Strip BOM / leading junk before first brace
+  const brace = raw.indexOf("{");
+  if (brace > 0) raw = raw.slice(brace);
   try {
     return JSON.parse(raw);
   } catch {
@@ -139,10 +199,26 @@ export function extractJsonObject(text) {
   const start = raw.indexOf("{");
   const end = raw.lastIndexOf("}");
   if (start >= 0 && end > start) {
+    const slice = raw.slice(start, end + 1);
     try {
-      return JSON.parse(raw.slice(start, end + 1));
+      return JSON.parse(slice);
     } catch {
-      return null;
+      // Truncated JSON: try closing open braces/brackets (best-effort)
+      try {
+        let repaired = slice;
+        const opens = (repaired.match(/\{/g) || []).length;
+        const closes = (repaired.match(/\}/g) || []).length;
+        const openArr = (repaired.match(/\[/g) || []).length;
+        const closeArr = (repaired.match(/\]/g) || []).length;
+        // Trim trailing incomplete string
+        repaired = repaired.replace(/,\s*"[^"]*$/, "");
+        repaired = repaired.replace(/,\s*$/, "");
+        for (let i = 0; i < openArr - closeArr; i++) repaired += "]";
+        for (let i = 0; i < opens - closes; i++) repaired += "}";
+        return JSON.parse(repaired);
+      } catch {
+        return null;
+      }
     }
   }
   return null;

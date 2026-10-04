@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   allowFinOffline,
+  extractChatText,
   goldCost,
   llmApiKey,
   llmConfigured,
@@ -32,5 +33,20 @@ describe("functions/_shared/llm", () => {
   it("allowFinOffline is opt-in only", () => {
     assert.equal(allowFinOffline({}), false);
     assert.equal(allowFinOffline({ ALLOW_FIN_OFFLINE: "true" }), true);
+  });
+
+  it("extractChatText prefers content then reasoning_content", () => {
+    assert.equal(
+      extractChatText({
+        choices: [{ message: { content: "hi", reasoning_content: "think" } }],
+      }),
+      "hi",
+    );
+    assert.equal(
+      extractChatText({
+        choices: [{ message: { content: "", reasoning_content: "think" } }],
+      }),
+      "think",
+    );
   });
 });
