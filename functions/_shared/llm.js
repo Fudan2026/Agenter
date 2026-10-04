@@ -3,6 +3,12 @@
  * Keys stay in env — never ship to the browser.
  */
 
+import {
+  sanitizeImageDataUrl,
+  visionParseSystemPrompt,
+  visionUserContent,
+} from "./vision.js";
+
 function firstNonEmpty(...vals) {
   for (const v of vals) {
     const s = String(v || "").trim();
@@ -60,10 +66,17 @@ export function estimateTokens(text) {
 }
 
 export function maxTokensForMode(mode) {
-  if (mode === "report") return 4096;
+  if (mode === "agent" || mode === "report") return 4096;
+  if (mode === "edge_infer") return 3072;
   if (mode === "multifactor" || mode === "e2e" || mode === "allocate") return 3072;
   if (mode === "transformer") return 2560;
   return 2048;
+}
+
+export function llmVisionModel(env) {
+  return (
+    firstNonEmpty(env?.LLM_VISION_MODEL) || "deepseek-v4-flash-vision-exp"
+  );
 }
 
 function deepseekBases(env) {
@@ -134,10 +147,11 @@ export async function callLlm(env, messages, mode, opts = {}) {
 
   const max_tokens = opts.max_tokens || maxTokensForMode(mode);
   const wantJson = opts.json !== false;
+  const useVision = Boolean(opts.vision);
 
   try {
     if (backend === "anthropic") {
-      const model = llmModel(env);
+      const model = opts.model || llmModel(env);
       const system = messages.find((m) => m.role === "system")?.content || "";
       const userMsgs = messages.filter((m) => m.role !== "system");
       const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -184,10 +198,11 @@ export async function callLlm(env, messages, mode, opts = {}) {
           output: data.usage?.output_tokens ?? null,
         },
         finish_reason: data.stop_reason || null,
+        model,
       };
     }
 
-    const model = llmModel(env);
+    const model = opts.model || (useVision ? llmVisionModel(env) : llmModel(env));
     const urls =
       backend === "deepseek"
         ? deepseekBases(env)
@@ -203,7 +218,8 @@ export async function callLlm(env, messages, mode, opts = {}) {
         temperature: opts.temperature ?? 0.35,
         max_tokens,
       };
-      if (wantJson) {
+      // Vision / multimodal often rejects response_format
+      if (wantJson && !useVision) {
         baseBody.response_format = { type: "json_object" };
       }
 
@@ -212,6 +228,7 @@ export async function callLlm(env, messages, mode, opts = {}) {
       if (
         !res.ok &&
         wantJson &&
+        !useVision &&
         String(data?.error?.message || "")
           .toLowerCase()
           .includes("response_format")
@@ -245,6 +262,7 @@ export async function callLlm(env, messages, mode, opts = {}) {
             output: data.usage?.completion_tokens ?? null,
           },
           url,
+          model,
         };
       }
       return {
@@ -256,6 +274,7 @@ export async function callLlm(env, messages, mode, opts = {}) {
         },
         finish_reason: finish,
         url,
+        model,
       };
     }
 
@@ -274,6 +293,28 @@ export async function callLlm(env, messages, mode, opts = {}) {
       error: e?.message || "llm_network_error",
     };
   }
+}
+
+/** Vision parse pass — multimodal user content with image_url data URL. */
+export async function callVisionLlm(env, locale, userText, imageDataUrl) {
+  const image = sanitizeImageDataUrl(imageDataUrl);
+  if (!image) {
+    return { ok: false, code: "invalid_image", text: null, error: "invalid_image" };
+  }
+  const messages = [
+    { role: "system", content: visionParseSystemPrompt(locale) },
+    {
+      role: "user",
+      content: visionUserContent(userText || "Parse this financial image.", image),
+    },
+  ];
+  return callLlm(env, messages, "edge_infer", {
+    vision: true,
+    model: llmVisionModel(env),
+    json: false,
+    temperature: 0.2,
+    max_tokens: 1536,
+  });
 }
 
 /** Second-pass: force JSON from a prior prose / truncated answer. */

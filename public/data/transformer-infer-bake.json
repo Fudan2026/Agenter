@@ -1,0 +1,1442 @@
+{
+  "generatedAt": "2026-10-04T05:29:44.311Z",
+  "reportDate": "2026-10-03",
+  "source": "PatchTST-distill edge inference on bake OHLC (no ONNX in Workers; no trained weights)",
+  "attribution": {
+    "zh": "蒸馏 PatchTST / TimeGPT / FinGPT 思路：补丁时序注意力 + 次日收益分位带；浏览器边缘推理，Workers 不嵌入 ONNX。",
+    "en": "Distill of PatchTST / TimeGPT / FinGPT ideas: patch temporal attention + next-day quantile bands; browser-edge; no ONNX in Workers."
+  },
+  "limitations": {
+    "zh": [
+      "默认 distill_patch，非 HuggingFace ONNX 权重",
+      "分位带为启发式高斯，非校准概率",
+      "教育演示，非投资建议"
+    ],
+    "en": [
+      "Default distill_patch — not HuggingFace ONNX weights",
+      "Bands are heuristic Gaussian, not calibrated probs",
+      "Educational only — not advice"
+    ]
+  },
+  "rows": [
+    {
+      "symbol": "000016.SS",
+      "prediction_band": {
+        "lo": 2795.6912216990763,
+        "mid": 2819.45740688359,
+        "hi": 2843.2235920681032
+      },
+      "next_day_return_dist": {
+        "mean": -0.0013539546613904807,
+        "std": 0.006568300694730686,
+        "p10": -0.009771888831757329,
+        "p50": -0.0013539546613904807,
+        "p90": 0.007063979508976367
+      },
+      "volume_prob": {
+        "up": 0.3968253968253968,
+        "flat": 0.14285714285714285,
+        "down": 0.4603174603174603
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1043,
+          0.1096,
+          0.1153,
+          0.1206,
+          0.1277,
+          0.1337,
+          0.1411,
+          0.1476
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7241,
+      "engine": "distill_patch",
+      "last_close": 2823.28,
+      "note": "Distill PatchTST edge infer · conf 72% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "510050.SS",
+      "prediction_band": {
+        "lo": 2.9091281272588727,
+        "mid": 2.9342399522537486,
+        "hi": 2.9593517772486244
+      },
+      "next_day_return_dist": {
+        "mean": -0.0012797984160148573,
+        "std": 0.006669203753050872,
+        "p10": -0.009827049945924855,
+        "p50": -0.0012797984160148573,
+        "p90": 0.007267453113895141
+      },
+      "volume_prob": {
+        "up": 0.4603174603174603,
+        "flat": 0.031746031746031744,
+        "down": 0.5079365079365079
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1041,
+          0.1097,
+          0.1155,
+          0.1208,
+          0.1274,
+          0.1336,
+          0.1411,
+          0.1477
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7229,
+      "engine": "distill_patch",
+      "last_close": 2.938,
+      "note": "Distill PatchTST edge infer · conf 72% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "601166.SS",
+      "prediction_band": {
+        "lo": 17.8855702937767,
+        "mid": 18.0540900178366,
+        "hi": 18.2226097418965
+      },
+      "next_day_return_dist": {
+        "mean": 0.00022659378596105793,
+        "std": 0.007284857054543154,
+        "p10": -0.00910967901514145,
+        "p50": 0.00022659378596105793,
+        "p90": 0.009562866587063564
+      },
+      "volume_prob": {
+        "up": 0.49206349206349204,
+        "flat": 0.031746031746031744,
+        "down": 0.47619047619047616
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1055,
+          0.1092,
+          0.1142,
+          0.1213,
+          0.1279,
+          0.1326,
+          0.1402,
+          0.1492
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7157,
+      "engine": "distill_patch",
+      "last_close": 18.05,
+      "note": "Distill PatchTST edge infer · conf 72% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "600900.SS",
+      "prediction_band": {
+        "lo": 28.26273362661823,
+        "mid": 28.54597879213042,
+        "hi": 28.82922395764261
+      },
+      "next_day_return_dist": {
+        "mean": 0.00020948816154237493,
+        "std": 0.007743834067135749,
+        "p10": -0.0097150095788988,
+        "p50": 0.00020948816154237493,
+        "p90": 0.010133985901983552
+      },
+      "volume_prob": {
+        "up": 0.42857142857142855,
+        "flat": 0.031746031746031744,
+        "down": 0.5396825396825397
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1049,
+          0.1092,
+          0.1155,
+          0.121,
+          0.1275,
+          0.1334,
+          0.14,
+          0.1485
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7103,
+      "engine": "distill_patch",
+      "last_close": 28.54,
+      "note": "Distill PatchTST edge infer · conf 71% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "510300.SS",
+      "prediction_band": {
+        "lo": 4.379642763531185,
+        "mid": 4.423837185157203,
+        "hi": 4.468031606783222
+      },
+      "next_day_return_dist": {
+        "mean": -0.0018417903526166896,
+        "std": 0.007780637897422136,
+        "p10": -0.0118134558819529,
+        "p50": -0.0018417903526166896,
+        "p90": 0.00812987517671952
+      },
+      "volume_prob": {
+        "up": 0.47619047619047616,
+        "flat": 0.06349206349206349,
+        "down": 0.4603174603174603
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1034,
+          0.1099,
+          0.1156,
+          0.1209,
+          0.1271,
+          0.1339,
+          0.1416,
+          0.1476
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7099,
+      "engine": "distill_patch",
+      "last_close": 4.432,
+      "note": "Distill PatchTST edge infer · conf 71% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "159919.SZ",
+      "prediction_band": {
+        "lo": 4.57464220612143,
+        "mid": 4.6226487879762725,
+        "hi": 4.670655369831116
+      },
+      "next_day_return_dist": {
+        "mean": -0.0018033280120335427,
+        "std": 0.008088602715423707,
+        "p10": -0.012169681252120566,
+        "p50": -0.0018033280120335427,
+        "p90": 0.00856302522805348
+      },
+      "volume_prob": {
+        "up": 0.5079365079365079,
+        "flat": 0.031746031746031744,
+        "down": 0.4603174603174603
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1034,
+          0.11,
+          0.1155,
+          0.121,
+          0.127,
+          0.1339,
+          0.1415,
+          0.1476
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7063,
+      "engine": "distill_patch",
+      "last_close": 4.631,
+      "note": "Distill PatchTST edge infer · conf 71% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "000651.SZ",
+      "prediction_band": {
+        "lo": 37.87156255890722,
+        "mid": 38.27318610584841,
+        "hi": 38.6748096527896
+      },
+      "next_day_return_dist": {
+        "mean": -0.0001780014146183022,
+        "std": 0.008186433521520318,
+        "p10": -0.010669734615798742,
+        "p50": -0.0001780014146183022,
+        "p90": 0.010313731786562138
+      },
+      "volume_prob": {
+        "up": 0.4444444444444444,
+        "flat": 0.06349206349206349,
+        "down": 0.49206349206349204
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1036,
+          0.1093,
+          0.1159,
+          0.1212,
+          0.1266,
+          0.1346,
+          0.1406,
+          0.1482
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7052,
+      "engine": "distill_patch",
+      "last_close": 38.28,
+      "note": "Distill PatchTST edge infer · conf 71% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "000300.SS",
+      "prediction_band": {
+        "lo": 4303.559645556908,
+        "mid": 4349.392320775265,
+        "hi": 4395.2249959936225
+      },
+      "next_day_return_dist": {
+        "mean": -0.0018881130582139721,
+        "std": 0.008206790615219024,
+        "p10": -0.012405935910678673,
+        "p50": -0.0018881130582139721,
+        "p90": 0.008629709794250729
+      },
+      "volume_prob": {
+        "up": 0.3968253968253968,
+        "flat": 0.09523809523809523,
+        "down": 0.5079365079365079
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1034,
+          0.1099,
+          0.1154,
+          0.1209,
+          0.1272,
+          0.1341,
+          0.1416,
+          0.1475
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7049,
+      "engine": "distill_patch",
+      "last_close": 4357.62,
+      "note": "Distill PatchTST edge infer · conf 70% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "000001.SZ",
+      "prediction_band": {
+        "lo": 11.440811467323687,
+        "mid": 11.568244169579373,
+        "hi": 11.69567687183506
+      },
+      "next_day_return_dist": {
+        "mean": -0.0001517571668649211,
+        "std": 0.008593993777204094,
+        "p10": -0.01116581959172969,
+        "p50": -0.0001517571668649211,
+        "p90": 0.010862305257999846
+      },
+      "volume_prob": {
+        "up": 0.47619047619047616,
+        "flat": 0.031746031746031744,
+        "down": 0.49206349206349204
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1044,
+          0.1095,
+          0.1149,
+          0.1219,
+          0.1277,
+          0.1323,
+          0.1403,
+          0.149
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.7004,
+      "engine": "distill_patch",
+      "last_close": 11.57,
+      "note": "Distill PatchTST edge infer · conf 70% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "000858.SZ",
+      "prediction_band": {
+        "lo": 69.19448180999306,
+        "mid": 70.00439092201482,
+        "hi": 70.81430003403655
+      },
+      "next_day_return_dist": {
+        "mean": -0.0007937350554551408,
+        "std": 0.0090201477922364,
+        "p10": -0.012353956465985312,
+        "p50": -0.0007937350554551408,
+        "p90": 0.01076648635507503
+      },
+      "volume_prob": {
+        "up": 0.4603174603174603,
+        "flat": 0,
+        "down": 0.5396825396825397
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1047,
+          0.1095,
+          0.1141,
+          0.1207,
+          0.1276,
+          0.1329,
+          0.1418,
+          0.1488
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6954,
+      "engine": "distill_patch",
+      "last_close": 70.06,
+      "note": "Distill PatchTST edge infer · conf 70% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "600036.SS",
+      "prediction_band": {
+        "lo": 40.780545592780584,
+        "mid": 41.278230130917976,
+        "hi": 41.775914669055375
+      },
+      "next_day_return_dist": {
+        "mean": 0.00044183545608296275,
+        "std": 0.009411794283317482,
+        "p10": -0.011620320097416722,
+        "p50": 0.00044183545608296275,
+        "p90": 0.012503991009582648
+      },
+      "volume_prob": {
+        "up": 0.42857142857142855,
+        "flat": 0.06349206349206349,
+        "down": 0.5079365079365079
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1056,
+          0.1085,
+          0.1144,
+          0.1212,
+          0.1287,
+          0.1332,
+          0.1399,
+          0.1486
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6908,
+      "engine": "distill_patch",
+      "last_close": 41.26,
+      "note": "Distill PatchTST edge infer · conf 69% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "600519.SS",
+      "prediction_band": {
+        "lo": 1242.1527675439118,
+        "mid": 1257.3792701058765,
+        "hi": 1272.6057726678414
+      },
+      "next_day_return_dist": {
+        "mean": -0.0009857859354875781,
+        "std": 0.009439587849359788,
+        "p10": -0.013083561723227083,
+        "p50": -0.0009857859354875781,
+        "p90": 0.011111989852251928
+      },
+      "volume_prob": {
+        "up": 0.4603174603174603,
+        "flat": 0.06349206349206349,
+        "down": 0.47619047619047616
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1046,
+          0.1099,
+          0.1148,
+          0.1203,
+          0.1282,
+          0.1329,
+          0.1401,
+          0.1493
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6905,
+      "engine": "distill_patch",
+      "last_close": 1258.62,
+      "note": "Distill PatchTST edge infer · conf 69% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "600030.SS",
+      "prediction_band": {
+        "lo": 25.421016673634448,
+        "mid": 25.791628494541865,
+        "hi": 26.16224031544928
+      },
+      "next_day_return_dist": {
+        "mean": -0.0026439097238257457,
+        "std": 0.011182483036340665,
+        "p10": -0.016975379983199944,
+        "p50": -0.0026439097238257457,
+        "p90": 0.01168756053554845
+      },
+      "volume_prob": {
+        "up": 0.4126984126984127,
+        "flat": 0.047619047619047616,
+        "down": 0.5396825396825397
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1048,
+          0.1093,
+          0.1151,
+          0.1211,
+          0.1273,
+          0.1336,
+          0.1412,
+          0.1477
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.67,
+      "engine": "distill_patch",
+      "last_close": 25.86,
+      "note": "Distill PatchTST edge infer · conf 67% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "512880.SS",
+      "prediction_band": {
+        "lo": 1.0111567845044342,
+        "mid": 1.026358611005456,
+        "hi": 1.0415604375064775
+      },
+      "next_day_return_dist": {
+        "mean": -0.0025669475165637,
+        "std": 0.011527308021361255,
+        "p10": -0.017340345476740286,
+        "p50": -0.0025669475165637,
+        "p90": 0.012206450443612885
+      },
+      "volume_prob": {
+        "up": 0.4126984126984127,
+        "flat": 0.06349206349206349,
+        "down": 0.5238095238095238
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.104,
+          0.1093,
+          0.1151,
+          0.121,
+          0.1279,
+          0.1336,
+          0.1415,
+          0.1476
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.666,
+      "engine": "distill_patch",
+      "last_close": 1.029,
+      "note": "Distill PatchTST edge infer · conf 67% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "002415.SZ",
+      "prediction_band": {
+        "lo": 31.867632030396088,
+        "mid": 32.354315887741926,
+        "hi": 32.840999745087764
+      },
+      "next_day_return_dist": {
+        "mean": -0.0032558260091828744,
+        "std": 0.01169892420523135,
+        "p10": -0.018249167270607373,
+        "p50": -0.0032558260091828744,
+        "p90": 0.011737515252241626
+      },
+      "volume_prob": {
+        "up": 0.42857142857142855,
+        "flat": 0.047619047619047616,
+        "down": 0.5238095238095238
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1044,
+          0.1124,
+          0.1127,
+          0.1204,
+          0.1276,
+          0.1328,
+          0.1412,
+          0.1486
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.664,
+      "engine": "distill_patch",
+      "last_close": 32.46,
+      "note": "Distill PatchTST edge infer · conf 66% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "510500.SS",
+      "prediction_band": {
+        "lo": 7.346049809486327,
+        "mid": 7.458872083153039,
+        "hi": 7.571694356819751
+      },
+      "next_day_return_dist": {
+        "mean": -0.0017569481861565543,
+        "std": 0.011781632876211858,
+        "p10": -0.016856288880309673,
+        "p50": -0.0017569481861565543,
+        "p90": 0.013342392507996563
+      },
+      "volume_prob": {
+        "up": 0.4603174603174603,
+        "flat": 0.07936507936507936,
+        "down": 0.4603174603174603
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1031,
+          0.1105,
+          0.1156,
+          0.1209,
+          0.1273,
+          0.1339,
+          0.1419,
+          0.1468
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.663,
+      "engine": "distill_patch",
+      "last_close": 7.472,
+      "note": "Distill PatchTST edge infer · conf 66% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "601888.SS",
+      "prediction_band": {
+        "lo": 50.59453550993609,
+        "mid": 51.3768083750575,
+        "hi": 52.1590812401789
+      },
+      "next_day_return_dist": {
+        "mean": -0.0012284530509817262,
+        "std": 0.011866012660614718,
+        "p10": -0.01643593487682555,
+        "p50": -0.0012284530509817262,
+        "p90": 0.013979028774862097
+      },
+      "volume_prob": {
+        "up": 0.3492063492063492,
+        "flat": 0.07936507936507936,
+        "down": 0.5714285714285714
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.106,
+          0.1102,
+          0.114,
+          0.1206,
+          0.1269,
+          0.1317,
+          0.1427,
+          0.1479
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.662,
+      "engine": "distill_patch",
+      "last_close": 51.44,
+      "note": "Distill PatchTST edge infer · conf 66% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "399001.SZ",
+      "prediction_band": {
+        "lo": 12650.017659163474,
+        "mid": 12856.102386751792,
+        "hi": 13062.18711434011
+      },
+      "next_day_return_dist": {
+        "mean": -0.0024455728247890964,
+        "std": 0.012477299149555254,
+        "p10": -0.01843647941485911,
+        "p50": -0.0024455728247890964,
+        "p90": 0.01354533376528092
+      },
+      "volume_prob": {
+        "up": 0.4444444444444444,
+        "flat": 0.12698412698412698,
+        "down": 0.42857142857142855
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1025,
+          0.1105,
+          0.1158,
+          0.1209,
+          0.127,
+          0.1343,
+          0.1421,
+          0.147
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6549,
+      "engine": "distill_patch",
+      "last_close": 12887.62,
+      "note": "Distill PatchTST edge infer · conf 65% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "601318.SS",
+      "prediction_band": {
+        "lo": 52.32134954531774,
+        "mid": 53.20366253528302,
+        "hi": 54.08597552524831
+      },
+      "next_day_return_dist": {
+        "mean": -0.0016201438303053651,
+        "std": 0.012918867805005006,
+        "p10": -0.01817696480919978,
+        "p50": -0.0016201438303053651,
+        "p90": 0.014936677148589051
+      },
+      "volume_prob": {
+        "up": 0.4603174603174603,
+        "flat": 0.07936507936507936,
+        "down": 0.4603174603174603
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1061,
+          0.109,
+          0.1139,
+          0.1214,
+          0.1268,
+          0.1336,
+          0.1405,
+          0.1486
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6497,
+      "engine": "distill_patch",
+      "last_close": 53.29,
+      "note": "Distill PatchTST edge infer · conf 65% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "002594.SZ",
+      "prediction_band": {
+        "lo": 81.75883356262328,
+        "mid": 83.14083313751941,
+        "hi": 84.52283271241554
+      },
+      "next_day_return_dist": {
+        "mean": -0.00203057090962182,
+        "std": 0.012943695160638686,
+        "p10": -0.01861921062749636,
+        "p50": -0.00203057090962182,
+        "p90": 0.01455806880825272
+      },
+      "volume_prob": {
+        "up": 0.4444444444444444,
+        "flat": 0.07936507936507936,
+        "down": 0.47619047619047616
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1021,
+          0.1096,
+          0.1156,
+          0.1226,
+          0.1253,
+          0.1334,
+          0.1425,
+          0.1489
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6495,
+      "engine": "distill_patch",
+      "last_close": 83.31,
+      "note": "Distill PatchTST edge infer · conf 65% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "512690.SS",
+      "prediction_band": {
+        "lo": 0.40974467422301464,
+        "mid": 0.4166570069316833,
+        "hi": 0.4235693396403519
+      },
+      "next_day_return_dist": {
+        "mean": -0.000822525343685084,
+        "std": 0.012934095997862152,
+        "p10": -0.01739886277454522,
+        "p50": -0.000822525343685084,
+        "p90": 0.01575381208717505
+      },
+      "volume_prob": {
+        "up": 0.42857142857142855,
+        "flat": 0.047619047619047616,
+        "down": 0.5238095238095238
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.105,
+          0.1105,
+          0.1149,
+          0.1202,
+          0.1272,
+          0.1315,
+          0.1417,
+          0.1489
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6495,
+      "engine": "distill_patch",
+      "last_close": 0.417,
+      "note": "Distill PatchTST edge infer · conf 65% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "515790.SS",
+      "prediction_band": {
+        "lo": 0.761234518851744,
+        "mid": 0.7744061483689024,
+        "hi": 0.7875777778860611
+      },
+      "next_day_return_dist": {
+        "mean": -0.0020539325143009426,
+        "std": 0.013244186468306489,
+        "p10": -0.01902768189208254,
+        "p50": -0.0020539325143009426,
+        "p90": 0.014919816863480654
+      },
+      "volume_prob": {
+        "up": 0.36507936507936506,
+        "flat": 0.06349206349206349,
+        "down": 0.5714285714285714
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1043,
+          0.1093,
+          0.1149,
+          0.1206,
+          0.1261,
+          0.1341,
+          0.1432,
+          0.1475
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6459,
+      "engine": "distill_patch",
+      "last_close": 0.776,
+      "note": "Distill PatchTST edge infer · conf 65% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "000333.SZ",
+      "prediction_band": {
+        "lo": 78.50844965679504,
+        "mid": 79.87370882008186,
+        "hi": 81.23896798336865
+      },
+      "next_day_return_dist": {
+        "mean": -0.0028251083635223227,
+        "std": 0.013299339886537823,
+        "p10": -0.019869542362109197,
+        "p50": -0.0028251083635223227,
+        "p90": 0.014219325635064551
+      },
+      "volume_prob": {
+        "up": 0.4444444444444444,
+        "flat": 0.031746031746031744,
+        "down": 0.5238095238095238
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1038,
+          0.1085,
+          0.1158,
+          0.1217,
+          0.1286,
+          0.1338,
+          0.1393,
+          0.1485
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6452,
+      "engine": "distill_patch",
+      "last_close": 80.1,
+      "note": "Distill PatchTST edge infer · conf 65% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "512010.SS",
+      "prediction_band": {
+        "lo": 0.38164335388840226,
+        "mid": 0.3883798865223172,
+        "hi": 0.3951164191562322
+      },
+      "next_day_return_dist": {
+        "mean": 0.000979088975044389,
+        "std": 0.013547282701381167,
+        "p10": -0.016383108535045716,
+        "p50": 0.000979088975044389,
+        "p90": 0.018341286485134493
+      },
+      "volume_prob": {
+        "up": 0.42857142857142855,
+        "flat": 0.015873015873015872,
+        "down": 0.5555555555555556
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1038,
+          0.1096,
+          0.1158,
+          0.1217,
+          0.1275,
+          0.1323,
+          0.1415,
+          0.1478
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6423,
+      "engine": "distill_patch",
+      "last_close": 0.388,
+      "note": "Distill PatchTST edge infer · conf 64% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "601012.SS",
+      "prediction_band": {
+        "lo": 10.948600874506365,
+        "mid": 11.18357844789858,
+        "hi": 11.418556021290794
+      },
+      "next_day_return_dist": {
+        "mean": -0.002356962720911827,
+        "std": 0.016355668635674368,
+        "p10": -0.023318387644392098,
+        "p50": -0.002356962720911827,
+        "p90": 0.018604462202568443
+      },
+      "volume_prob": {
+        "up": 0.4603174603174603,
+        "flat": 0.06349206349206349,
+        "down": 0.47619047619047616
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.107,
+          0.1089,
+          0.1135,
+          0.1195,
+          0.1256,
+          0.1335,
+          0.1426,
+          0.1494
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6094,
+      "engine": "distill_patch",
+      "last_close": 11.21,
+      "note": "Distill PatchTST edge infer · conf 61% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "159915.SZ",
+      "prediction_band": {
+        "lo": 3.0786220014818553,
+        "mid": 3.145775072638179,
+        "hi": 3.212928143794503
+      },
+      "next_day_return_dist": {
+        "mean": -0.0026077765890363844,
+        "std": 0.01661313872588812,
+        "p10": -0.0238991751801346,
+        "p50": -0.0026077765890363844,
+        "p90": 0.01868362200206183
+      },
+      "volume_prob": {
+        "up": 0.4444444444444444,
+        "flat": 0.09523809523809523,
+        "down": 0.4603174603174603
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1016,
+          0.111,
+          0.1164,
+          0.1207,
+          0.1267,
+          0.1344,
+          0.1423,
+          0.1468
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6064,
+      "engine": "distill_patch",
+      "last_close": 3.154,
+      "note": "Distill PatchTST edge infer · conf 61% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "399006.SZ",
+      "prediction_band": {
+        "lo": 3059.055182932814,
+        "mid": 3127.0701934104504,
+        "hi": 3195.085203888087
+      },
+      "next_day_return_dist": {
+        "mean": -0.002618524211410042,
+        "std": 0.01692684192463406,
+        "p10": -0.024311964822021054,
+        "p50": -0.002618524211410042,
+        "p90": 0.019074916399200968
+      },
+      "volume_prob": {
+        "up": 0.3968253968253968,
+        "flat": 0.19047619047619047,
+        "down": 0.4126984126984127
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1015,
+          0.1111,
+          0.1165,
+          0.1208,
+          0.1266,
+          0.1344,
+          0.1424,
+          0.1467
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.6028,
+      "engine": "distill_patch",
+      "last_close": 3135.28,
+      "note": "Distill PatchTST edge infer · conf 60% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "159992.SZ",
+      "prediction_band": {
+        "lo": 0.8527029806682244,
+        "mid": 0.8728831695077781,
+        "hi": 0.8930633583473316
+      },
+      "next_day_return_dist": {
+        "mean": 0.0010128090685528077,
+        "std": 0.018057442567090798,
+        "p10": -0.02212960932543076,
+        "p50": 0.0010128090685528077,
+        "p90": 0.02415522746253638
+      },
+      "volume_prob": {
+        "up": 0.4444444444444444,
+        "flat": 0.07936507936507936,
+        "down": 0.47619047619047616
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1026,
+          0.1098,
+          0.1163,
+          0.1231,
+          0.1278,
+          0.1318,
+          0.1415,
+          0.1471
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.5895,
+      "engine": "distill_patch",
+      "last_close": 0.872,
+      "note": "Distill PatchTST edge infer · conf 59% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "588000.SS",
+      "prediction_band": {
+        "lo": 1.5716691421392792,
+        "mid": 1.611988791438558,
+        "hi": 1.6523084407378372
+      },
+      "next_day_return_dist": {
+        "mean": -0.002482183515743796,
+        "std": 0.019468069625259075,
+        "p10": -0.02743246154747583,
+        "p50": -0.002482183515743796,
+        "p90": 0.022468094515988236
+      },
+      "volume_prob": {
+        "up": 0.42857142857142855,
+        "flat": 0.047619047619047616,
+        "down": 0.5238095238095238
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1023,
+          0.1123,
+          0.1173,
+          0.1193,
+          0.1276,
+          0.1336,
+          0.1427,
+          0.1449
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.5729,
+      "engine": "distill_patch",
+      "last_close": 1.616,
+      "note": "Distill PatchTST edge infer · conf 57% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "600276.SS",
+      "prediction_band": {
+        "lo": 46.050750854520004,
+        "mid": 47.23164570672548,
+        "hi": 48.41254055893096
+      },
+      "next_day_return_dist": {
+        "mean": 0.0006704598882515539,
+        "std": 0.019521659435991625,
+        "p10": -0.024348498844915314,
+        "p50": 0.0006704598882515539,
+        "p90": 0.025689418621418422
+      },
+      "volume_prob": {
+        "up": 0.3968253968253968,
+        "flat": 0.031746031746031744,
+        "down": 0.5714285714285714
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1056,
+          0.1091,
+          0.1171,
+          0.1178,
+          0.1272,
+          0.1318,
+          0.1439,
+          0.1475
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.5723,
+      "engine": "distill_patch",
+      "last_close": 47.2,
+      "note": "Distill PatchTST edge infer · conf 57% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "300750.SZ",
+      "prediction_band": {
+        "lo": 281.51584353003597,
+        "mid": 289.13687445712327,
+        "hi": 296.7579053842106
+      },
+      "next_day_return_dist": {
+        "mean": -0.006777938040179784,
+        "std": 0.020426977053946152,
+        "p10": -0.03295715183251717,
+        "p50": -0.006777938040179784,
+        "p90": 0.019401275752157606
+      },
+      "volume_prob": {
+        "up": 0.4444444444444444,
+        "flat": 0.047619047619047616,
+        "down": 0.5079365079365079
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1034,
+          0.1081,
+          0.1156,
+          0.1206,
+          0.126,
+          0.1353,
+          0.1403,
+          0.1507
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.5618,
+      "engine": "distill_patch",
+      "last_close": 291.11,
+      "note": "Distill PatchTST edge infer · conf 56% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "512480.SS",
+      "prediction_band": {
+        "lo": 0.9253501758900355,
+        "mid": 0.9525928743394736,
+        "hi": 0.9798355727889115
+      },
+      "next_day_return_dist": {
+        "mean": -0.0025205504298705795,
+        "std": 0.022258415894920346,
+        "p10": -0.0310469362408005,
+        "p50": -0.0025205504298705795,
+        "p90": 0.02600583538105934
+      },
+      "volume_prob": {
+        "up": 0.42857142857142855,
+        "flat": 0.06349206349206349,
+        "down": 0.5079365079365079
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1033,
+          0.112,
+          0.1184,
+          0.119,
+          0.1273,
+          0.1334,
+          0.143,
+          0.1438
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.5402,
+      "engine": "distill_patch",
+      "last_close": 0.955,
+      "note": "Distill PatchTST edge infer · conf 54% · not ONNX/trained weights"
+    },
+    {
+      "symbol": "000001.SS",
+      "prediction_band": {
+        "lo": 3690.0126249505,
+        "mid": 3865.5135599419586,
+        "hi": 4041.014494933417
+      },
+      "next_day_return_dist": {
+        "mean": 0.006069054581484503,
+        "std": 0.035640806716199194,
+        "p10": -0.03960820330599639,
+        "p50": 0.006069054581484503,
+        "p90": 0.0517463124689654
+      },
+      "volume_prob": {
+        "up": 0.49206349206349204,
+        "flat": 0.06349206349206349,
+        "down": 0.4444444444444444
+      },
+      "attention_heatmap_data": {
+        "patch_count": 8,
+        "patch_len": 8,
+        "weights": [
+          0.1017,
+          0.1122,
+          0.1118,
+          0.1203,
+          0.1309,
+          0.1375,
+          0.1367,
+          0.1489
+        ],
+        "features": [
+          "return_patches",
+          "close",
+          "volume"
+        ]
+      },
+      "prediction_confidence": 0.3834,
+      "engine": "distill_patch",
+      "last_close": 3842.195068359375,
+      "note": "Distill PatchTST edge infer · conf 38% · not ONNX/trained weights"
+    }
+  ]
+}

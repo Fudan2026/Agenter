@@ -14,7 +14,9 @@ export type FinMode =
   | "e2e"
   | "transformer"
   | "report"
-  | "allocate";
+  | "allocate"
+  | "edge_infer"
+  | "agent";
 
 export type ChatMessage = { role: "user" | "assistant"; content: string };
 
@@ -45,6 +47,8 @@ export interface FinConversationMeta {
 
 /** Mode gold tier multipliers (must match functions/_shared/gold-tiers.js). */
 export function modeGoldMultiplier(mode: FinMode | string): number {
+  if (mode === "agent") return 6;
+  if (mode === "edge_infer") return 5;
   if (mode === "e2e") return 4;
   if (mode === "report") return 3;
   if (
@@ -219,6 +223,8 @@ export async function callFinDesk(input: {
   context?: string;
   messages?: ChatMessage[];
   conversation_id?: string | null;
+  image?: string | null;
+  inference?: unknown;
 }): Promise<
   | {
       ok: true;
@@ -228,6 +234,7 @@ export async function callFinDesk(input: {
       conversation_id?: string | null;
       mode_multiplier?: number;
       meta?: unknown;
+      structured?: unknown;
     }
   | { ok: false; error: string; gold_needed?: number; code?: string }
 > {
@@ -248,6 +255,7 @@ export async function callFinDesk(input: {
       conversation_id?: string;
       mode_multiplier?: number;
       meta?: unknown;
+      structured?: unknown;
       error?: string;
       code?: string;
       gold_needed?: number;
@@ -272,8 +280,42 @@ export async function callFinDesk(input: {
       conversation_id: data.conversation_id ?? null,
       mode_multiplier: data.mode_multiplier,
       meta: data.meta,
+      structured: data.structured,
     };
   } catch {
     return { ok: false, error: "network_error" };
   }
+}
+
+/** Compress image file to a data URL suitable for DeepSeek vision (≤ ~1.2MB). */
+export async function fileToVisionDataUrl(file: File): Promise<string | null> {
+  if (!file || !file.type.startsWith("image/")) return null;
+  if (file.size > 12 * 1024 * 1024) return null;
+  const bitmap = await createImageBitmap(file).catch(() => null);
+  if (!bitmap) {
+    // Fallback: raw FileReader (may exceed limit)
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const r = String(reader.result || "");
+        resolve(r.startsWith("data:image/") ? r : null);
+      };
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(file);
+    });
+  }
+  const maxSide = 1280;
+  let w = bitmap.width;
+  let h = bitmap.height;
+  const scale = Math.min(1, maxSide / Math.max(w, h));
+  w = Math.max(1, Math.round(w * scale));
+  h = Math.max(1, Math.round(h * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+  return canvas.toDataURL("image/jpeg", 0.82);
 }

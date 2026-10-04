@@ -7,14 +7,26 @@ const TIER_1 = new Set(["review", "pick", "factor", "strategy"]);
 const TIER_2 = new Set(["multifactor", "allocate", "transformer"]);
 const TIER_3 = new Set(["report"]);
 const TIER_4 = new Set(["e2e"]);
+const TIER_5 = new Set(["edge_infer"]);
+const TIER_6 = new Set(["agent"]);
 
 export function modeGoldMultiplier(mode) {
   const m = String(mode || "");
+  if (TIER_6.has(m)) return 6;
+  if (TIER_5.has(m)) return 5;
   if (TIER_4.has(m)) return 4;
   if (TIER_3.has(m)) return 3;
   if (TIER_2.has(m)) return 2;
   if (TIER_1.has(m)) return 1;
   return 1;
+}
+
+/** Preflight gold floor before expensive modes (non-admin). */
+export function minGoldFloorForMode(mode) {
+  const mult = modeGoldMultiplier(mode);
+  if (mult >= 6) return 60;
+  if (mult >= 5) return 50;
+  return 20;
 }
 
 export function billGoldForMode(tokens, mode, { admin = false } = {}) {

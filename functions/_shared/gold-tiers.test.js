@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 import {
   billGoldForMode,
+  minGoldFloorForMode,
   modeGoldMultiplier,
   trimHistoryForModel,
 } from "./gold-tiers.js";
@@ -13,14 +14,24 @@ describe("gold-tiers", () => {
     assert.equal(modeGoldMultiplier("transformer"), 2);
     assert.equal(modeGoldMultiplier("report"), 3);
     assert.equal(modeGoldMultiplier("e2e"), 4);
+    assert.equal(modeGoldMultiplier("edge_infer"), 5);
+    assert.equal(modeGoldMultiplier("agent"), 6);
   });
 
   it("bills tokens * multiplier; admin free", () => {
     assert.equal(billGoldForMode(1000, "review"), 1);
     assert.equal(billGoldForMode(1000, "e2e"), 4);
+    assert.equal(billGoldForMode(1000, "edge_infer"), 5);
+    assert.equal(billGoldForMode(1000, "agent"), 6);
     assert.equal(billGoldForMode(2500, "report"), 9); // ceil(2.5)=3 * 3
     assert.equal(billGoldForMode(2500, "report", { admin: true }), 0);
     assert.equal(billGoldForMode(0, "e2e"), 0);
+  });
+
+  it("minGoldFloorForMode raises for premium tiers", () => {
+    assert.equal(minGoldFloorForMode("review"), 20);
+    assert.equal(minGoldFloorForMode("edge_infer"), 50);
+    assert.equal(minGoldFloorForMode("agent"), 60);
   });
 
   it("trimHistoryForModel keeps last N", () => {

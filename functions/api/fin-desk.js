@@ -26,19 +26,22 @@ import {
 import {
   allowFinOffline,
   callLlm,
+  callVisionLlm,
   llmBackend,
   llmConfigured,
   llmModel,
+  llmVisionModel,
   repairJsonLlm,
   sumUsage,
 } from "../_shared/llm.js";
 import {
   billGoldForMode,
+  minGoldFloorForMode,
   modeGoldMultiplier,
   trimHistoryForModel,
 } from "../_shared/gold-tiers.js";
+import { sanitizeImageDataUrl } from "../_shared/vision.js";
 
-const MIN_FLOOR = 20;
 const ADMIN_EMAIL = "seanfudan@163.com";
 
 function isAdminUser(user, preflight) {
@@ -87,6 +90,10 @@ export async function onRequestPost({ request, env }) {
   let conversationId = body?.conversation_id
     ? String(body.conversation_id)
     : null;
+  const imageDataUrl = sanitizeImageDataUrl(body?.image);
+  const clientInference =
+    body?.inference && typeof body.inference === "object" ? body.inference : null;
+  const floor = minGoldFloorForMode(mode);
 
   let pre = await rpcWithUserJwt(env, jwt, "preflight_my_fin_desk", {});
   if (!pre.ok && serviceKey(env)) {
@@ -114,19 +121,19 @@ export async function onRequestPost({ request, env }) {
         ok: false,
         code: "insufficient_gold_floor",
         gold: Number(preflight.gold ?? 0),
-        min_gold_floor: MIN_FLOOR,
+        min_gold_floor: floor,
         error: "insufficient_gold_floor",
       },
       402,
     );
   }
-  if (!admin && Number(preflight.gold ?? 0) < MIN_FLOOR) {
+  if (!admin && Number(preflight.gold ?? 0) < floor) {
     return json(
       {
         ok: false,
         code: "insufficient_gold_floor",
         gold: Number(preflight.gold ?? 0),
-        min_gold_floor: MIN_FLOOR,
+        min_gold_floor: floor,
       },
       402,
     );
@@ -134,9 +141,17 @@ export async function onRequestPost({ request, env }) {
 
   // Client already sends bake context — only top up lightly to avoid truncation.
   const ctxBudget = String(context || "");
+  let inferBlock = "";
+  if (clientInference) {
+    try {
+      inferBlock = `\n\nEdgeInfer:\n${JSON.stringify(clientInference).slice(0, 2500)}`;
+    } catch {
+      inferBlock = "";
+    }
+  }
   let userContent = ctxBudget
-    ? `Context:\n${ctxBudget.slice(0, 6000)}\n\nUser:\n${prompt}`
-    : prompt;
+    ? `Context:\n${ctxBudget.slice(0, 6000)}${inferBlock}\n\nUser:\n${prompt}`
+    : `${inferBlock ? `Context:${inferBlock}\n\n` : ""}User:\n${prompt}`;
 
   if (ctxBudget.length < 1200) {
     try {
@@ -192,14 +207,39 @@ export async function onRequestPost({ request, env }) {
     );
   }
 
+  let usageAcc = null;
+  let visionParse = null;
+  // Multimodal: parse screenshot before text synthesis (edge_infer or any mode with image)
+  if (imageDataUrl && llmConfigured(env)) {
+    const vision = await callVisionLlm(
+      env,
+      locale,
+      locale === "zh"
+        ? `解析此财经截图（K线或财报），服务于问题：${prompt.slice(0, 400)}`
+        : `Parse this financial screenshot for: ${prompt.slice(0, 400)}`,
+      imageDataUrl,
+    );
+    usageAcc = sumUsage(usageAcc, vision.usage) || vision.usage || null;
+    if (vision.ok) {
+      visionParse = extractJsonObject(vision.text) || {
+        summary: String(vision.text || "").slice(0, 1200),
+        chart_type: "other",
+      };
+      userContent = `VisionParse:\n${JSON.stringify(visionParse).slice(0, 2000)}\n\n${userContent}`;
+      messages[messages.length - 1] = { role: "user", content: userContent };
+    }
+  }
+
   let llm = await callLlm(env, messages, mode);
-  let usageAcc = llm.usage || null;
+  usageAcc = sumUsage(usageAcc, llm.usage) || llm.usage || null;
   let structured = null;
   let answerText = "";
   let llmMeta = {
     backend: llmBackend(env),
     model: llmModel(env),
+    vision_model: imageDataUrl ? llmVisionModel(env) : null,
     offline: false,
+    vision: Boolean(visionParse),
   };
   let tokensUsed = 0;
 
@@ -240,6 +280,23 @@ export async function onRequestPost({ request, env }) {
       structured = liveStructuredFromText(mode, prompt, locale, llm.text);
       llmMeta.non_json = true;
       llmMeta.finish_reason = llm.finish_reason || null;
+    }
+    if (visionParse && structured && typeof structured === "object") {
+      structured.vision_parse = visionParse;
+    }
+    if (
+      clientInference &&
+      structured &&
+      typeof structured === "object" &&
+      structured.prediction_confidence == null &&
+      clientInference.prediction_confidence != null
+    ) {
+      structured.prediction_confidence = clientInference.prediction_confidence;
+      structured.prediction_band =
+        structured.prediction_band || clientInference.prediction_band;
+      structured.attention_heatmap_data =
+        structured.attention_heatmap_data ||
+        clientInference.attention_heatmap_data;
     }
     answerText = JSON.stringify(structured);
     const inn = Number(usageAcc?.input);
