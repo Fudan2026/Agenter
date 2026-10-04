@@ -26,6 +26,7 @@ import { bindShellChrome } from "./pages/shell";
 import type { LatestPayload } from "./pages/types";
 import type { FactorsPayload } from "./lib/factors/cross-section";
 import type { FactorsIcPayload } from "./lib/factors/ic";
+import type { AlphaLitePayload } from "./lib/factors/alpha-lite";
 import type { CnCalendarPayload } from "./lib/paper/calendar";
 import {
   requiresAuth,
@@ -42,6 +43,7 @@ let indicesData: IndicesPayload | null = null;
 let screensData: ScreensPayload | null = null;
 let factorsData: FactorsPayload | null = null;
 let factorsIcData: FactorsIcPayload | null = null;
+let alphaLiteData: AlphaLitePayload | null = null;
 let recipesData: RecipesPayload | null = null;
 let calendarData: CnCalendarPayload | null = null;
 let etfMetaData: EtfMetaPayload | null = null;
@@ -148,6 +150,16 @@ async function loadFactorsIc(): Promise<void> {
     factorsIcData = await fetchJsonWithRetry<FactorsIcPayload>("factors-ic.json");
   } catch {
     factorsIcData = null;
+  }
+}
+
+async function loadAlphaLite(): Promise<void> {
+  try {
+    alphaLiteData = await fetchJsonWithRetry<AlphaLitePayload>(
+      "factors-alpha-lite.json",
+    );
+  } catch {
+    alphaLiteData = null;
   }
 }
 
@@ -269,6 +281,7 @@ async function render(): Promise<void> {
           quantData,
           screensData,
           factorsIcData,
+          alphaLiteData,
         );
         break;
       case "admin":
@@ -367,6 +380,7 @@ export async function startApp(): Promise<void> {
     loadScreens(),
     loadFactors(),
     loadFactorsIc(),
+    loadAlphaLite(),
     loadRecipes(),
     loadCalendar(),
     loadEtfMeta(),

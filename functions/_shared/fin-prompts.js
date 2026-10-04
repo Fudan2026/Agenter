@@ -59,8 +59,8 @@ export function systemPrompt(mode, locale) {
       ? "任务=复盘问答：结合语料要点；标明不确定；reasoning_chain 写清依据。"
       : "Task=review Q&A: corpus-grounded; mark uncertainty; fill reasoning_chain.",
     multifactor: zh
-      ? "任务=多因子选股（LLMFactor 风格）：因子筛选→淘汰推理→组合权重→次日开盘信号。JSON 必填 factors/eliminations/portfolio/signals/reasoning_chain。"
-      : "Task=multi-factor (LLMFactor-style): screen→elimination rationale→portfolio→next-open signals. JSON must include factors/eliminations/portfolio/signals/reasoning_chain.",
+      ? "任务=多因子选股（蒸馏 LLMFactor SKGP + Qlib Alpha40-lite）：①先写背景知识（市场/行业假设）；②从 Context 的 AlphaLiteTop 引用具体因子 id（如 ROC20/RSV20/STD20）做保留/淘汰；③给出可归因权重与组合；④次日开盘信号。JSON 必填 factors/eliminations/portfolio/signals/reasoning_chain；reasoning_chain 至少 4 步对应 SKGP 顺序。"
+      : "Task=multi-factor (LLMFactor SKGP + Qlib Alpha40-lite distill): (1) background knowledge; (2) keep/kill concrete factor ids from AlphaLiteTop in Context (ROC20/RSV20/STD20…); (3) attributable weights + portfolio; (4) next-open signals. JSON must include factors/eliminations/portfolio/signals/reasoning_chain; reasoning_chain ≥4 SKGP steps.",
     e2e: zh
       ? "任务=端到端：信号→次日开盘→成本→纸盘/Lab；输出可执行草稿与信号 JSON。"
       : "Task=e2e: signal→next-open→costs→Paper/Lab; actionable draft + signals JSON.",

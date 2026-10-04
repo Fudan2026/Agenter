@@ -150,7 +150,7 @@ export const STRINGS = {
     finModeFactor: "智能因子",
     finModeStrategy: "策略草稿",
     finModeReview: "复盘问答",
-    finModeMultifactor: "多因子选股",
+    finModeMultifactor: "智能因子/多因子",
     finModeE2e: "端到端策略",
     finModeTransformer: "Transformer 量价",
     finModeReport: "投研报告",

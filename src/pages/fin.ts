@@ -24,6 +24,7 @@ import { esc } from "../lib/util/esc";
 import { bindShellChrome, renderShell } from "./shell";
 import type { LatestPayload } from "./types";
 import type { FactorsIcPayload } from "../lib/factors/ic";
+import type { AlphaLitePayload } from "../lib/factors/alpha-lite";
 import type { ScreensPayload } from "../lib/screens/map";
 
 function readQueryPrompt(): string {
@@ -57,6 +58,7 @@ export function renderFinDesk(
   data: LatestPayload | null,
   screens: ScreensPayload | null = null,
   factorsIc: FactorsIcPayload | null = null,
+  alphaLite: AlphaLitePayload | null = null,
 ): void {
   if (!isLoggedIn()) {
     location.hash = `#/login`;
@@ -100,6 +102,26 @@ export function renderFinDesk(
             .map(
               (r) =>
                 `- ${r.factor}: IC=${r.icMean == null ? "—" : r.icMean.toFixed(3)} IR=${r.ir == null ? "—" : r.ir.toFixed(3)}`,
+            )
+            .join("\n"),
+      );
+    }
+    if (alphaLite?.topN?.length) {
+      const w = alphaLite.suggestedWeights || {};
+      parts.push(
+        `AlphaLiteWeights:\n` +
+          Object.entries(w)
+            .slice(0, 10)
+            .map(([k, v]) => `- ${k}: ${v}`)
+            .join("\n"),
+      );
+      parts.push(
+        `AlphaLiteTop:\n` +
+          alphaLite.topN
+            .slice(0, 10)
+            .map(
+              (r) =>
+                `- ${r.symbol} rank=${r.rank} composite=${r.composite == null ? "—" : r.composite.toFixed(3)} ROC20=${r.factors?.ROC20 ?? "—"} RSV20=${r.factors?.RSV20 ?? "—"} STD20=${r.factors?.STD20 ?? "—"}`,
             )
             .join("\n"),
       );
