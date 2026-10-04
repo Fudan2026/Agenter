@@ -7,6 +7,7 @@
 import { json } from "../_shared/http.js";
 import {
   anonKey,
+  cloudNotConfiguredBody,
   rpcWithServiceRole,
   supabaseAuthConfigured,
   supabaseUrl,
@@ -33,7 +34,7 @@ function resolveRedirect(body, request) {
 
 export async function onRequestPost({ request, env }) {
   if (!supabaseAuthConfigured(env)) {
-    return json({ ok: false, code: "cloud_not_configured" }, 503);
+    return json(cloudNotConfiguredBody(), 503);
   }
   const ip = request.headers.get("CF-Connecting-IP") || "anon";
   const rl = rateLimit(`signup:${ip}`, { limit: 10, windowMs: 60_000 });
