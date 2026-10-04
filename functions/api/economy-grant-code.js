@@ -1,14 +1,15 @@
 /**
- * POST /api/economy-grant-code — redeem into shared Letus gold.
- * Tries additive gold_codes first; falls back to Letus redeem_vip_code (JWT).
+ * POST /api/economy-grant-code — redeem gold_codes into Supro wallet.
+ * Prefers JWT redeem_my_gold_code; falls back to service_role redeem_gold_code.
  * Body: { code }
  */
 
-import { bearerToken, json } from "../_shared/http.js";
+import { bearerToken, errText, json } from "../_shared/http.js";
 import {
   getUserFromJwt,
   rpcWithServiceRole,
   rpcWithUserJwt,
+  serviceKey,
   supabaseAuthConfigured,
 } from "../_shared/supabase.js";
 import { rateLimit } from "../_shared/rateLimit.js";
@@ -36,11 +37,15 @@ export async function onRequestPost({ request, env }) {
     .toUpperCase();
   if (!code) return json({ ok: false, code: "invalid_code" }, 400);
 
-  // Additive Supro gold_codes → shared user_economy.gold
-  const res = await rpcWithServiceRole(env, "redeem_gold_code", {
-    p_user_id: String(user.id),
+  let res = await rpcWithUserJwt(env, jwt, "redeem_my_gold_code", {
     p_code: code,
   });
+  if (!res.ok && serviceKey(env)) {
+    res = await rpcWithServiceRole(env, "redeem_gold_code", {
+      p_user_id: String(user.id),
+      p_code: code,
+    });
+  }
   if (res.ok) {
     return json({
       ok: true,
@@ -50,37 +55,11 @@ export async function onRequestPost({ request, env }) {
     });
   }
 
-  // Fall back to Letus VIP/gold codes (JWT-scoped)
-  const vip = await rpcWithUserJwt(env, jwt, "redeem_vip_code", {
-    p_code: code,
-  });
-  if (vip.ok && (vip.data?.ok === true || vip.data?.ok === undefined)) {
-    const granted =
-      Number(vip.data?.granted ?? vip.data?.gold_granted ?? 0) ||
-      (vip.data?.type === "gold" ? Number(vip.data?.gold ?? 0) : 0);
-    // After vip redeem, re-read balance
-    const bal = await rpcWithServiceRole(env, "ensure_supro_economy", {
-      p_user_id: String(user.id),
-    });
-    return json({
-      ok: true,
-      gold: Number(bal.data?.gold ?? vip.data?.gold ?? 0),
-      granted,
-      via: "vip_codes",
-      vip: vip.data,
-    });
-  }
-
   return json(
     {
       ok: false,
       code: "redeem_failed",
-      error:
-        res.data?.message ||
-        vip.data?.reason ||
-        res.data ||
-        vip.data ||
-        "redeem_failed",
+      error: errText(res.data, "redeem_failed"),
     },
     400,
   );

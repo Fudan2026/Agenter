@@ -467,6 +467,67 @@ grant execute on function public.preflight_fin_desk(uuid) to service_role;
 grant execute on function public.list_fin_desk_usage(uuid, integer) to service_role;
 grant execute on function public.get_my_profile() to authenticated, service_role;
 
+-- JWT wrappers (no service_role required for the caller's own wallet)
+create or replace function public.preflight_my_fin_desk()
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return public.preflight_fin_desk(auth.uid());
+end;
+$$;
+
+create or replace function public.spend_my_gold_for_usage(
+  p_tokens integer,
+  p_feature text,
+  p_gold integer default null
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return public.spend_gold_for_usage(auth.uid(), p_tokens, p_feature, p_gold);
+end;
+$$;
+
+create or replace function public.list_my_fin_desk_usage(
+  p_limit integer default 20
+)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return public.list_fin_desk_usage(auth.uid(), p_limit);
+end;
+$$;
+
+create or replace function public.redeem_my_gold_code(p_code text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  return public.redeem_gold_code(auth.uid(), p_code);
+end;
+$$;
+
+revoke all on function public.preflight_my_fin_desk() from public, anon;
+revoke all on function public.spend_my_gold_for_usage(integer, text, integer) from public, anon;
+revoke all on function public.list_my_fin_desk_usage(integer) from public, anon;
+revoke all on function public.redeem_my_gold_code(text) from public, anon;
+
+grant execute on function public.preflight_my_fin_desk() to authenticated, service_role;
+grant execute on function public.spend_my_gold_for_usage(integer, text, integer) to authenticated, service_role;
+grant execute on function public.list_my_fin_desk_usage(integer) to authenticated, service_role;
+grant execute on function public.redeem_my_gold_code(text) to authenticated, service_role;
+
 insert into public.gold_codes (code, gold) values
   ('SUPRO100', 100),
   ('SUPRO500', 500),

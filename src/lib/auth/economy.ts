@@ -33,6 +33,24 @@ export interface EconomyBalance {
   }>;
 }
 
+function flattenErr(err: unknown, fallback: string): string {
+  if (err == null || err === "") return fallback;
+  if (typeof err === "string") return err;
+  if (typeof err === "number" || typeof err === "boolean") return String(err);
+  if (typeof err === "object") {
+    const o = err as Record<string, unknown>;
+    for (const k of ["message", "error", "msg", "code", "hint"]) {
+      if (typeof o[k] === "string" && o[k]) return String(o[k]);
+    }
+    try {
+      return JSON.stringify(err);
+    } catch {
+      return fallback;
+    }
+  }
+  return String(err);
+}
+
 export async function fetchBalance(): Promise<EconomyBalance | null> {
   if (!isLoggedIn()) return null;
   try {
@@ -40,7 +58,6 @@ export async function fetchBalance(): Promise<EconomyBalance | null> {
       headers: { Authorization: `Bearer ${accessToken()}` },
       cache: "no-cache",
     });
-    if (!res.ok) return null;
     const data = (await res.json()) as {
       ok?: boolean;
       gold?: number;
@@ -51,8 +68,11 @@ export async function fetchBalance(): Promise<EconomyBalance | null> {
       min_gold_floor?: number;
       is_admin?: boolean;
       usage?: EconomyBalance["usage"];
+      error?: unknown;
+      code?: string;
+      hint?: string;
     };
-    if (!data.ok) return null;
+    if (!res.ok || !data.ok) return null;
     return {
       gold: Number(data.gold ?? 0),
       total_earned: Number(data.total_earned ?? 0),
@@ -88,7 +108,10 @@ export async function redeemCode(
       code?: string;
     };
     if (!data.ok) {
-      return { ok: false, error: String(data.error || data.code || "redeem_failed") };
+      return {
+        ok: false,
+        error: flattenErr(data.error || data.code, "redeem_failed"),
+      };
     }
     return {
       ok: true,
@@ -137,7 +160,7 @@ export async function callFinDesk(input: {
     if (!data.ok || !data.answer) {
       return {
         ok: false,
-        error: String(data.error || data.code || "fin_desk_failed"),
+        error: flattenErr(data.error || data.code, "fin_desk_failed"),
         gold_needed: data.gold_needed,
         code: data.code,
       };
