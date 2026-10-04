@@ -2,6 +2,9 @@
  * POST /api/fin-desk — 苏坡大模型 / Supro Model (DeepSeek).
  * Preflight gold >= 20 (non-admin) → call LLM → debit AFTER actual tokens.
  * Structured JSON pillars: multifactor / e2e / transformer / report / allocate.
+ *
+ * Offline drafts are opt-in only (ALLOW_FIN_OFFLINE=true). Otherwise missing
+ * LLM_API_KEY / DeepSeek errors return clearly — never fake Token counts.
  */
 
 import { bearerToken, errText, json } from "../_shared/http.js";
@@ -19,151 +22,17 @@ import {
   offlineStructured,
   systemPrompt,
 } from "../_shared/fin-prompts.js";
+import {
+  allowFinOffline,
+  callLlm,
+  goldCost,
+  llmBackend,
+  llmConfigured,
+  llmModel,
+} from "../_shared/llm.js";
 
-const GOLD_PER_1K = 1;
 const MIN_FLOOR = 20;
 const ADMIN_EMAIL = "seanfudan@163.com";
-
-function goldCost(tokens) {
-  return Math.max(1, Math.ceil((tokens / 1000) * GOLD_PER_1K));
-}
-
-function estimateTokens(text) {
-  const n = String(text || "").length;
-  return Math.max(200, Math.ceil(n / 1.5) + 400);
-}
-
-function maxTokensForMode(mode) {
-  if (mode === "report") return 3200;
-  if (mode === "multifactor" || mode === "e2e" || mode === "allocate") return 2048;
-  return 1400;
-}
-
-async function callLlm(env, messages, mode) {
-  const backend = String(env.LLM_BACKEND || "deepseek").toLowerCase();
-  const key =
-    env.LLM_API_KEY ||
-    env.DEEPSEEK_API_KEY ||
-    env.OPENAI_API_KEY ||
-    env.ANTHROPIC_API_KEY ||
-    "";
-  if (!key) {
-    return { ok: false, code: "llm_not_configured", text: null };
-  }
-
-  const max_tokens = maxTokensForMode(mode);
-
-  if (backend === "anthropic") {
-    const model = env.LLM_MODEL || "claude-3-5-haiku-latest";
-    const system = messages.find((m) => m.role === "system")?.content || "";
-    const userMsgs = messages.filter((m) => m.role !== "system");
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": key,
-        "anthropic-version": "2023-06-01",
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens,
-        system,
-        messages: userMsgs,
-      }),
-    });
-    const data = await res.json().catch(() => ({}));
-    if (!res.ok) {
-      return {
-        ok: false,
-        code: "llm_error",
-        text: data?.error?.message || "llm_error",
-      };
-    }
-    const text = (data.content || [])
-      .filter((c) => c.type === "text")
-      .map((c) => c.text)
-      .join("\n");
-    return {
-      ok: true,
-      text,
-      usage: {
-        input: data.usage?.input_tokens ?? null,
-        output: data.usage?.output_tokens ?? null,
-      },
-    };
-  }
-
-  const base =
-    env.LLM_BASE_URL ||
-    (backend === "deepseek"
-      ? "https://api.deepseek.com"
-      : "https://api.openai.com/v1");
-  const model =
-    env.LLM_MODEL ||
-    (backend === "deepseek" ? "deepseek-chat" : "gpt-4o-mini");
-  const res = await fetch(`${base.replace(/\/$/, "")}/chat/completions`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model,
-      messages,
-      temperature: 0.35,
-      max_tokens,
-      response_format: { type: "json_object" },
-    }),
-  });
-  const data = await res.json().catch(() => ({}));
-  if (!res.ok) {
-    // Retry without response_format if provider rejects it
-    if (String(data?.error?.message || "").toLowerCase().includes("response_format")) {
-      const res2 = await fetch(`${base.replace(/\/$/, "")}/chat/completions`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${key}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          temperature: 0.35,
-          max_tokens,
-        }),
-      });
-      const data2 = await res2.json().catch(() => ({}));
-      if (!res2.ok) {
-        return {
-          ok: false,
-          code: "llm_error",
-          text: data2?.error?.message || "llm_error",
-        };
-      }
-      return {
-        ok: true,
-        text: data2.choices?.[0]?.message?.content || "",
-        usage: {
-          input: data2.usage?.prompt_tokens ?? null,
-          output: data2.usage?.completion_tokens ?? null,
-        },
-      };
-    }
-    return {
-      ok: false,
-      code: "llm_error",
-      text: data?.error?.message || "llm_error",
-    };
-  }
-  return {
-    ok: true,
-    text: data.choices?.[0]?.message?.content || "",
-    usage: {
-      input: data.usage?.prompt_tokens ?? null,
-      output: data.usage?.completion_tokens ?? null,
-    },
-  };
-}
 
 function isAdminUser(user, preflight) {
   const email = String(user?.email || "").toLowerCase();
@@ -308,19 +177,54 @@ export async function onRequestPost({ request, env }) {
     /* ignore */
   }
 
+  if (!llmConfigured(env) && !allowFinOffline(env)) {
+    return json(
+      {
+        ok: false,
+        code: "llm_not_configured",
+        error: "llm_not_configured",
+        hint:
+          "Set Cloudflare Pages Production secret LLM_API_KEY (DeepSeek) and/or GitHub Actions secret LLM_API_KEY so deploy can sync it. Redeploy after setting. Optional alias: DEEPSEEK_API_KEY.",
+        need: ["LLM_API_KEY"],
+        backend: llmBackend(env),
+        model: llmModel(env),
+      },
+      503,
+    );
+  }
+
   const llm = await callLlm(env, messages, mode);
   let structured = null;
   let answerText = "";
   let llmMeta = {
-    backend: env.LLM_BACKEND || "deepseek",
+    backend: llmBackend(env),
+    model: llmModel(env),
     offline: false,
   };
-  let tokensUsed = estimateTokens(prompt + context + (llm.text || ""));
+  let tokensUsed = 0;
 
   if (!llm.ok) {
+    if (!allowFinOffline(env)) {
+      return json(
+        {
+          ok: false,
+          code: llm.code || "llm_error",
+          error: errText(llm.error || llm.code, "llm_error"),
+          hint:
+            llm.code === "llm_not_configured"
+              ? "Set Pages Production secret LLM_API_KEY (DeepSeek), then redeploy."
+              : "DeepSeek/LLM call failed. Check LLM_API_KEY, LLM_MODEL=deepseek-chat, and LLM_BASE_URL.",
+          backend: llmBackend(env),
+          model: llmModel(env),
+        },
+        llm.code === "llm_not_configured" ? 503 : 502,
+      );
+    }
+    // Explicit offline opt-in only — never invent billed tokens
     structured = offlineStructured(mode, prompt, locale);
     answerText = JSON.stringify(structured);
     llmMeta = { ...llmMeta, offline: true, code: llm.code };
+    tokensUsed = 0;
   } else {
     structured = extractJsonObject(llm.text);
     if (!structured) {
@@ -332,6 +236,13 @@ export async function onRequestPost({ request, env }) {
           "Model returned non-JSON; narrative preserved",
         ],
       };
+      // Clear offline-looking narrative if we have real model text
+      if (llm.text) {
+        structured.narrative = llm.text;
+        structured.reasoning_chain = [
+          "DeepSeek response parsed as narrative (non-JSON)",
+        ];
+      }
       answerText = JSON.stringify(structured);
     } else {
       answerText = JSON.stringify(structured);
@@ -343,22 +254,28 @@ export async function onRequestPost({ request, env }) {
         1,
         (Number.isFinite(inn) ? inn : 0) + (Number.isFinite(out) ? out : 0),
       );
+    } else {
+      // Real call succeeded but provider omitted usage — bill a minimal floor
+      tokensUsed = 1;
     }
     llmMeta = { ...llmMeta, usage: llm.usage };
   }
 
   const cost = goldCost(tokensUsed);
+  // Admin steward: log tokens, spent=0. Offline: tokens=0 → cost=0.
+  const billGold = admin || tokensUsed <= 0 ? 0 : cost;
+
   let spend = await rpcWithUserJwt(env, jwt, "spend_my_gold_for_usage", {
     p_tokens: tokensUsed,
     p_feature: `fin_desk_${mode}`,
-    p_gold: admin ? 0 : cost,
+    p_gold: billGold,
   });
   if (!spend.ok && serviceKey(env)) {
     spend = await rpcWithServiceRole(env, "spend_gold_for_usage", {
       p_user_id: String(user.id),
       p_tokens: tokensUsed,
       p_feature: `fin_desk_${mode}`,
-      p_gold: admin ? 0 : cost,
+      p_gold: billGold,
     });
   }
   if (!spend.ok) {
@@ -376,11 +293,25 @@ export async function onRequestPost({ request, env }) {
     );
   }
 
-  const spent = Number(spend.data?.spent ?? (admin ? 0 : cost));
-  const stamp =
-    locale === "zh"
-      ? `\n\n— 苏坡大模型 · AIaaS · 非投资建议 · Token ${tokensUsed} · 已扣 ${spent} 金币（100 金币=$1）`
-      : `\n\n— Supro Model · AIaaS · not advice · tokens ${tokensUsed} · gold spent ${spent} (100 gold=$1)`;
+  const spent = Number(spend.data?.spent ?? billGold);
+  const offline = Boolean(llmMeta.offline);
+  let stamp;
+  if (offline) {
+    stamp =
+      locale === "zh"
+        ? `\n\n— 离线草稿 · 未调用 DeepSeek · Token 0 · 已扣 0 金币`
+        : `\n\n— Offline draft · DeepSeek not called · tokens 0 · gold spent 0`;
+  } else if (admin) {
+    stamp =
+      locale === "zh"
+        ? `\n\n— 苏坡大模型 · DeepSeek · 非投资建议 · Token ${tokensUsed} · 管理员免扣（标价 ${cost} 金币；100 金币=$1）`
+        : `\n\n— Supro Model · DeepSeek · not advice · tokens ${tokensUsed} · admin free (list price ${cost} gold; 100 gold=$1)`;
+  } else {
+    stamp =
+      locale === "zh"
+        ? `\n\n— 苏坡大模型 · DeepSeek · 非投资建议 · Token ${tokensUsed} · 已扣 ${spent} 金币（100 金币=$1）`
+        : `\n\n— Supro Model · DeepSeek · not advice · tokens ${tokensUsed} · gold spent ${spent} (100 gold=$1)`;
+  }
 
   return json({
     ok: true,

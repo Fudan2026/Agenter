@@ -158,9 +158,14 @@ export async function callFinDesk(input: {
       gold_needed?: number;
     };
     if (!data.ok || !data.answer) {
+      const base = flattenErr(data.error || data.code, "fin_desk_failed");
+      const hint =
+        typeof (data as { hint?: unknown }).hint === "string"
+          ? String((data as { hint?: string }).hint)
+          : "";
       return {
         ok: false,
-        error: flattenErr(data.error || data.code, "fin_desk_failed"),
+        error: hint ? `${base} — ${hint}` : base,
         gold_needed: data.gold_needed,
         code: data.code,
       };

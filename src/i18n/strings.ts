@@ -130,6 +130,8 @@ export const STRINGS = {
     logout: "退出登录",
     openFinDesk: "打开苏坡大模型",
     economyUnavailable: "经济接口暂不可用（检查 Supabase / Functions 密钥）。",
+    finLlmUnavailable:
+      "苏坡大模型未接通 DeepSeek：请在 Cloudflare Pages（supro / Production）设置 LLM_API_KEY，并在 GitHub Actions secrets 同步同名密钥后重新部署。可访问 /api/fin-health 检查 llm_configured。",
     cloudNotConfigured:
       "云端未配置：请在 Cloudflare Pages 项目 supro 的 Production 环境变量中设置 SUPABASE_URL 与 SUPABASE_ANON_KEY，然后重新部署。仅配置 GitHub 的 VITE_* 不够。",
     insufficientGold: "金币不足，请兑换码或充值后再试。",
@@ -725,6 +727,8 @@ export const STRINGS = {
     openFinDesk: "Open Supro Model",
     economyUnavailable:
       "Economy API unavailable (check Supabase / Functions secrets).",
+    finLlmUnavailable:
+      "Supro Model is not connected to DeepSeek: set LLM_API_KEY on Cloudflare Pages (supro / Production) and the matching GitHub Actions secret, then redeploy. Check GET /api/fin-health for llm_configured.",
     cloudNotConfigured:
       "Cloud not configured: set SUPABASE_URL + SUPABASE_ANON_KEY on Cloudflare Pages project `supro` (Production), then redeploy. GitHub VITE_* alone is not enough for /api/*.",
     insufficientGold: "Insufficient gold — redeem a code or top up.",

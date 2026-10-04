@@ -230,9 +230,21 @@ export function renderFinDesk(
             ? t(locale, "insufficientGoldFloor")
             : r.code === "email_not_confirmed"
               ? t(locale, "loginEmailNotConfirmed")
-              : r.error === "insufficient_gold" || r.code === "insufficient_gold"
-                ? t(locale, "insufficientGold")
-                : r.error;
+              : r.code === "llm_not_configured" ||
+                  r.code === "llm_error" ||
+                  r.code === "llm_network_error"
+                ? t(locale, "finLlmUnavailable")
+                : r.error === "insufficient_gold" || r.code === "insufficient_gold"
+                  ? t(locale, "insufficientGold")
+                  : r.error;
+        if (
+          (r.code === "llm_not_configured" ||
+            r.code === "llm_error" ||
+            r.code === "llm_network_error") &&
+          r.error
+        ) {
+          flash = `${flash} ${r.error}`;
+        }
         answerRaw = "";
         paint();
         return;
