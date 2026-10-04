@@ -62,14 +62,14 @@ export function systemPrompt(mode, locale) {
       ? "任务=多因子选股（蒸馏 LLMFactor SKGP + Qlib Alpha40-lite）：①先写背景知识（市场/行业假设）；②从 Context 的 AlphaLiteTop 引用具体因子 id（如 ROC20/RSV20/STD20）做保留/淘汰；③给出可归因权重与组合；④次日开盘信号。JSON 必填 factors/eliminations/portfolio/signals/reasoning_chain；reasoning_chain 至少 4 步对应 SKGP 顺序。"
       : "Task=multi-factor (LLMFactor SKGP + Qlib Alpha40-lite distill): (1) background knowledge; (2) keep/kill concrete factor ids from AlphaLiteTop in Context (ROC20/RSV20/STD20…); (3) attributable weights + portfolio; (4) next-open signals. JSON must include factors/eliminations/portfolio/signals/reasoning_chain; reasoning_chain ≥4 SKGP steps.",
     e2e: zh
-      ? "任务=端到端：信号→次日开盘→成本→纸盘/Lab；输出可执行草稿与信号 JSON。"
-      : "Task=e2e: signal→next-open→costs→Paper/Lab; actionable draft + signals JSON.",
+      ? "任务=端到端策略引擎（4x 金币档）：①引用 Context（AlphaLiteTop/Screens/IC/公告）形成信号；②给出 lab_id（仅允许 ma_cross|rsi_reversion|confluence|ml_lite）与 params；③强调次日开盘与成本/闸门；④deep_links 必须含 #/quant?panel=lab&lab=… 与纸盘链接；⑤signals + reasoning_chain ≥5 步。禁止声称已代下单。"
+      : "Task=e2e strategy engine (4x gold tier): (1) cite Context (AlphaLiteTop/Screens/IC/filings) for signals; (2) lab_id in {ma_cross,rsi_reversion,confluence,ml_lite} + params; (3) next-open + costs/gates; (4) deep_links MUST include #/quant?panel=lab&lab=… and paper; (5) signals + reasoning_chain ≥5 steps. Never claim live order submission.",
     transformer: zh
       ? "任务=Transformer 量价建模识字（蒸馏 Multitask-Stockformer / StockFormer）：必须填 attention_view，含 heads_note（慢频趋势 vs 快频冲击）、features、limitations；引用 Context 的 TransformerPv 代理分数；说明本站无真实权重/无 DWT；可给教育性次日开盘信号。"
       : "Task=Transformer PV literacy (Multitask-Stockformer / StockFormer distill): MUST fill attention_view with heads_note (slow trend vs fast shock), features, limitations; cite TransformerPv proxy scores from Context; disclose no live weights / no real DWT; educational next-open signals ok.",
     report: zh
-      ? "任务=金融投研报告：数据→因子发现→策略/回测素养→成稿→quality_score(0-1)。填 report.title/summary/sections/rating/sources；reasoning_chain 写研究步骤。"
-      : "Task=research report: data→factor findings→strategy/backtest literacy→draft→quality_score(0-1). Fill report.*; reasoning_chain = research steps.",
+      ? "任务=自动化投研报告（3x 金币档）：结合 Context 的公告/问财资讯/因子/AlphaLite；强制填 report.title/summary/sections(≥3)/rating/quality_score/sources；reasoning_chain ≥5；可多轮追问同一标的细化章节。教育演示非投顾。"
+      : "Task=automated research report (3x gold tier): use Context filings/iwencai/factors/AlphaLite; MUST fill report.title/summary/sections(≥3)/rating/quality_score/sources; reasoning_chain ≥5; multi-turn may refine the same name. Educational — not advice.",
     allocate: zh
       ? "任务=AI 动态资产配置：在仓位上限下给出 weights、再平衡说明、次日开盘约束；引用多因子组合逻辑；填 allocation + portfolio + reasoning_chain。"
       : "Task=dynamic allocation: capped weights, rebalance notes, next-open constraint; cite multi-factor logic; fill allocation + portfolio + reasoning_chain.",

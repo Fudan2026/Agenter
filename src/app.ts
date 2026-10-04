@@ -295,6 +295,8 @@ async function render(): Promise<void> {
           factorsIcData,
           alphaLiteData,
           transformerPvData,
+          announcementsData,
+          iwencaiNewsData,
         );
         break;
       case "admin":
