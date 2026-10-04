@@ -4,10 +4,12 @@
  * Structured JSON pillars: multifactor / e2e / transformer / report / allocate.
  */
 
-import { bearerToken, json } from "../_shared/http.js";
+import { bearerToken, errText, json } from "../_shared/http.js";
 import {
   getUserFromJwt,
   rpcWithServiceRole,
+  rpcWithUserJwt,
+  serviceKey,
   supabaseAuthConfigured,
 } from "../_shared/supabase.js";
 import { rateLimit } from "../_shared/rateLimit.js";
@@ -206,12 +208,21 @@ export async function onRequestPost({ request, env }) {
   const locale = body?.locale === "zh" ? "zh" : "en";
   const context = String(body?.context || "").slice(0, 14000);
 
-  const pre = await rpcWithServiceRole(env, "preflight_fin_desk", {
-    p_user_id: String(user.id),
-  });
+  let pre = await rpcWithUserJwt(env, jwt, "preflight_my_fin_desk", {});
+  if (!pre.ok && serviceKey(env)) {
+    pre = await rpcWithServiceRole(env, "preflight_fin_desk", {
+      p_user_id: String(user.id),
+    });
+  }
   if (!pre.ok) {
     return json(
-      { ok: false, code: "economy_error", error: pre.data },
+      {
+        ok: false,
+        code: "economy_error",
+        error: errText(pre.data, "economy_error"),
+        hint:
+          "Apply supabase/supro_auth_rpc_patch.sql on the Supro project (JWT RPCs). Also set SUPABASE_SERVICE_ROLE_KEY on Pages if preferred.",
+      },
       pre.status || 500,
     );
   }
@@ -337,16 +348,23 @@ export async function onRequestPost({ request, env }) {
   }
 
   const cost = goldCost(tokensUsed);
-  const spend = await rpcWithServiceRole(env, "spend_gold_for_usage", {
-    p_user_id: String(user.id),
+  let spend = await rpcWithUserJwt(env, jwt, "spend_my_gold_for_usage", {
     p_tokens: tokensUsed,
     p_feature: `fin_desk_${mode}`,
     p_gold: admin ? 0 : cost,
   });
+  if (!spend.ok && serviceKey(env)) {
+    spend = await rpcWithServiceRole(env, "spend_gold_for_usage", {
+      p_user_id: String(user.id),
+      p_tokens: tokensUsed,
+      p_feature: `fin_desk_${mode}`,
+      p_gold: admin ? 0 : cost,
+    });
+  }
   if (!spend.ok) {
-    const msg = spend.data?.message || spend.data?.error || spend.data;
+    const msg = errText(spend.data, "spend_failed");
     const insufficient =
-      String(msg).includes("insufficient") || spend.status === 402;
+      msg.includes("insufficient") || spend.status === 402;
     return json(
       {
         ok: false,

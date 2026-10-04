@@ -1,12 +1,14 @@
 /**
  * GET /api/economy-balance — Supro gold + admin / floor metadata.
+ * Prefers JWT ensure_my_economy (no service_role required).
  */
 
-import { bearerToken, json } from "../_shared/http.js";
+import { bearerToken, errText, json } from "../_shared/http.js";
 import {
   getUserFromJwt,
   rpcWithServiceRole,
   rpcWithUserJwt,
+  serviceKey,
   supabaseAuthConfigured,
 } from "../_shared/supabase.js";
 
@@ -22,22 +24,40 @@ export async function onRequestGet({ request, env }) {
   const user = await getUserFromJwt(env, jwt);
   if (!user?.id) return json({ ok: false, code: "unauthorized" }, 401);
 
-  await rpcWithUserJwt(env, jwt, "ensure_my_economy", {});
-  const ensured = await rpcWithServiceRole(env, "ensure_supro_economy", {
-    p_user_id: String(user.id),
-  });
-  if (!ensured.ok) {
+  let row = null;
+  let rpcErr = null;
+
+  const mine = await rpcWithUserJwt(env, jwt, "ensure_my_economy", {});
+  if (mine.ok && mine.data && typeof mine.data === "object") {
+    row = mine.data;
+  } else {
+    rpcErr = mine.data;
+    if (serviceKey(env)) {
+      const ensured = await rpcWithServiceRole(env, "ensure_supro_economy", {
+        p_user_id: String(user.id),
+      });
+      if (ensured.ok && ensured.data) {
+        row = ensured.data;
+        rpcErr = null;
+      } else {
+        rpcErr = ensured.data || mine.data;
+      }
+    }
+  }
+
+  if (!row) {
     return json(
       {
         ok: false,
         code: "economy_error",
-        error: ensured.data,
+        error: errText(rpcErr, "economy_error"),
+        hint:
+          "Run supabase/supro.sql (or supabase/supro_auth_rpc_patch.sql). Prefer JWT ensure_my_economy; service_role optional for balance.",
       },
-      ensured.status || 500,
+      500,
     );
   }
 
-  const row = ensured.data || {};
   const email = String(user.email || "").toLowerCase();
   const isAdmin =
     Boolean(row.is_admin) ||
@@ -45,11 +65,18 @@ export async function onRequestGet({ request, env }) {
     String(user.app_metadata?.role || "") === "admin";
 
   let usage = [];
-  const usageRes = await rpcWithServiceRole(env, "list_fin_desk_usage", {
-    p_user_id: String(user.id),
+  const usageMine = await rpcWithUserJwt(env, jwt, "list_my_fin_desk_usage", {
     p_limit: 20,
   });
-  if (usageRes.ok && Array.isArray(usageRes.data)) usage = usageRes.data;
+  if (usageMine.ok && Array.isArray(usageMine.data)) {
+    usage = usageMine.data;
+  } else if (serviceKey(env)) {
+    const usageRes = await rpcWithServiceRole(env, "list_fin_desk_usage", {
+      p_user_id: String(user.id),
+      p_limit: 20,
+    });
+    if (usageRes.ok && Array.isArray(usageRes.data)) usage = usageRes.data;
+  }
 
   return json({
     ok: true,
