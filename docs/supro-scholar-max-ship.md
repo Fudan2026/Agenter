@@ -25,3 +25,16 @@ Multi-turn Fin conversations, 苏大学士 ZH narrative, gold tiers 1–4×, Alp
 ### Verify
 - `npm test` + `npm run build` green
 - No Computer Use in CI; human verifies multimodal on production
+
+## Stage 5B — Fin-Research Agent (6×)
+
+**Branch:** `cursor/stage5-5b-agent-0341`
+
+### Shipped
+- `POST /api/fin-agent` Plan-and-Solve loop (≤4 baked-data tools + synthesis LLM)
+- Tools: `search_announcements`, `search_iwencai`, `pull_factors`, `graph_neighbors` (seed), `quick_backtest`
+- Mode **`agent` at 6×** gold (floor 60)
+- Collapsible thought-chain timeline from `reasoning_steps` in Fin UI
+
+### Station-master note (ZH)
+硬刷新后选择「深度投研 Agent」(6x)，提问复杂产业链问题，展开思维链时间线，确认 6× 扣费。

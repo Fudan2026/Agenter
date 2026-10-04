@@ -2563,6 +2563,36 @@ a.index-chip:hover {
   white-space: pre-wrap;
   line-height: 1.55;
 }
+.fin-thought-chain .fin-timeline {
+  display: grid;
+  gap: 0.5rem;
+  border-left: 2px solid #d1d5db;
+  padding-left: 0.75rem;
+}
+.fin-timeline-step {
+  background: #f9fafb;
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+}
+.fin-timeline-step summary {
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+.fin-obs {
+  margin: 0.35rem 0 0;
+  font-size: 0.72rem;
+  white-space: pre-wrap;
+  max-height: 10rem;
+  overflow: auto;
+}
+.fin-upload {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0.5rem 0;
+}
+.fin-upload-name {
+  color: #374151;
+}
 .attention-board {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));

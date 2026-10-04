@@ -287,6 +287,87 @@ export async function callFinDesk(input: {
   }
 }
 
+export async function callFinAgent(input: {
+  prompt: string;
+  locale: "zh" | "en";
+  context?: string;
+  messages?: ChatMessage[];
+  conversation_id?: string | null;
+}): Promise<
+  | {
+      ok: true;
+      answer: string;
+      gold_spent: number;
+      gold_remaining: number | null;
+      conversation_id?: string | null;
+      mode_multiplier?: number;
+      reasoning_steps?: Array<{
+        step?: number;
+        thought?: string;
+        action?: string;
+        observation?: string;
+      }>;
+      structured?: unknown;
+      meta?: unknown;
+    }
+  | { ok: false; error: string; gold_needed?: number; code?: string }
+> {
+  try {
+    const res = await fetch("/api/fin-agent", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken()}`,
+      },
+      body: JSON.stringify({ ...input, mode: "agent" }),
+    });
+    const data = (await res.json()) as {
+      ok?: boolean;
+      answer?: string;
+      gold_spent?: number;
+      gold_remaining?: number | null;
+      conversation_id?: string;
+      mode_multiplier?: number;
+      reasoning_steps?: Array<{
+        step?: number;
+        thought?: string;
+        action?: string;
+        observation?: string;
+      }>;
+      structured?: unknown;
+      meta?: unknown;
+      error?: string;
+      code?: string;
+      gold_needed?: number;
+      hint?: string;
+    };
+    if (!data.ok || !data.answer) {
+      const base = flattenErr(data.error || data.code, "fin_agent_failed");
+      const hint = typeof data.hint === "string" ? data.hint : "";
+      return {
+        ok: false,
+        error: hint ? `${base} — ${hint}` : base,
+        gold_needed: data.gold_needed,
+        code: data.code,
+      };
+    }
+    return {
+      ok: true,
+      answer: data.answer,
+      gold_spent: Number(data.gold_spent ?? 0),
+      gold_remaining:
+        data.gold_remaining == null ? null : Number(data.gold_remaining),
+      conversation_id: data.conversation_id ?? null,
+      mode_multiplier: data.mode_multiplier,
+      reasoning_steps: data.reasoning_steps,
+      structured: data.structured,
+      meta: data.meta,
+    };
+  } catch {
+    return { ok: false, error: "network_error" };
+  }
+}
+
 /** Compress image file to a data URL suitable for DeepSeek vision (≤ ~1.2MB). */
 export async function fileToVisionDataUrl(file: File): Promise<string | null> {
   if (!file || !file.type.startsWith("image/")) return null;

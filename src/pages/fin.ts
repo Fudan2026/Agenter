@@ -1,6 +1,7 @@
 import type { Locale } from "../i18n/strings";
 import { t } from "../i18n/strings";
 import {
+  callFinAgent,
   callFinDesk,
   fetchBalance,
   fileToVisionDataUrl,
@@ -275,6 +276,7 @@ export function renderFinDesk(
     "e2e",
     "transformer",
     "edge_infer",
+    "agent",
     "report",
     "allocate",
   ];
@@ -428,16 +430,25 @@ export function renderFinDesk(
       paint();
       const edgeRows = mode === "edge_infer" ? liveEdgeRows() : [];
       const inference = edgeRows[0] || null;
-      const r = await callFinDesk({
-        mode,
-        prompt,
-        locale,
-        context: buildContext(),
-        messages: history,
-        conversation_id: conversationId,
-        image: pendingImage,
-        inference,
-      });
+      const r =
+        mode === "agent"
+          ? await callFinAgent({
+              prompt,
+              locale,
+              context: buildContext(),
+              messages: history,
+              conversation_id: conversationId,
+            })
+          : await callFinDesk({
+              mode,
+              prompt,
+              locale,
+              context: buildContext(),
+              messages: history,
+              conversation_id: conversationId,
+              image: pendingImage,
+              inference,
+            });
       busy = false;
       if (!r.ok) {
         turns = history;

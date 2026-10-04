@@ -25,10 +25,23 @@ export interface SuproStructured {
     rationale?: string;
   }>;
   reasoning_chain?: string[];
+  reasoning_steps?: Array<{
+    step?: number;
+    thought?: string;
+    action?: string;
+    observation?: string;
+  }>;
   attention_view?: {
     heads_note?: string;
     features?: string[];
     limitations?: string[];
+  };
+  prediction_confidence?: number;
+  prediction_band?: { lo?: number; mid?: number; hi?: number };
+  attention_heatmap_data?: {
+    patch_count?: number;
+    weights?: number[];
+    features?: string[];
   };
   allocation?: {
     weights?: Array<{ symbol?: string; weight?: number }>;
@@ -97,6 +110,21 @@ export function renderStructuredHtml(
   structured: SuproStructured,
 ): string {
   const parts: string[] = [];
+
+  if (structured.reasoning_steps?.length) {
+    parts.push(`<section class="fin-thought-chain"><h3>${esc(t(locale, "finThoughtChain"))}</h3>
+      <div class="fin-timeline">${structured.reasoning_steps
+        .map((s, i) => {
+          const n = s.step ?? i + 1;
+          const obs = String(s.observation || "").slice(0, 400);
+          return `<details class="fin-timeline-step"${i === 0 ? " open" : ""}>
+            <summary><strong>#${esc(String(n))}</strong> ${esc(String(s.action || ""))}</summary>
+            <p class="muted tiny">${esc(String(s.thought || ""))}</p>
+            <pre class="fin-obs">${esc(obs)}</pre>
+          </details>`;
+        })
+        .join("")}</div></section>`);
+  }
 
   if (structured.reasoning_chain?.length) {
     parts.push(`<section><h3>${esc(t(locale, "finReasoning"))}</h3><ol>${structured.reasoning_chain
